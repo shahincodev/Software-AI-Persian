@@ -25,7 +25,7 @@ jobs:
 
       - name: Force Push Persian → English (overwrite)
         run: |
-          git push english main --force
+          git push english +main:main
 
       - name: Notify on Success
         run: |

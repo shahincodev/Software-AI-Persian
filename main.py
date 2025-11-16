@@ -77,9 +77,9 @@ def parse_arguments() -> argparse.Namespace:
     )
     parser.add_argument(
         "--tts-provider",
-        choices=["google-cloud", "gtts"],
+        choices=["google-cloud", "gtts", "elevenlabs"],
         default="gtts",
-        help="انتخاب سرویس تبدیل متن به گفتار: 'google-cloud' (پولی، کیفیت بالا) یا 'gtts' (رایگان)"
+        help="انتخاب سرویس تبدیل متن به گفتار: 'google-cloud' (پولی، کیفیت بالا)، 'gtts' (رایگان) یا 'elevenlabs' (پولی، کیفیت بالا)"
     )
 
     return parser.parse_args()

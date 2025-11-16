@@ -16,8 +16,7 @@ from typing import Optional, Callable, Any, cast, Literal, Tuple
 import speech_recognition as sr
 from google.cloud import texttospeech
 from gtts import gTTS
-from elevenlabs import play as elevenlabs_play
-from elevenlabs.client import ElevenLabs
+from elevenlabs import play as elevenlabs_play, generate as elevenlabs_generate, set_api_key
 from langdetect import detect, LangDetectException
 import sounddevice as sd
 import soundfile as sf
@@ -92,7 +91,7 @@ class VoiceInput:
         """
         def listener_thread():
             while self.is_listening:
-                text = self.listen_once()
+                text, lang = self.listen_once()
                 if text:
                     callback(text)
 
@@ -130,7 +129,7 @@ class VoiceOutput:
             api_key = os.environ.get("ELEVENLABS_API_KEY")
             if not api_key:
                 raise ValueError("ELEVENLABS_API_KEY dar mohit yaaft nashod.")
-            self.elevenlabs_client = ElevenLabs(api_key=api_key)
+            set_api_key(api_key)
             logger.info("TTS Provider: ElevenLabs")
         elif self.tts_provider == "google-cloud":
             self.client = texttospeech.TextToSpeechClient()
@@ -146,7 +145,7 @@ class VoiceOutput:
             )
             logger.info("TTS Provider: Google Cloud Text-to-Speech")
         else:
-            logger.info("TTS Provider: gTTS (rayegan)")
+            logger.info("TTS Provider: gTTS (Free)")
         
         self._start_speaker_thread()
 
@@ -200,7 +199,7 @@ class VoiceOutput:
         voice_id = "Rachel" 
         model_id = "eleven_multilingual_v2"
         
-        audio_stream = self.elevenlabs_client.generate(
+        audio_stream = elevenlabs_generate(
             text=text,
             voice=voice_id,
             model=model_id,
@@ -237,12 +236,8 @@ class VoiceOutput:
             audio_content: داده‌های صوتی به صورت bytes
             is_mp3: آیا فرمت صوتی MP3 است (برای gTTS و ElevenLabs)
         """
-        if self.tts_provider == "elevenlabs":
-            elevenlabs_play(audio_content)
-            return
-
         if is_mp3:
-            # برای gTTS که MP3 است
+            # برای gTTS و ElevenLabs که MP3 است
             temp_mp3 = os.path.join(self.temp_dir, "temp_audio.mp3")
             try:
                 # ذخیره MP3

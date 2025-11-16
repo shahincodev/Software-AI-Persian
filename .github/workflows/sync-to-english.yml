@@ -1,11 +1,12 @@
 name: Sync to English Repository
 
 on:
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:
+
 jobs:
   sync:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout Persian Repository
         uses: actions/checkout@v4
@@ -22,10 +23,10 @@ jobs:
         run: |
           git remote add english https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/shahincodev/Sofware-AI-English.git
 
-      - name: Push to English Repository
+      - name: Force Push Persian → English (overwrite)
         run: |
           git push english main --force
 
       - name: Notify on Success
         run: |
-          echo "✅ Successfully synced to English repository!" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Forced sync completed. English repository now matches Persian." >> $GITHUB_STEP_SUMMARY

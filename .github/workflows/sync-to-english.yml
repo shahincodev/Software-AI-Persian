@@ -24,7 +24,7 @@ jobs:
 
       - name: Push to English Repository
         run: |
-          git push english main:persian-sync
+          git push english main
 
       - name: Notify on Success
         run: |

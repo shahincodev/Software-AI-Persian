@@ -103,122 +103,91 @@ def print_banner(text=banner, color=Fore.CYAN) -> None:
         print(color + str(text) + Style.RESET_ALL)
 
 async def process_user_input(task_engine: TaskEngine, memory: MemoryManager, mode: str, input_mode: str, voice: VoiceManager) -> None:
-    """پردازش ورودی کاربر در یک حلقه تعاملی."""
+    """پردازش ورودی کاربر در یک حلقه تعاملی بهبود یافته با پشتیبانی از چندزبانگی."""
 
     print_banner(banner, color=Fore.CYAN)
-    # خوش‌آمدگویی صوتی اگر حالت voice انتخاب شده باشد
+    welcome_message = "Hello! Welcome to the Artificial Intelligence System."
+    current_lang = "en"  # زبان پیش‌فرض
     if input_mode == "voice":
-        voice.speak("Hello! Welcome to the Artificial Intelligence System.", block=True)
-    print("\n Be Systeme Narm Afzarie Hooshe Masnoee Sofware-AI Khosh Amadid !")
-    print("Task haaye khod ra vared konid (har task dar yek khat). Baraye khorooj az Ctrl+C estefade konid.\n")
+        voice.speak(welcome_message, lang=current_lang, block=True)
+    
+    print(f"\n{welcome_message}")
+    print("Please enter your tasks. Type 'run' or 'start' to execute them. Use Ctrl+C to exit.\n")
 
     try:
-        # حلقه بیرونی: امکان چندین دور اضافه کردن + اجرای وظایف را فراهم می‌کند
         while True:
-            # حلقه داخلی: یک یا چند وظیفه را از کاربر دریافت می‌کند
-            while True:
-                try:
-
-                    if input_mode == "voice":
-                        user_input = voice.listen(timeout=7)
-                        if not user_input:
-                            print("verodi soti daryaft neshod, lotfan dobareh talash konid.")
-                            continue
-                    else:
-                        user_input = input("Taske Jadid > ").strip()
-                        if not user_input:
-                            continue
-
-                    # ذخیره تسک در حافظه کوتاه‌مدت
-                    memory.remember_short(
-                        content=user_input,
-                        ttl=3600,  # 1 ساعت TTL
-                        metadata={"type": "user_task", "mode": mode}
-                    )
-
-                    # افزودن تسک به موتور پردازش
-                    task_engine.add_task(user_input, mode=mode)
-                    print(f"Task ezafe shod: {user_input}")
-
-                    # پرسش برای افزودن تسک بیشتر یا شروع اجرا
-
-                    if input_mode == "voice":
-                        voice.speak("Do you have another task? Say yes to add a new task or remain silent to continue.")
-                        choice = voice.listen(timeout=5)
-                        if choice and ("بله" in choice or "yes" in choice.lower()):
-                            continue
-                        else:
-                            break
-                    else:
-                        choice = input("\n Aya task digari darid? (y/N) ").strip().lower()
-                        if choice == 'y':
-                            continue
-                        else:
-                            break
-
-                except EOFError:
-                    break
-
-            # اگر در این دور هیچ وظیفه‌ای اضافه نشده است، بپرسید که آیا ادامه دهید یا خارج شوید
-
-            if not task_engine.queue:
-                if input_mode == "voice":
-                    voice.speak("No tasks have been added. Do you want to continue? If not, say no.")
-                    cont = voice.listen(timeout=5)
-                    if cont and ("نه" in cont or "no" in cont.lower()):
-                        break
-                    else:
-                        continue
-                else:
-                    cont = input("\n Hich taski ezafe nashode ast. Aya mikhahid edame dahid? (Y/n) ").strip().lower()
-                    if cont == 'n':
-                        break
-                    else:
-                        continue
-
-            # اجرای تمام تسک‌های جمع‌آوری شده
-            print("\n Dar hal ejraaye task-ha...")
-
-            # وظایف را قبل از اجرا عکس‌برداری می‌کند، زیرا run_all صف را پاک نمی‌کند
-            tasks_list = list(task_engine.queue)
-            results = await task_engine.run_all()
-
-            # ذخیره نتایج در حافظه بلندمدت
-            for (task_text, task_mode), result in zip(tasks_list, results):
-                if result:
-                    memory.remember_long(
-                        content=result,
-                        metadata={
-                            "type": "task_result",
-                            "original_task": task_text,
-                            "mode": task_mode
-                        }
-                    )
-                    print(f"\nNatiije task: {result}\n")
-                else:
-                    print(f"\nTask ba shekast movajeh shod ya natije-i nadasht\n")
-
-            # صف موتور را خالی کنید تا دور بعدی از نو شروع شود
-            task_engine.queue.clear()
-
-            # بپرسید که آیا کاربر می‌خواهد وظایف بیشتری اضافه کند یا اجرا کند
-
+            user_text = ""
             if input_mode == "voice":
-                voice.speak("Do you want to add or run more tasks? If not, say no.")
-                cont = voice.listen(timeout=5)
-                if cont and ("نه" in cont or "no" in cont.lower()):
-                    break
+                print("Listening for a new task...")
+                user_text, detected_lang = voice.listen(timeout=10)
+                if user_text and detected_lang:
+                    current_lang = detected_lang
                 else:
+                    print("No voice input detected. Say 'run' to start tasks or add a new one.")
                     continue
             else:
-                cont = input("\n Aya mikhahid task haye bishtari ezafe konid ya anjam dahid? (Y/n) ").strip().lower()
-                if cont == 'n':
-                    break
-                else:
+                user_text = input("New Task (or 'run' to start) > ").strip()
+                # برای ورودی متنی، زبان را انگلیسی فرض می‌کنیم
+                current_lang = "en"
+
+            if not user_text:
+                continue
+
+            # کلمات کلیدی برای اجرا یا خروج
+            if user_text.lower() in ["run", "start", "اجرا کن"]:
+                if not task_engine.queue:
+                    message = "No tasks to run. Please add tasks first."
+                    print(message)
+                    if input_mode == "voice":
+                        voice.speak(message, lang=current_lang)
                     continue
+                
+                # اجرای تسک‌ها
+                exec_message = "Executing tasks..."
+                print(f"\n{exec_message}")
+                if input_mode == "voice":
+                    voice.speak(exec_message, lang=current_lang)
+
+                tasks_list = list(task_engine.queue)
+                results = await task_engine.run_all()
+
+                # پردازش و ذخیره نتایج
+                for (task_text, task_mode), result in zip(tasks_list, results):
+                    if result:
+                        memory.remember_long(
+                            content=result,
+                            metadata={"type": "task_result", "original_task": task_text, "mode": task_mode}
+                        )
+                        result_message = f"Task Result: {result}"
+                        print(f"\n{result_message}\n")
+                        if input_mode == "voice":
+                            voice.speak(f"The task is complete. The result is: {result}", lang=current_lang, block=True)
+                    else:
+                        error_message = f"Task '{task_text}' failed or had no result."
+                        print(f"\n{error_message}\n")
+                        if input_mode == "voice":
+                            voice.speak(error_message, lang=current_lang, block=True)
+                
+                task_engine.queue.clear()
+                print("\nAll tasks processed. You can add new tasks or exit.")
+
+            elif user_text.lower() in ["exit", "quit", "خروج"]:
+                break
+            else:
+                # افزودن تسک جدید
+                memory.remember_short(
+                    content=user_text,
+                    ttl=3600,
+                    metadata={"type": "user_task", "mode": mode, "lang": current_lang}
+                )
+                task_engine.add_task(user_text, mode=mode)
+                added_message = f"Task added: {user_text}"
+                print(added_message)
+                if input_mode == "voice":
+                    voice.speak(added_message, lang=current_lang)
 
     except KeyboardInterrupt:
-        print("\nDar hal khamosh shodan narm-afzar...")
+        print("\nShutting down gracefully...")
     finally:
         memory.shutdown()
         voice.shutdown()

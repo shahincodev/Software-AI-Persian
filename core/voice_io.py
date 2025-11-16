@@ -12,10 +12,13 @@ import threading
 import logging
 import tempfile
 import subprocess
-from typing import Optional, Callable, Any, cast, Literal
+from typing import Optional, Callable, Any, cast, Literal, Tuple
 import speech_recognition as sr
 from google.cloud import texttospeech
 from gtts import gTTS
+from elevenlabs import play as elevenlabs_play
+from elevenlabs.client import ElevenLabs
+from langdetect import detect, LangDetectException
 import sounddevice as sd
 import soundfile as sf
 from pydub import AudioSegment
@@ -43,36 +46,43 @@ class VoiceInput:
             self.recognizer.energy_threshold = 4000
             self.recognizer.dynamic_energy_threshold = True
 
-    def listen_once(self, timeout: Optional[int] = None) -> str:
-        """یک‌بار گوش دادن و تبدیل گفتار به متن
+    def listen_once(self, timeout: Optional[int] = None) -> Tuple[str, str]:
+        """یک‌بار گوش دادن، تبدیل گفتار به متن و تشخیص زبان.
         
         Args:
             timeout: زمان انتظار به ثانیه (None برای نامحدود)
             
         Returns:
-            متن تشخیص داده شده یا رشته خالی در صورت خطا
+            تاپلی شامل (متن تشخیص داده شده, کد زبان) یا ('', '') در صورت خطا
         """
         try:
             with self.microphone as source:
-                logger.info("Dar hale Goosh dadan...")
+                logger.info("Listening for voice input...")
                 audio = self.recognizer.listen(source, timeout=timeout)
 
             text = cast(Any, self.recognizer).recognize_google(audio)
-            logger.info(f"Tashkhis Dade Shod: {text}")
-            return text
-        except sr.WaitTimeoutError:
-            logger.warning("Zaman-e entezaar be payan resid.")
-            return ""
-        except sr.UnknownValueError:
-            logger.error("Gofte shode ra nemitavan tashkhis dad.")
-            return ""
-        except sr.RequestError as e:
-            logger.error(f"Khataye khadamat-e tashkhis: {str(e)}")
-            return ""
-        except Exception as e:
-            logger.error(f"Khataye gheire montazere: {str(e)}")
+            logger.info(f"Recognized text: {text}")
             
-        return ""
+            try:
+                lang = detect(text)
+                logger.info(f"Detected language: {lang}")
+                return text, lang
+            except LangDetectException:
+                logger.warning("Could not detect language, defaulting to English.")
+                return text, "en"
+
+        except sr.WaitTimeoutError:
+            logger.warning("Listening timed out.")
+            return "", ""
+        except sr.UnknownValueError:
+            logger.error("Could not understand the audio.")
+            return "", ""
+        except sr.RequestError as e:
+            logger.error(f"Speech recognition service error: {e}")
+            return "", ""
+        except Exception as e:
+            logger.error(f"An unexpected error occurred during listening: {e}")
+            return "", ""
         
     def start_continuous(self, callback: Callable[[str], Any]) -> None:
         """شروع گوش دادن مداوم در یک thread جداگانه
@@ -96,16 +106,18 @@ class VoiceInput:
 class VoiceOutput:
     """کلاس مدیریت خروجی صوتی (تبدیل متن به گفتار)
     
-    این کلاس از دو سرویس TTS پشتیبانی می‌کند:
-    - Google Cloud TTS (google-cloud): کیفیت بالاتر، پرداختی
+    این کلاس از سه سرویس TTS پشتیبانی می‌کند:
+    - ElevenLabs (elevenlabs): کیفیت بسیار بالا، نیازمند API Key
+    - Google Cloud TTS (google-cloud): کیفیت بالا، پرداختی
     - gTTS (gtts): رایگان، کیفیت معقول
     """
     
-    def __init__(self, tts_provider: Literal["google-cloud", "gtts"] = "google-cloud") -> None:
+    def __init__(self, tts_provider: Literal["elevenlabs", "google-cloud", "gtts"] = "elevenlabs") -> None:
         """مقداردهی اولیه موتور تبدیل متن به گفتار
         
         Args:
             tts_provider: انتخاب سرویس TTS
+                - "elevenlabs": ElevenLabs TTS (niaz be API key)
                 - "google-cloud": Google Cloud Text-to-Speech (niaz be etebarname)
                 - "gtts": gTTS سرویس رایگان
         """
@@ -114,8 +126,13 @@ class VoiceOutput:
         self.is_speaking = False
         self.temp_dir = tempfile.mkdtemp()
         
-        # مقداردهی سرویس Google Cloud (اگر استفاده شود)
-        if self.tts_provider == "google-cloud":
+        if self.tts_provider == "elevenlabs":
+            api_key = os.environ.get("ELEVENLABS_API_KEY")
+            if not api_key:
+                raise ValueError("ELEVENLABS_API_KEY dar mohit yaaft nashod.")
+            self.elevenlabs_client = ElevenLabs(api_key=api_key)
+            logger.info("TTS Provider: ElevenLabs")
+        elif self.tts_provider == "google-cloud":
             self.client = texttospeech.TextToSpeechClient()
             self.voice = texttospeech.VoiceSelectionParams(
                 language_code="fa-IR",
@@ -150,34 +167,28 @@ class VoiceOutput:
         )
         return response.audio_content
 
-    def _synthesize_speech_gtts(self, text: str) -> bytes:
-        """تبدیل متن به صدا با استفاده از gTTS
+    def _synthesize_speech_gtts(self, text: str, lang: str = 'en') -> bytes:
+        """تبدیل متن به صدا با استفاده از gTTS با زبان مشخص.
         
         Args:
             text: متن برای تبدیل به گفتار
+            lang: کد زبان (مثلاً 'en', 'fa')
             
         Returns:
             داده‌های صوتی به صورت bytes
         """
         temp_mp3 = os.path.join(self.temp_dir, "temp_gtts.mp3")
         try:
-            # ایجاد و ذخیره فایل صوتی gTTS
-            # gTTS پشتیبانی فارسی قابل اعتمادی ندارد، بنابراین خروجی به انگلیسی تولید می‌شود
-            tts = gTTS(text=text, lang='en', slow=False)
+            tts = gTTS(text=text, lang=lang, slow=False)
             tts.save(temp_mp3)
-
-            # خواندن فایل MP3 و تبدیل به bytes
             with open(temp_mp3, 'rb') as f:
-                audio_bytes = f.read()
-
-            return audio_bytes
+                return f.read()
         finally:
-            # پاک‌سازی فایل موقت
             if os.path.exists(temp_mp3):
                 os.remove(temp_mp3)
 
-    def _synthesize_speech(self, text: str) -> bytes:
-        """تبدیل متن به صدا با استفاده از سرویس انتخاب‌شده
+    def _synthesize_speech_elevenlabs(self, text: str) -> bytes:
+        """تبدیل متن به صدا با استفاده از ElevenLabs
         
         Args:
             text: متن برای تبدیل به گفتار
@@ -185,18 +196,51 @@ class VoiceOutput:
         Returns:
             داده‌های صوتی به صورت bytes
         """
-        if self.tts_provider == "google-cloud":
-            return self._synthesize_speech_google_cloud(text)
+        # انتخاب صدا و مدل - این مقادیر را می‌توانید تغییر دهید
+        voice_id = "Rachel" 
+        model_id = "eleven_multilingual_v2"
+        
+        audio_stream = self.elevenlabs_client.generate(
+            text=text,
+            voice=voice_id,
+            model=model_id,
+            stream=True
+        )
+        
+        # جمع‌آوری داده‌های استریم شده در یک متغیر bytes
+        audio_bytes = b"".join(chunk for chunk in audio_stream)
+        return audio_bytes
+
+    def _synthesize_speech(self, text: str, lang: str = 'en') -> bytes:
+        """تبدیل متن به صدا با استفاده از سرویس انتخاب‌شده و زبان مشخص.
+        
+        Args:
+            text: متن برای تبدیل به گفتار
+            lang: کد زبان
+            
+        Returns:
+            داده‌های صوتی به صورت bytes
+        """
+        if self.tts_provider == "elevenlabs":
+            # ElevenLabs multilingual v2 automatically detects language
+            return self._synthesize_speech_elevenlabs(text)
+        elif self.tts_provider == "google-cloud":
+            # Google Cloud needs the language code
+            return self._synthesize_speech_google_cloud(text) # Note: This function needs to be updated to accept lang
         else:
-            return self._synthesize_speech_gtts(text)
+            return self._synthesize_speech_gtts(text, lang=lang)
 
     def _play_audio(self, audio_content: bytes, is_mp3: bool = False) -> None:
         """پخش صدا با استفاده از sounddevice و ffplay
         
         Args:
             audio_content: داده‌های صوتی به صورت bytes
-            is_mp3: آیا فرمت صوتی MP3 است (برای gTTS)
+            is_mp3: آیا فرمت صوتی MP3 است (برای gTTS و ElevenLabs)
         """
+        if self.tts_provider == "elevenlabs":
+            elevenlabs_play(audio_content)
+            return
+
         if is_mp3:
             # برای gTTS که MP3 است
             temp_mp3 = os.path.join(self.temp_dir, "temp_audio.mp3")
@@ -238,18 +282,18 @@ class VoiceOutput:
         def speaker_thread():
             while True:
                 try:
-                    text = self.speaking_queue.get()
-                    if text is None:  # سیگنال توقف
+                    item = self.speaking_queue.get()
+                    if item is None:
                         break
                     
+                    text, lang = item
                     self.is_speaking = True
-                    audio_content = self._synthesize_speech(text)
+                    audio_content = self._synthesize_speech(text, lang=lang)
                     
-                    # تعیین فرمت صوتی بر اساس سرویس
-                    is_mp3 = self.tts_provider == "gtts"
+                    is_mp3 = self.tts_provider in ["gtts", "elevenlabs"]
                     self._play_audio(audio_content, is_mp3=is_mp3)
                 except Exception as e:
-                    logger.error(f"khata dar pokhsh goftar:\n{str(e)}")
+                    logger.error(f"Error in speaker thread: {e}")
                 finally:
                     self.is_speaking = False
                     self.speaking_queue.task_done()
@@ -257,19 +301,20 @@ class VoiceOutput:
         self.speaker_thread = threading.Thread(target=speaker_thread, daemon=True)
         self.speaker_thread.start()
 
-    def speak(self, text: str, block: bool = False) -> None:
-        """تبدیل متن به گفتار
+    def speak(self, text: str, lang: str = 'en', block: bool = False) -> None:
+        """تبدیل متن به گفتار با زبان مشخص.
         
         Args:
             text: متن برای تبدیل به گفتار
+            lang: کد زبان
             block: اگر True باشد، منتظر اتمام گفتار می‌ماند
         """
         try:
-            self.speaking_queue.put(text)
+            self.speaking_queue.put((text, lang))
             if block:
                 self.speaking_queue.join()
         except Exception as e:
-            logger.error(f"khata dar afzoodan matn be saf goftar: {str(e)}")
+            logger.error(f"Error adding text to speaking queue: {e}")
 
     def stop_speaking(self) -> None:
         """توقف فوری گفتار فعلی و پاک‌سازی صف"""
@@ -289,35 +334,38 @@ class VoiceOutput:
 class VoiceManager:
     """مدیریت یکپارچه ورودی و خروجی صوتی"""
 
-    def __init__(self, tts_provider: Literal["google-cloud", "gtts"] = "google-cloud") -> None:
+    def __init__(self, tts_provider: Literal["elevenlabs", "google-cloud", "gtts"] = "elevenlabs") -> None:
         """مقداردهی اولیه مدیر صوتی
         
         Args:
             tts_provider: انتخاب سرویس TTS
+                - "elevenlabs": ElevenLabs TTS
                 - "google-cloud": Google Cloud Text-to-Speech
                 - "gtts": gTTS رایگان
         """
         self.voice_input = VoiceInput()
         self.voice_output = VoiceOutput(tts_provider=tts_provider)
 
-    def listen(self, timeout: Optional[int] = None) -> str:
-        """گوش دادن یک‌باره به ورودی صوتی
+    def listen(self, timeout: Optional[int] = None) -> Tuple[str, str]:
+        """گوش دادن یک‌باره و تشخیص زبان.
         
         Args:
             timeout: زمان انتظار به ثانیه
             
         Returns:
-            متن تشخیص داده شده
+            تاپلی از (متن, زبان)
         """
         return self.voice_input.listen_once(timeout)
     
-    def speak(self, text: str, block: bool = False) -> None:
-        """تبدیل متن به گفتار
+    def speak(self, text: str, lang: str = 'en', block: bool = False) -> None:
+        """تبدیل متن به گفتار با زبان مشخص.
+        
         Args:
             text: متن برای تبدیل به گفتار
+            lang: کد زبان
             block: اگر True باشد، منتظر اتمام گفتار می‌ماند
         """
-        self.voice_output.speak(text, block)
+        self.voice_output.speak(text, lang=lang, block=block)
 
     def start_conversation(self, callback: Callable[[str], Any]) -> None:
         """شروع مکالمه دوطرفه

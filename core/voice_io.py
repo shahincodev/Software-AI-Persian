@@ -16,7 +16,7 @@ from typing import Optional, Callable, Any, cast, Literal, Tuple
 import speech_recognition as sr
 from google.cloud import texttospeech
 from gtts import gTTS
-from elevenlabs import play as elevenlabs_play, generate as elevenlabs_generate, set_api_key
+from elevenlabs.client import ElevenLabs
 from langdetect import detect, LangDetectException
 import sounddevice as sd
 import soundfile as sf
@@ -129,7 +129,7 @@ class VoiceOutput:
             api_key = os.environ.get("ELEVENLABS_API_KEY")
             if not api_key:
                 raise ValueError("ELEVENLABS_API_KEY dar mohit yaaft nashod.")
-            set_api_key(api_key)
+            self.elevenlabs_client = ElevenLabs(api_key=api_key)
             logger.info("TTS Provider: ElevenLabs")
         elif self.tts_provider == "google-cloud":
             self.client = texttospeech.TextToSpeechClient()
@@ -199,11 +199,10 @@ class VoiceOutput:
         voice_id = "Rachel" 
         model_id = "eleven_multilingual_v2"
         
-        audio_stream = elevenlabs_generate(
+        audio_stream = self.elevenlabs_client.text_to_speech.convert(
             text=text,
             voice=voice_id,
             model=model_id,
-            stream=True
         )
         
         # جمع‌آوری داده‌های استریم شده در یک متغیر bytes

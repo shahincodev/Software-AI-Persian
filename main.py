@@ -112,7 +112,7 @@ async def process_user_input(task_engine: TaskEngine, memory: MemoryManager, mod
         voice.speak(welcome_message, lang=current_lang, block=True)
     
     print(f"\n{welcome_message}")
-    print("Please enter your tasks. Type 'run' or 'start' to execute them. Use Ctrl+C to exit.\n")
+    print("Please enter your tasks. ask or Type 'start' to execute them. Use Ctrl+C to exit.\n")
 
     try:
         while True:
@@ -123,7 +123,7 @@ async def process_user_input(task_engine: TaskEngine, memory: MemoryManager, mod
                 if user_text and detected_lang:
                     current_lang = detected_lang
                 else:
-                    print("No voice input detected. Say 'run' to start tasks or add a new one.")
+                    print("No voice input detected. Say 'start' to start tasks or add a new one.")
                     continue
             else:
                 user_text = input("New Task (or 'run' to start) > ").strip()

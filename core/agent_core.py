@@ -29,8 +29,14 @@ def create_agent(task: str, mode: str = "browser") -> Agent | CodeAgent:
     """
 
     ai_brain = AIBrain()
-    # تعیین مدل بر اساس نوع agent
-    llm = ai_brain.get_model("browse" if mode == "browser" else "analyze")
+    
+    # انتخاب خودکار مدل بر اساس محتوای task
+    # اگر mode='browser' باشد، صراحتاً از مدل browser استفاده کن
+    # در غیر این صورت، بذار AIBrain خودش از روی task تصمیم بگیره
+    if mode == "browser":
+        llm = ai_brain.get_model(purpose="browse")
+    else:
+        llm = ai_brain.get_model(task=task)  # انتخاب خودکار!
 
     browser = create_browser() if mode == "browser" else None
 
@@ -73,4 +79,6 @@ def create_agent(task: str, mode: str = "browser") -> Agent | CodeAgent:
         available_file_paths=available_paths,
     )
 
-    return agent
+    # Type assertion to help the type checker
+    from typing import cast
+    return cast(Agent | CodeAgent, agent)

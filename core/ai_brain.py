@@ -25,6 +25,54 @@ class AIBrain:
     def __init__(self) -> None:
         self._models: dict[str, Any] = {}
 
+    def _analyze_task_complexity(self, task: str) -> str:
+        """تحلیل خودکار پیچیدگی تسک و انتخاب بهترین مدل.
+        
+        این متد بر اساس کلمات کلیدی و محتوای تسک، مناسب‌ترین مدل را انتخاب می‌کند.
+        """
+        if not task:
+            return "normal"
+        
+        task_lower = task.lower()
+        
+        # کلمات کلیدی برای کارهای مرورگری
+        browser_keywords = [
+            "browse", "search", "web", "website", "google", "click", "open",
+            "مرور", "جستجو", "وب", "سایت", "گوگل", "کلیک", "باز کن"
+        ]
+        
+        # کلمات کلیدی برای تحلیل و استدلال عمیق
+        reasoning_keywords = [
+            "analyze", "compare", "explain", "why", "how does", "reason",
+            "evaluate", "assess", "investigate", "deep",
+            "تحلیل", "مقایسه", "توضیح", "چرا", "چگونه", "دلیل", 
+            "ارزیابی", "بررسی", "تحقیق"
+        ]
+        
+        # کلمات کلیدی برای پاسخ‌های سریع
+        fast_keywords = [
+            "quick", "fast", "simple", "short", "brief",
+            "سریع", "ساده", "کوتاه", "خلاصه"
+        ]
+        
+        # بررسی اولویت‌دار
+        if any(kw in task_lower for kw in browser_keywords):
+            logger.info("Task type detection: browser_use")
+            return "browse"
+        elif any(kw in task_lower for kw in reasoning_keywords):
+            logger.info("Task type identification: reasoning")
+            return "analyze"
+        elif any(kw in task_lower for kw in fast_keywords):
+            logger.info("Task type detection: fast")
+            return "realtime"
+        else:
+            # برای تسک‌های طولانی‌تر از 100 کاراکتر از مدل reasoning استفاده کن
+            if len(task) > 100:
+                logger.info("Task type detection: reasoning (long)")
+                return "analyze"
+            logger.info("Task type detection: normal")
+            return "normal"
+
     def _load_model(self, name: str) -> Any:
         """بارگذاری مدل با نام منطقی. این توابع importهای سنگین را محصور می‌کند."""
         try:
@@ -42,7 +90,14 @@ class AIBrain:
 
                 model = ChatGroq(model=os.getenv("GROQ_MODEL", "groq-1"),
                                   temperature=float(os.getenv("MODEL_TEMPERATURE", "0.7")))
+            elif name == "normal":
+                from browser_use.llm.openai.chat import ChatOpenAI
+
+                model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "openai/gpt-4o-mini"),
+                                    temperature=float(os.getenv("MODEL_TEMPERATURE", "0")))
             else:
+                # fallback برای مقادیر نامعتبر
+                logger.warning("نام مدل نامعتبر: %s - استفاده از مدل پیش‌فرض", name)
                 from browser_use.llm.openai.chat import ChatOpenAI
 
                 model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "openai/gpt-4o-mini"),
@@ -53,17 +108,38 @@ class AIBrain:
             logger.exception("Khataye dar load kardan model %s: %s", name, exc)
             raise
 
-    def get_model(self, purpose: str) -> Any:
-        """انتخاب مدل بر اساس منظور (purpose).
+    def get_model(self, purpose: str | None = None, task: str | None = None) -> Any:
+        """انتخاب خودکار مدل بر اساس تسک یا منظور.
 
-        مقادیر ممکن برای purpose: 'analyze', 'browse', 'realtime', یا پیش‌فرض.
+        پارامترها:
+        - purpose: منظور دستی ('analyze', 'browse', 'realtime', 'normal')
+        - task: متن تسک برای تحلیل خودکار (اگر purpose داده نشده باشد)
+
+        اگر هیچ‌کدام داده نشود، از مدل 'normal' استفاده می‌شود.
+        
+        مثال:
+        >>> brain.get_model(task="مرورگر را باز کن و گوگل را جستجو کن")  # auto: browse
+        >>> brain.get_model(purpose="analyze")  # manual: reasoning
+        >>> brain.get_model()  # default: normal
         """
+        # اگر purpose داده نشده، از task تحلیل کن
+        if purpose is None:
+            if task:
+                purpose = self._analyze_task_complexity(task)
+                logger.info("انتخاب خودکار مدل بر اساس تسک: %s", purpose)
+            else:
+                purpose = "normal"
+                logger.info("استفاده از مدل پیش‌فرض: normal")
+        
+        # تبدیل purpose به نام داخلی مدل
         key = {
             "analyze": "reasoning",
             "browse": "browser_use",
             "realtime": "fast",
+            "normal": "normal",
         }.get(purpose, "normal")
 
+        # lazy-loading: فقط در صورت نیاز مدل را بارگذاری کن
         if key not in self._models:
             self._models[key] = self._load_model(key)
 

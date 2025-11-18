@@ -126,10 +126,10 @@ class AIBrain:
         if purpose is None:
             if task:
                 purpose = self._analyze_task_complexity(task)
-                logger.info("انتخاب خودکار مدل بر اساس تسک: %s", purpose)
+                logger.info("Automatic model selection based on task: %s", purpose)
             else:
                 purpose = "normal"
-                logger.info("استفاده از مدل پیش‌فرض: normal")
+                logger.info("Use default model: normal")
         
         # تبدیل purpose به نام داخلی مدل
         key = {

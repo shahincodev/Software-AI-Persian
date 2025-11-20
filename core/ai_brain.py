@@ -35,6 +35,14 @@ class AIBrain:
         
         task_lower = task.lower()
         
+        # کلمات کلیدی برای عملیات سیستمی
+        system_keywords = [
+            "install", "open app", "launch", "run program", "photoshop", "notepad",
+            "system", "hardware", "cpu", "memory", "process", "kill", "terminate",
+            "نصب", "برنامه", "باز کن", "اجرا", "فتوشاپ", "سیستم", "سخت‌افزار",
+            "پردازنده", "حافظه", "فرآیند", "بستن"
+        ]
+        
         # کلمات کلیدی برای کارهای مرورگری
         browser_keywords = [
             "browse", "search", "web", "website", "google", "click", "open",
@@ -56,8 +64,11 @@ class AIBrain:
         ]
         
         # بررسی اولویت‌دار
-        if any(kw in task_lower for kw in browser_keywords):
-            logger.info("Task type detection: browser_use")
+        if any(kw in task_lower for kw in system_keywords):
+            logger.info("تشخیص نوع تسک: system")
+            return "system"
+        elif any(kw in task_lower for kw in browser_keywords):
+            logger.info("تشخیص نوع تسک: browser_use")
             return "browse"
         elif any(kw in task_lower for kw in reasoning_keywords):
             logger.info("Task type identification: reasoning")
@@ -81,6 +92,12 @@ class AIBrain:
 
                 model = ChatGoogle(model=os.getenv("GOOGLE_REASONING_MODEL", "gemini-2.5-flash"),
                                    temperature=float(os.getenv("MODEL_TEMPERATURE", "0.5")))
+            elif name == "system":
+                # برای عملیات سیستمی از مدل با دقت بالاتر استفاده کن
+                from browser_use.llm.google.chat import ChatGoogle
+
+                model = ChatGoogle(model=os.getenv("GOOGLE_SYSTEM_MODEL", "gemini-2.5-flash"),
+                                   temperature=float(os.getenv("SYSTEM_MODEL_TEMPERATURE", "0.3")))
             elif name == "browser_use":
                 from browser_use.llm.browser_use.chat import ChatBrowserUse
 
@@ -97,15 +114,15 @@ class AIBrain:
                                     temperature=float(os.getenv("MODEL_TEMPERATURE", "0")))
             else:
                 # fallback برای مقادیر نامعتبر
-                logger.warning("نام مدل نامعتبر: %s - استفاده از مدل پیش‌فرض", name)
+                logger.warning("Invalid model name: %s - use default model", name)
                 from browser_use.llm.openai.chat import ChatOpenAI
 
                 model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "openai/gpt-4o-mini"),
                                     temperature=float(os.getenv("MODEL_TEMPERATURE", "0")))
-            logger.info("Model Hoshe Masnoii Load Shod: %s", name)
+            logger.info("Artificial intelligence model opened: %s", name)
             return model
         except Exception as exc:
-            logger.exception("Khataye dar load kardan model %s: %s", name, exc)
+            logger.exception("Error loading model. %s: %s", name, exc)
             raise
 
     def get_model(self, purpose: str | None = None, task: str | None = None) -> Any:
@@ -137,6 +154,7 @@ class AIBrain:
             "browse": "browser_use",
             "realtime": "fast",
             "normal": "normal",
+            "system": "system",
         }.get(purpose, "normal")
 
         # lazy-loading: فقط در صورت نیاز مدل را بارگذاری کن

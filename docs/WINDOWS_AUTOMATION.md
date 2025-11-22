@@ -304,4 +304,4 @@ Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION
 
 ---
 
-**ساخته شده با ❤️ توسط تیم Sofware-AI**
+**ساخته شده با ❤️ توسط تیم Shahin**

@@ -21,6 +21,7 @@ from colorama import init as colorama_init, Fore, Style
 
 
 from core.agent_core import create_agent
+from core.intelligent_agent import IntelligentSystemAgent
 from core.memory_system import MemoryManager
 from core.task_engine import TaskEngine
 from core.voice_io import VoiceManager
@@ -28,6 +29,74 @@ from dotenv import load_dotenv
 from core.logging_config import setup_logging, install_exception_hook
 
 colorama_init(autoreset=True) # در ویندوز، فعال کردن مدیریت ANSI
+
+logger = logging.getLogger(__name__)
+
+
+async def _is_system_request(user_text: str, system_agent: IntelligentSystemAgent) -> bool:
+    """تشخیص هوشمند آیا درخواست کاربر مربوط به سیستم است یا نه.
+    
+    Args:
+        user_text: متن درخواست کاربر
+        system_agent: عامل سیستم برای دسترسی به AIBrain
+    
+    Returns:
+        True اگر درخواست سیستمی باشد
+    """
+    # کلمات کلیدی سیستمی (فارسی و انگلیسی)
+    system_keywords = [
+        # Actions
+        "open", "launch", "start", "run", "باز", "اجرا", "شروع",
+        "install", "نصب", "setup",
+        "close", "kill", "terminate", "stop", "بستن", "توقف",
+        "hardware", "سخت‌افزار", "cpu", "ram", "memory", "disk", "gpu",
+        # Apps
+        "notepad", "calculator", "chrome", "firefox", "edge",
+        "photoshop", "فتوشاپ", "word", "excel", "powerpoint",
+        "vscode", "visual studio", "برنامه",
+        # System operations
+        "process", "فرآیند", "task manager", "مدیریت", "system", "سیستم"
+    ]
+    
+    user_lower = user_text.lower()
+    
+    # چک سریع با کلمات کلیدی
+    for keyword in system_keywords:
+        if keyword in user_lower:
+            return True
+    
+    return False
+
+
+def _summarize_for_voice(result_text: str) -> str:
+    """خلاصه‌سازی پاسخ طولانی برای خروجی صوتی.
+    
+    Args:
+        result_text: متن کامل نتیجه
+    
+    Returns:
+        خلاصه مناسب برای گفتار
+    """
+    # اگر خیلی کوتاه است، همان را برگردان
+    if len(result_text) < 150:
+        return result_text
+    
+    # استخراج خط اول که معمولاً خلاصه است
+    lines = result_text.split('\n')
+    first_meaningful_line = ""
+    
+    for line in lines:
+        line = line.strip()
+        if line and not line.startswith('#') and not line.startswith('```'):
+            first_meaningful_line = line
+            break
+    
+    if first_meaningful_line:
+        return first_meaningful_line
+    
+    # اگر نتوانستیم، ۱۵۰ کاراکتر اول
+    return result_text[:150] + "..."
+
 with open('banner.txt', 'r', encoding='utf-8') as file:
     banner = file.read()
 
@@ -102,7 +171,7 @@ def print_banner(text=banner, color=Fore.CYAN) -> None:
         logger.error(f"Khata dar Namayeshe Banner: {str(e)}")
         print(color + str(text) + Style.RESET_ALL)
 
-async def process_user_input(task_engine: TaskEngine, memory: MemoryManager, mode: str, input_mode: str, voice: VoiceManager) -> None:
+async def process_user_input(task_engine: TaskEngine, memory: MemoryManager, mode: str, input_mode: str, voice: VoiceManager, system_agent: IntelligentSystemAgent) -> None:
     """پردازش ورودی کاربر در یک حلقه تعاملی بهبود یافته با پشتیبانی از چندزبانگی."""
 
     print_banner(banner, color=Fore.CYAN)
@@ -174,17 +243,51 @@ async def process_user_input(task_engine: TaskEngine, memory: MemoryManager, mod
             elif user_text.lower() in ["exit", "quit", "خروج"]:
                 break
             else:
-                # افزودن تسک جدید
-                memory.remember_short(
-                    content=user_text,
-                    ttl=3600,
-                    metadata={"type": "user_task", "mode": mode, "lang": current_lang}
-                )
-                task_engine.add_task(user_text, mode=mode)
-                added_message = f"Task added: {user_text}"
-                print(added_message)
-                if input_mode == "voice":
-                    voice.speak(added_message, lang=current_lang)
+                # تشخیص هوشمند: آیا این یک درخواست سیستمی است؟
+                is_system_task = await _is_system_request(user_text, system_agent)
+                
+                if is_system_task:
+                    # پردازش مستقیم با عامل سیستم
+                    processing_msg = "Processing system request with AI..."
+                    print(f"\n🤖 {processing_msg}")
+                    if input_mode == "voice":
+                        voice.speak("Processing your system request.", lang=current_lang)
+                    
+                    try:
+                        # اجرای هوشمند با AI
+                        system_result = await system_agent.process_request(user_text)
+                        
+                        # ذخیره در حافظه
+                        memory.remember_long(
+                            content=system_result,
+                            metadata={"type": "system_result", "original_request": user_text}
+                        )
+                        
+                        # نمایش نتیجه
+                        print(f"\n{system_result}\n")
+                        if input_mode == "voice":
+                            # خلاصه‌سازی پاسخ برای صدا
+                            summary = _summarize_for_voice(system_result)
+                            voice.speak(summary, lang=current_lang, block=True)
+                    
+                    except Exception as e:
+                        error_msg = f"Error executing system task: {str(e)}"
+                        print(f"\n❌ {error_msg}\n")
+                        logger.exception("System task execution failed")
+                        if input_mode == "voice":
+                            voice.speak("Sorry, the system task failed.", lang=current_lang)
+                else:
+                    # تسک عادی (browser/code) - افزودن به صف
+                    memory.remember_short(
+                        content=user_text,
+                        ttl=3600,
+                        metadata={"type": "user_task", "mode": mode, "lang": current_lang}
+                    )
+                    task_engine.add_task(user_text, mode=mode)
+                    added_message = f"Task added: {user_text}"
+                    print(added_message)
+                    if input_mode == "voice":
+                        voice.speak(added_message, lang=current_lang)
 
     except KeyboardInterrupt:
         print("\nShutting down gracefully...")
@@ -209,9 +312,13 @@ async def main() -> None:
         task_engine = TaskEngine(concurrency=args.concurrency)
         memory = MemoryManager()
         voice = VoiceManager(tts_provider=args.tts_provider)
+        
+        # راه‌اندازی عامل هوشمند سیستم
+        system_agent = IntelligentSystemAgent(dry_run=args.debug)
+        logger.info("عامل هوشمند سیستم راه‌اندازی شد")
 
         # پردازش ورودی کاربر و اجرای تسک‌ها
-        await process_user_input(task_engine, memory, args.mode, args.input_mode, voice)
+        await process_user_input(task_engine, memory, args.mode, args.input_mode, voice, system_agent)
 
     except Exception as e:
         logger.exception("Khataaye mohalek rokh daad")

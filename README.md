@@ -12,17 +12,56 @@ Sofware-AI پروژه‌ای آزمایشی و قابل توسعه است که �
 
 این نسخه تمرکز روی سه بخش اصلی داره: انتخاب مدل (LLM)، موتور اجرای تسک‌ها (Task Engine)، و سیستم حافظه (Memory System).
 
-### 🆕 سیستم اتوماسیون ویندوز
-یک سیستم قدرتمند و ایمن برای اتوماسیون کارهای ویندوز با استفاده از هوش مصنوعی افزوده شد:
+### 🆕 سیستم اتوماسیون هوشمند ویندوز
+یک سیستم قدرتمند برای کنترل ویندوز با زبان طبیعی - **بدون نیاز به یادگیری دستورات!**
 
-- **🖥️ کنترل سیستم**: باز کردن برنامه‌ها، نصب نرم‌افزار، مدیریت فرآیندها
-- **📊 نظارت هوشمند**: نظارت real-time بر CPU, RAM, Disk
-- **🛡️ امنیت پیشرفته**: فیلتر امنیتی، whitelist/blacklist، تایید کاربر
-- **🔍 کشف قابلیت‌ها**: اسکن خودکار برنامه‌ها و سخت‌افزار
-- **🧠 یکپارچگی AI**: تشخیص خودکار نوع تسک و انتخاب مدل مناسب
+#### ✨ چه کارهایی می‌شود کرد؟
 
-📖 **[راهنمای کامل Windows Automation](docs/WINDOWS_AUTOMATION.md)**  
-🚀 **[شروع سریع](docs/QUICKSTART.md)**
+```
+باز کردن Photoshop
+install Git via winget  
+چقدر RAM دارم؟
+بستن همه پروسه‌های Chrome
+```
+
+سیستم با استفاده از AI:
+- 🧠 **تشخیص هوشمند**: خودش می‌فهمد چه اقدامی لازم است
+- 🔄 **اجرای خودکار**: بدون دستور دستی، فقط بگویید چی می‌خواهید
+- 🛡️ **امنیت چندلایه**: فیلتر امنیتی + تأیید کاربر
+- 📊 **مانیتورینگ لحظه‌ای**: CPU, RAM, Disk, Processes
+- 🔍 **کشف خودکار**: برنامه‌های نصب‌شده، ابزارها، سخت‌افزار
+
+#### 🚀 استفاده آسان
+
+**با ورودی متنی:**
+```bash
+python main.py --input-mode text
+
+> باز کردن calculator
+🤖 Processing system request with AI...
+✅ اقدام 1: موفق
+```
+
+**با صدا:**
+```bash
+python main.py --input-mode voice
+
+🎤 "Install Python 3.11"
+✅ نصب شروع شد...
+```
+
+**یا از کد Python:**
+```python
+from core.intelligent_agent import IntelligentSystemAgent
+
+agent = IntelligentSystemAgent()
+result = await agent.process_request("show me system specs")
+```
+
+📖 **راهنماهای کامل:**
+- [Windows Automation Guide](docs/WINDOWS_AUTOMATION.md) - معماری و API
+- [AI Control Guide](docs/AI_WINDOWS_CONTROL.md) - نحوه استفاده با AI
+- [Quick Start](docs/QUICKSTART.md) - شروع سریع
 
 ---
 

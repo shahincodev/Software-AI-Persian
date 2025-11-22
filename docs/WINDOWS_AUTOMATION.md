@@ -298,16 +298,6 @@ data/logs/audit.jsonl
 - **Error handling**: خطاها را مدیریت کنید
 - **Resource cleanup**: منابع را پاکسازی کنید
 
-## 🔮 توسعه‌های آینده
-
-- [ ] پشتیبانی از Linux/macOS
-- [ ] رابط وب برای مدیریت
-- [ ] Rollback خودکار
-- [ ] Snapshot/Restore سیستم
-- [ ] یادگیری از رفتار کاربر
-- [ ] Task scheduling پیشرفته
-- [ ] دسته‌بندی اقدامات (workflows)
-
 ## 📄 مجوز
 
 Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION

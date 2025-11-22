@@ -57,7 +57,7 @@ class SystemActionParser:
                         "arguments": []
                     },
                     "priority": "normal",
-                    "description": f"باز کردن {app_name}"
+                    "description": f"Open {app_name}"
                 })
         
         # الگو 2: نصب نرم‌افزار
@@ -72,7 +72,7 @@ class SystemActionParser:
                         "silent": True
                     },
                     "priority": "normal",
-                    "description": f"نصب {package_name}"
+                    "description": f"Install {package_name}"
                 })
         
         # الگو 3: اطلاعات سخت‌افزار
@@ -83,7 +83,7 @@ class SystemActionParser:
                     "query_type": "all"
                 },
                 "priority": "normal",
-                "description": "دریافت اطلاعات سخت‌افزار"
+                "description": "Get hardware information"
             })
         
         # الگو 4: بستن فرآیند
@@ -97,10 +97,10 @@ class SystemActionParser:
                         "force": False
                     },
                     "priority": "normal",
-                    "description": f"بستن {process_name}"
+                    "description": f"Close {process_name}"
                 })
         
-        logger.info("تعداد %d اقدام از درخواست استخراج شد", len(actions))
+        logger.info("Extracted %d actions from request", len(actions))
         return actions
     
     def _extract_app_name(self, request: str) -> Optional[str]:
@@ -161,19 +161,19 @@ class SystemActionParser:
     
     def _build_system_context(self) -> str:
         """ساخت اطلاعات زمینه‌ای سیستم."""
-        context_parts = ["اطلاعات سیستم فعلی:"]
+        context_parts = ["Current system information:"]
         
         # اطلاعات سخت‌افزار
         if self.registry.has_capability("os"):
             os_cap = self.registry.get_capability("os")
             if os_cap:
-                context_parts.append(f"- سیستم‌عامل: {os_cap.metadata.get('system')} {os_cap.version}")
+                context_parts.append(f"- Operating System: {os_cap.metadata.get('system')} {os_cap.version}")
         
         if self.registry.has_capability("cpu"):
             cpu_cap = self.registry.get_capability("cpu")
             if cpu_cap:
                 cores = cpu_cap.metadata.get("logical_cores")
-                context_parts.append(f"- CPU: {cores} هسته")
+                context_parts.append(f"- CPU: {cores} cores")
         
         if self.registry.has_capability("memory"):
             mem_cap = self.registry.get_capability("memory")
@@ -185,13 +185,13 @@ class SystemActionParser:
         apps = self.registry.list_capabilities(type_filter="app")
         if apps:
             app_names = [app.name for app in apps[:10]]
-            context_parts.append(f"- برنامه‌های نصب‌شده: {', '.join(app_names)}")
+            context_parts.append(f"- Installed applications: {', '.join(app_names)}")
         
         # ابزارها
         tools = self.registry.list_capabilities(type_filter="tool")
         if tools:
             tool_names = [f"{t.name}" for t in tools]
-            context_parts.append(f"- ابزارها: {', '.join(tool_names)}")
+            context_parts.append(f"- Tools: {', '.join(tool_names)}")
         
         return "\n".join(context_parts)
     
@@ -212,7 +212,7 @@ class IntelligentSystemAgent:
         
         # کش اسکن سیستم
         if self.registry.needs_refresh():
-            logger.info("اسکن سیستم برای کشف قابلیت‌ها...")
+            logger.info("Scanning system for capabilities...")
             self.registry.scan_system()
     
     async def process_request(self, user_request: str) -> str:
@@ -224,7 +224,7 @@ class IntelligentSystemAgent:
         Returns:
             پاسخ نهایی برای کاربر
         """
-        logger.info("پردازش درخواست: %s", user_request)
+        logger.info("Processing request: %s", user_request)
         
         # تجزیه درخواست به اقدامات
         actions_data = await self.parser.parse_request(user_request)
@@ -244,32 +244,32 @@ class IntelligentSystemAgent:
                 description = action_data.get("description", action.describe())
                 results.append(f"✓ {description}")
             else:
-                logger.warning("نتوانستیم اقدام بسازیم: %s", action_data)
+                logger.warning("Failed to create action: %s", action_data)
         
         if not results:
-            return "هیچ اقدام قابل اجرایی شناسایی نشد."
+            return "No executable actions were identified."
         
         # اجرای تمام اقدامات
         execution_results = await self.executor.execute_all()
         
         # ساخت پاسخ
-        response_parts = ["نتایج اجرا:"]
+        response_parts = ["Run results:"]
         
         for i, exec_result in enumerate(execution_results):
             if exec_result.success:
-                response_parts.append(f"✅ اقدام {i+1}: موفق")
+                response_parts.append(f"✅ Action {i+1}: Success")
                 if exec_result.output and not self.dry_run:
                     # محدود کردن طول خروجی
                     output_preview = exec_result.output[:200]
-                    response_parts.append(f"   خروجی: {output_preview}...")
+                    response_parts.append(f"   Output: {output_preview}...")
             else:
-                response_parts.append(f"❌ اقدام {i+1}: ناموفق")
+                response_parts.append(f"❌ Action {i+1}: failed")
                 if exec_result.error:
-                    response_parts.append(f"   خطا: {exec_result.error}")
+                    response_parts.append(f"   Error: {exec_result.error}")
         
         # اضافه کردن آمار
         stats = self.executor.get_stats()
-        response_parts.append(f"\n📊 آمار: {stats['total_succeeded']} موفق، {stats['total_failed']} ناموفق")
+        response_parts.append(f"\n📊 Stats: {stats['total_succeeded']} succeeded, {stats['total_failed']} failed")
         
         return "\n".join(response_parts)
     
@@ -312,11 +312,11 @@ class IntelligentSystemAgent:
                 )
             
             else:
-                logger.warning("نوع اقدام ناشناخته: %s", action_type)
+                logger.warning("Unknown action type: %s", action_type)
                 return None
         
         except Exception as e:
-            logger.exception("خطا در ساخت اقدام %s: %s", action_type, e)
+            logger.exception("Error creating action %s: %s", action_type, e)
             return None
     
     def _parse_priority(self, priority_str: str) -> ExecutionPriority:

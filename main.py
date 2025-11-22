@@ -168,7 +168,7 @@ def print_banner(text=banner, color=Fore.CYAN) -> None:
             else:
                 print(color + line + Style.RESET_ALL)
     except Exception as e:
-        logger.error(f"Khata dar Namayeshe Banner: {str(e)}")
+        logger.error(F"Error displaying banner: {str(e)}")
         print(color + str(text) + Style.RESET_ALL)
 
 async def process_user_input(task_engine: TaskEngine, memory: MemoryManager, mode: str, input_mode: str, voice: VoiceManager, system_agent: IntelligentSystemAgent) -> None:
@@ -315,13 +315,13 @@ async def main() -> None:
         
         # راه‌اندازی عامل هوشمند سیستم
         system_agent = IntelligentSystemAgent(dry_run=args.debug)
-        logger.info("عامل هوشمند سیستم راه‌اندازی شد")
+        logger.info("Intelligent system agent initialized")
 
         # پردازش ورودی کاربر و اجرای تسک‌ها
         await process_user_input(task_engine, memory, args.mode, args.input_mode, voice, system_agent)
 
     except Exception as e:
-        logger.exception("Khataaye mohalek rokh daad")
+        logger.exception("A fatal error occurred.")
         sys.exit(1)
 
 if __name__ == "__main__":

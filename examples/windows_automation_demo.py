@@ -34,7 +34,7 @@ from core.safety_filter import SafetyFilter, UserConsentManager
 async def demo_hardware_query():
     """نمونه: دریافت اطلاعات سخت‌افزار"""
     print("\n" + "="*60)
-    print("🖥️  نمونه 1: دریافت اطلاعات سخت‌افزار")
+    print("🖥️ Example 1: Getting hardware information")
     print("="*60)
     
     # ساخت مدیر اجرا
@@ -45,21 +45,21 @@ async def demo_hardware_query():
     
     # ارسال به صف
     action_id = manager.submit(action, priority=ExecutionPriority.HIGH)
-    print(f"✅ اقدام به صف اضافه شد: {action_id}")
+    print(f"✅ Action added to queue: {action_id}")
     
     # اجرا
     result = await manager.execute_next()
     
     if result and result.success:
-        print(f"\n✅ اطلاعات سخت‌افزار:\n{result.output}")
+        print(f"\n✅ Hardware information:\n{result.output}")
     else:
-        print(f"\n❌ خطا: {result.error if result else 'نامشخص'}")
+        print(f"\n❌ Error: {result.error if result else 'Unknown'}")
 
 
 async def demo_launch_app():
     """نمونه: باز کردن برنامه (با تایید کاربر)"""
     print("\n" + "="*60)
-    print("📝 نمونه 2: باز کردن Notepad")
+    print("📝 Example 2: Launching Notepad")
     print("="*60)
     
     # ساخت مدیر اجرا با فیلتر امنیتی
@@ -79,20 +79,20 @@ async def demo_launch_app():
     
     # ارسال و اجرا
     action_id = manager.submit(action)
-    print(f"✅ اقدام به صف اضافه شد: {action_id}")
+    print(f"✅ Action added to queue: {action_id}")
     
     result = await manager.execute_next()
     
     if result and result.success:
-        print(f"\n✅ موفقیت: {result.output}")
+        print(f"\n✅ Success: {result.output}")
     else:
-        print(f"\n❌ خطا یا لغو: {result.error if result else 'نامشخص'}")
+        print(f"\n❌ Error or Cancelled: {result.error if result else 'Unknown'}")
 
 
 async def demo_dry_run_install():
     """نمونه: شبیه‌سازی نصب بسته (dry-run)"""
     print("\n" + "="*60)
-    print("📦 نمونه 3: شبیه‌سازی نصب بسته")
+    print("📦 Example 3: Dry-run package installation")
     print("="*60)
     
     # ساخت مدیر در حالت dry-run
@@ -106,24 +106,23 @@ async def demo_dry_run_install():
     )
     
     action_id = manager.submit(action)
-    print(f"✅ اقدام به صف اضافه شد (DRY-RUN): {action_id}")
+    print(f"✅ Action added to queue (DRY-RUN): {action_id}")
     
     result = await manager.execute_next()
     
-    print(f"\n🔍 نتیجه Dry-Run: {result.output if result else 'خالی'}")
-
+    print(f"\n🔍 Dry-Run result: {result.output if result else 'Empty'}")
 
 def demo_capability_discovery():
     """نمونه: کشف قابلیت‌های سیستم"""
     print("\n" + "="*60)
-    print("🔍 نمونه 4: کشف قابلیت‌های سیستم")
+    print("🔍 Example 4: Discovering System Capabilities")
     print("="*60)
     
     # ساخت رجیستری
     registry = SystemCapabilityRegistry()
     
     # اسکن سیستم
-    print("📡 در حال اسکن سیستم...")
+    print("📡 Scanning system...")
     registry.scan_system(force=True)
     
     # نمایش خلاصه
@@ -132,14 +131,14 @@ def demo_capability_discovery():
     # لیست برنامه‌های کشف‌شده
     apps = registry.list_capabilities(type_filter="app")
     if apps:
-        print(f"\n📱 برنامه‌های کشف‌شده ({len(apps)}):")
+        print(f"\n📱 Discovered apps ({len(apps)}):")
         for app in apps[:5]:  # فقط 5 تای اول
             print(f"  - {app.name}: {app.path}")
     
     # لیست ابزارها
     tools = registry.list_capabilities(type_filter="tool")
     if tools:
-        print(f"\n🔧 ابزارها ({len(tools)}):")
+        print(f"\n🔧 Discovered tools ({len(tools)}):")
         for tool in tools:
             version = f" (v{tool.version})" if tool.version else ""
             print(f"  - {tool.name}{version}")
@@ -148,7 +147,7 @@ def demo_capability_discovery():
 def demo_monitoring():
     """نمونه: نظارت بر منابع سیستم"""
     print("\n" + "="*60)
-    print("📊 نمونه 5: نظارت بر منابع سیستم")
+    print("📊 Example 5: Monitoring System Resources")
     print("="*60)
     
     try:
@@ -162,36 +161,36 @@ def demo_monitoring():
         )
         
         # شروع نظارت
-        print("🔄 شروع نظارت...")
+        print("🔄 Start monitoring...")
         monitor.start()
         
         # نمایش وضعیت برای چند ثانیه
         import time
         for i in range(5):
             time.sleep(2)
-            print(f"\n⏱️  ثانیه {(i+1)*2}:")
+            print(f"\n⏱️ seconds {(i+1)*2}:")
             print(monitor.get_summary())
         
         # نمایش میانگین
         avg = monitor.get_average_usage(last_n=5)
-        print(f"\n📈 میانگین استفاده:")
+        print(f"\n📈 Average usage:")
         print(f"  CPU: {avg['cpu_percent']:.1f}%")
         print(f"  RAM: {avg['memory_percent']:.1f}%")
         
         # توقف
-        print("\n🛑 توقف سرویس نظارت...")
+        print("\n🛑 Stopping monitoring service...")
         monitor.stop()
-        print("✅ نظارت متوقف شد")
+        print("✅ Monitoring stopped")
     
     except RuntimeError as e:
-        print(f"❌ خطا: {e}")
-        print("💡 نکته: psutil باید نصب باشد: pip install psutil")
+        print(f"❌ Error: {e}")
+        print("💡 Tip: psutil must be installed: pip install psutil")
 
 
 async def main():
     """اجرای تمام نمونه‌ها"""
     print("\n" + "🎯"*30)
-    print("🚀 نمونه‌های سیستم اتوماسیون ویندوز - Sofware-AI")
+    print("🚀 Windows Automation System Examples - Sofware-AI")
     print("🎯"*30)
     
     # 1. کشف قابلیت‌ها
@@ -208,17 +207,17 @@ async def main():
     
     # 5. باز کردن برنامه (نیاز به تایید)
     print("\n" + "="*60)
-    print("⚠️  نمونه بعدی نیاز به تایید کاربر دارد")
+    print("⚠️ The next example requires user approval")
     print("="*60)
-    response = input("آیا می‌خواهید نمونه 'باز کردن Notepad' را اجرا کنید؟ (y/n): ")
+    response = input("Do you want to run the 'Open Notepad' sample? (y/n): ")
     
     if response.lower() in ['y', 'yes', 'بله']:
         await demo_launch_app()
     else:
-        print("⏭️  رد شد")
+        print("⏭️  Skipped")
     
     print("\n" + "✅"*30)
-    print("🎉 تمام نمونه‌ها اجرا شدند!")
+    print("🎉 All examples have been executed!")
     print("✅"*30)
 
 

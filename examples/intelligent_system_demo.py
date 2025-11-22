@@ -24,10 +24,10 @@ from core.logging_config import setup_logging
 async def demo_natural_language_requests():
     """نمایش درخواست‌های طبیعی."""
     print("=" * 70)
-    print("🤖 نمایش عامل هوشمند سیستم با AI")
+    print("🤖 Intelligent agent display system with AI")
     print("=" * 70)
-    print("\nدر این دمو، درخواست‌های طبیعی به صورت خودکار به اقدامات سیستمی")
-    print("تبدیل می‌شوند، بدون نیاز به دستورات دستی!\n")
+    print("\nIn this demo, natural requests are automatically routed to system actions")
+    print("and converted, without the need for manual commands!\n")
     
     # ایجاد عامل (با dry_run=True برای امنیت)
     agent = IntelligentSystemAgent(dry_run=True)
@@ -43,28 +43,28 @@ async def demo_natural_language_requests():
     
     for i, request in enumerate(test_requests, 1):
         print(f"\n{'─' * 70}")
-        print(f"📝 درخواست {i}: {request}")
+        print(f"📝 Request {i}: {request}")
         print('─' * 70)
         
         try:
             result = await agent.process_request(request)
             print(f"\n{result}")
         except Exception as e:
-            print(f"❌ خطا: {e}")
+            print(f"❌ Error: {e}")
             logging.exception("Request failed")
         
         # فاصله بین درخواست‌ها
         await asyncio.sleep(1)
     
     print("\n" + "=" * 70)
-    print("✅ تمام درخواست‌ها پردازش شدند")
+    print("✅ All requests have been processed")
     print("=" * 70)
 
 
 async def demo_mixed_scenario():
     """سناریوی ترکیبی: نصب و اجرا."""
     print("\n\n" + "=" * 70)
-    print("🎯 سناریوی ترکیبی: نصب و اجرای برنامه")
+    print("🎯 Combined scenario: installing and running the program")
     print("=" * 70)
     
     agent = IntelligentSystemAgent(dry_run=True)
@@ -85,7 +85,7 @@ async def demo_mixed_scenario():
 async def demo_hardware_query():
     """نمایش سوالات سخت‌افزاری."""
     print("\n\n" + "=" * 70)
-    print("💻 نمایش سوالات سخت‌افزاری")
+    print("💻 Show Hardware Questions")
     print("=" * 70)
     
     agent = IntelligentSystemAgent(dry_run=False)  # این یکی واقعاً اجرا می‌شود
@@ -109,7 +109,7 @@ async def demo_hardware_query():
 async def demo_system_summary():
     """نمایش خلاصه سیستم."""
     print("\n\n" + "=" * 70)
-    print("📊 خلاصه وضعیت سیستم")
+    print("📊 System Status Summary")
     print("=" * 70)
     
     agent = IntelligentSystemAgent()
@@ -137,19 +137,19 @@ async def main():
         await demo_system_summary()
         
         print("\n\n" + "=" * 70)
-        print("🎉 تمام نمایش‌ها با موفقیت اجرا شدند!")
+        print("🎉 All demos have been successfully executed!")
         print("=" * 70)
-        print("\n💡 نکات مهم:")
-        print("  • درخواست‌ها به صورت طبیعی (فارسی/انگلیسی) نوشته می‌شوند")
-        print("  • AI خودش تشخیص می‌دهد چه اقدامی لازم است")
-        print("  • فیلتر امنیتی قبل از هر اجرا بررسی می‌کند")
-        print("  • در حالت dry_run، هیچ تغییری اعمال نمی‌شود")
+        print("\n💡 Important notes:")
+        print("  • Requests are written naturally (Persian/English)")
+        print("  • AI automatically determines the necessary actions")
+        print("  • Security filter checks before each execution")
+        print("  • In dry_run mode, no changes are made")
         print("\n")
     
     except KeyboardInterrupt:
-        print("\n\n⚠️  توقف توسط کاربر")
+        print("\n\n⚠️  Stopped by user")
     except Exception as e:
-        print(f"\n\n❌ خطای کلی: {e}")
+        print(f"\n\n❌ General error: {e}")
         logging.exception("Demo failed")
 
 

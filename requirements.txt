@@ -7,6 +7,13 @@ pyfiglet>=1.0.4
 # System automation
 psutil>=5.9.0  # برای نظارت و مدیریت فرآیندها
 
+# Desktop vision (Week 1)
+pillow>=10.0.0  # Screenshot & image processing
+pytesseract>=0.3.10  # Free OCR engine
+opencv-python>=4.8.0  # Computer vision
+pygetwindow>=0.0.9  # Window management
+numpy>=1.24.0  # Array operations for image processing
+
 # Voice support (optional)
 langdetect>=1.0.9
 SpeechRecognition>=3.10.0
@@ -21,3 +28,6 @@ pyaudio>=0.2.13; platform_system == "Windows"  # for Windows
 
 # Optional (platform helpers)
 pywin32>=305; platform_system == "Windows"
+
+# Testing
+pytest>=7.4.0

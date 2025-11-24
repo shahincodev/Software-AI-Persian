@@ -15,6 +15,17 @@ Sofware-AI پروژه‌ای آزمایشی و قابل توسعه است که �
 ### 🆕 سیستم اتوماسیون هوشمند ویندوز
 یک سیستم قدرتمند برای کنترل ویندوز با زبان طبیعی - **بدون نیاز به یادگیری دستورات!**
 
+#### 👁️ Desktop Vision - NEW!
+سیستم بینایی رایانه که به AI قدرت "دیدن" صفحه را می‌دهد:
+- 📸 **Screenshot**: گرفتن اسکرین‌شات کل صفحه یا ناحیه خاص
+- 📝 **OCR**: خواندن متن از روی صفحه با Tesseract
+- 🪟 **Window Management**: لیست، فوکوس، و انتظار برای پنجره‌ها
+- 🔍 **Element Detection**: پیدا کردن متن و عناصر روی صفحه
+- 🔄 **Change Detection**: تشخیص تغییرات و انتظار هوشمند
+- ⏱️ **Smart Waiting**: منتظر ماندن تا متن ظاهر/ناپدید شود
+
+📖 [Desktop Vision Guide](docs/DESKTOP_VISION.md) - راهنمای کامل بینایی رایانه
+
 #### ✨ چه کارهایی می‌شود کرد؟
 
 ```
@@ -53,12 +64,21 @@ python main.py --input-mode voice
 **یا از کد Python:**
 ```python
 from core.intelligent_agent import IntelligentSystemAgent
+from core.desktop_vision import DesktopVision
 
+# Windows Automation
 agent = IntelligentSystemAgent()
 result = await agent.process_request("show me system specs")
+
+# Desktop Vision
+vision = DesktopVision()
+screenshot = vision.capture_screen()
+windows = vision.list_windows()
+text_position = vision.find_text("OK")
 ```
 
 📖 **راهنماهای کامل:**
+- [Desktop Vision Guide](docs/DESKTOP_VISION.md) - سیستم بینایی رایانه 👁️ **NEW**
 - [Windows Automation Guide](docs/WINDOWS_AUTOMATION.md) - معماری و API
 - [AI Control Guide](docs/AI_WINDOWS_CONTROL.md) - نحوه استفاده با AI
 - [Quick Start](docs/QUICKSTART.md) - شروع سریع

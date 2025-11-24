@@ -86,3 +86,8 @@ local_settings.py
 tmp/
 temp/
 __pycache__/
+
+# Test artifacts
+test_screenshot.png
+*.png
+!docs/**/*.png

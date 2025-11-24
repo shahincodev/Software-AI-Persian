@@ -358,7 +358,7 @@ DesktopVision
 ## کمک‌های بیشتر
 
 برای سوالات و مشکلات:
-- [GitHub Issues](https://github.com/tahanilishahin/Sofware-AI-Persian/issues)
+- [GitHub Issues](https://github.com/tahanilishahin/Software-AI-Persian/issues)
 - [QUICKSTART.md](QUICKSTART.md)
 - [AI_WINDOWS_CONTROL.md](AI_WINDOWS_CONTROL.md)
 

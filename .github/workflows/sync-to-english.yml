@@ -21,7 +21,7 @@ jobs:
 
       - name: Add English Repository Remote
         run: |
-          git remote add english https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/shahincodev/Sofware-AI-English.git
+          git remote add english https://x-access-token:${{ secrets.SYNC_TOKEN }}@github.com/shahincodev/Software-AI-English.git
 
       - name: Force Push Persian → English (overwrite)
         run: |

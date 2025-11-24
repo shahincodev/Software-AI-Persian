@@ -4077,7 +4077,7 @@ wheels = [
 ]
 
 [[package]]
-name = "sofware-ai"
+name = "software-ai"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

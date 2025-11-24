@@ -190,7 +190,7 @@ def demo_monitoring():
 async def main():
     """اجرای تمام نمونه‌ها"""
     print("\n" + "🎯"*30)
-    print("🚀 Windows Automation System Examples - Sofware-AI")
+    print("🚀 Windows Automation System Examples - Software-AI")
     print("🎯"*30)
     
     # 1. کشف قابلیت‌ها

@@ -1,4 +1,4 @@
-# Sofware-AI
+# Software-AI
 
 یک سامانهٔ ساده و قابل توسعه برای اجرای تسک‌های هوشمند با استفاده از مدل‌های LLM و ابزار مرورگر خودکار.
 
@@ -8,7 +8,7 @@
 
 ## معرفی پروژه
 
-Sofware-AI پروژه‌ای آزمایشی و قابل توسعه است که هدفش فراهم کردن یک چارچوب ساده برای ساخت "عامل‌های هوشمند" (Agents) است. این Agents می‌تونن با مرورگر تعامل کنن، کد تحلیل کنن، یا کارهای متنی/تحلیلی انجام بدن. اسم پروژه: "Sofware-AI".
+Software-AI پروژه‌ای آزمایشی و قابل توسعه است که هدفش فراهم کردن یک چارچوب ساده برای ساخت "عامل‌های هوشمند" (Agents) است. این Agents می‌تونن با مرورگر تعامل کنن، کد تحلیل کنن، یا کارهای متنی/تحلیلی انجام بدن. اسم پروژه: "Software-AI".
 
 این نسخه تمرکز روی سه بخش اصلی داره: انتخاب مدل (LLM)، موتور اجرای تسک‌ها (Task Engine)، و سیستم حافظه (Memory System).
 
@@ -89,8 +89,8 @@ text_position = vision.find_text("OK")
 
 ```bash
 # کلون کردن مخزن
-git clone https://github.com/tahanilishahin/Sofware-AI-Persian.git
-cd Sofware-AI-Persian
+git clone https://github.com/tahanilishahin/Software-AI-Persian.git
+cd Software-AI-Persian
 
 # ساخت محیط مجازی
 python -m venv .venv
@@ -173,8 +173,8 @@ chmod +x run.sh  # فقط بار اول
 
 ```powershell
 # PowerShell
-git clone <url-of-repo> Sofware-AI
-cd Sofware-AI
+git clone <url-of-repo> Software-AI
+cd Software-AI
 ```
 
 2) استفاده از اسکریپت‌های آماده (راحت‌ترین روش)

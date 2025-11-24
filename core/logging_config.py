@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: NOASSERTION
 # Copyright (c) 2025 Shahin
 
-"""تنظیمات متمرکز لاگ‌گیری برای Sofware-AI
+"""تنظیمات متمرکز لاگ‌گیری برای Software-AI
 
 این ماژول تابع setup_logging() رو ارائه می‌کنه که یه handler برای نمایش لاگ‌ها تو کنسول
 و یه handler چرخشی برای فایل (data/logs/app.log) تنظیم می‌کنه.

@@ -1,0 +1,626 @@
+# ✅ Week 2 - TODO Tracker
+## Action Layer Development Progress
+
+> **Progress Tracking** - وضعیت پیشرفت توسعه هفته دوم
+
+---
+
+## 📅 Timeline: 10 Days
+
+**Start Date**: [To be set]  
+**End Date**: [To be set]  
+**Current Day**: 0 (Planning Complete)
+
+---
+
+## 🎯 Phase 1: Core Action Infrastructure (Days 1-2)
+
+### Day 1: Mouse & Keyboard Foundation
+
+#### Task 1.1: Mouse Control System
+- [ ] **Setup** (`core/mouse_control.py`)
+  - [ ] Create file structure
+  - [ ] Import dependencies (pyautogui)
+  - [ ] Define MouseController class
+  
+- [ ] **Core Methods**
+  - [ ] `click(x, y, button, clicks, interval)`
+  - [ ] `move(x, y, duration, smooth)`
+  - [ ] `drag(start_x, start_y, end_x, end_y, duration)`
+  - [ ] `scroll(clicks, direction)`
+  - [ ] `get_position()`
+  
+- [ ] **Safety Features**
+  - [ ] `is_safe_position(x, y)`
+  - [ ] Boundary validation
+  - [ ] Rate limiting
+  
+- [ ] **Testing** (`tests/test_mouse_control.py`)
+  - [ ] Test click (left/right/double)
+  - [ ] Test move (smooth/direct)
+  - [ ] Test drag
+  - [ ] Test scroll
+  - [ ] Test safety validation
+  - [ ] Test edge cases
+  - [ ] Performance benchmarks
+  
+- [ ] **Documentation** (`docs/MOUSE_CONTROL.md`)
+  - [ ] Overview section
+  - [ ] API reference
+  - [ ] Examples (5+)
+  - [ ] Troubleshooting
+  - [ ] See also links
+
+#### Task 1.2: Keyboard Control System
+- [ ] **Setup** (`core/keyboard_control.py`)
+  - [ ] Create file structure
+  - [ ] Import dependencies (pyautogui, pynput)
+  - [ ] Define KeyboardController class
+  
+- [ ] **Core Methods**
+  - [ ] `type_text(text, interval, validate)`
+  - [ ] `press_key(key, presses, interval)`
+  - [ ] `hotkey(*keys)`
+  - [ ] `hold_key(key, duration)`
+  
+- [ ] **Advanced Features**
+  - [ ] Persian/English detection
+  - [ ] Special character handling
+  - [ ] Clipboard integration
+  - [ ] Safety validation
+  
+- [ ] **Testing** (`tests/test_keyboard_control.py`)
+  - [ ] Test type_text (EN/FA)
+  - [ ] Test press_key
+  - [ ] Test hotkeys (Ctrl+C, Alt+Tab, etc.)
+  - [ ] Test hold_key
+  - [ ] Test special characters
+  - [ ] Test safety
+  - [ ] Performance benchmarks
+  
+- [ ] **Documentation** (`docs/KEYBOARD_CONTROL.md`)
+  - [ ] Overview section
+  - [ ] API reference
+  - [ ] Examples (5+)
+  - [ ] Persian guide
+  - [ ] Troubleshooting
+
+### Day 2: Smart Wait System
+
+#### Task 1.3: Smart Wait Implementation
+- [ ] **Setup** (`core/smart_wait.py`)
+  - [ ] Create file structure
+  - [ ] Import dependencies
+  - [ ] Define SmartWaiter class
+  
+- [ ] **Wait Strategies**
+  - [ ] `wait_for_element(target, timeout, check_interval)`
+  - [ ] `wait_for_change(region, threshold, timeout)`
+  - [ ] `wait_for_window(title, timeout)`
+  - [ ] `wait_for_process(name, timeout)`
+  - [ ] `wait_for_idle(cpu_threshold, duration)`
+  - [ ] `wait_for_color(x, y, color, timeout)`
+  
+- [ ] **Advanced Methods**
+  - [ ] `retry_with_backoff(action, max_retries, backoff_factor)`
+  - [ ] `poll_until(condition_func, timeout, interval)`
+  
+- [ ] **Testing** (`tests/test_smart_wait.py`)
+  - [ ] Test each wait strategy
+  - [ ] Test timeout behavior
+  - [ ] Test retry mechanism
+  - [ ] Test backoff strategy
+  - [ ] Test edge cases
+  - [ ] Performance benchmarks
+  
+- [ ] **Documentation** (`docs/SMART_WAIT.md`)
+  - [ ] Overview section
+  - [ ] Wait strategies explained
+  - [ ] API reference
+  - [ ] Examples (5+)
+  - [ ] Best practices
+  - [ ] Troubleshooting
+
+### Day 1-2 Deliverables Checklist
+- [ ] 3 new modules created
+- [ ] 3 test files with >80% coverage
+- [ ] 3 documentation files
+- [ ] All tests passing
+- [ ] Code reviewed
+- [ ] Git committed
+
+---
+
+## 🎯 Phase 2: Vision-Guided Actions (Days 3-4)
+
+### Day 3: Enhanced Desktop Vision
+
+#### Task 2.1: Vision Enhancement
+- [ ] **Enhance** (`core/desktop_vision.py`)
+  - [ ] Template Matching
+    - [ ] `find_image(template_path, confidence)`
+    - [ ] `find_all_images(template_path, confidence)`
+  
+  - [ ] Color Detection
+    - [ ] `get_pixel_color(x, y)`
+    - [ ] `find_color(color, region)`
+  
+  - [ ] UI Recognition
+    - [ ] `find_button(text)`
+    - [ ] `find_input_field()`
+    - [ ] `classify_element(region)`
+  
+  - [ ] Visual Validation
+    - [ ] `verify_click_success(region)`
+    - [ ] `verify_text_typed(expected_text)`
+  
+- [ ] **Testing** (`tests/test_desktop_vision_enhanced.py`)
+  - [ ] Test template matching
+  - [ ] Test color detection
+  - [ ] Test UI recognition
+  - [ ] Test visual validation
+  - [ ] Test with various resolutions
+  - [ ] Performance benchmarks
+  
+- [ ] **Documentation**
+  - [ ] Update `docs/DESKTOP_VISION.md`
+  - [ ] Add new examples
+  - [ ] Update API reference
+
+### Day 4: Action Controller
+
+#### Task 2.2: Action Controller Implementation
+- [ ] **Setup** (`core/action_controller.py`)
+  - [ ] Create file structure
+  - [ ] Import all dependencies
+  - [ ] Define ActionController class
+  - [ ] Initialize components (vision, mouse, keyboard, waiter)
+  
+- [ ] **High-Level Actions**
+  - [ ] `click_on_text(text, button, verify)`
+  - [ ] `click_on_image(image_path, verify)`
+  - [ ] `type_in_field(field_id, text, verify)`
+  - [ ] `select_menu_item(menu_path)`
+  
+- [ ] **Complex Workflows**
+  - [ ] `fill_form(fields)`
+  - [ ] `drag_and_drop(source, target)`
+  - [ ] `navigate_ui(steps)`
+  
+- [ ] **State Management**
+  - [ ] Save state
+  - [ ] Restore state
+  - [ ] Checkpoint system
+  
+- [ ] **Testing** (`tests/test_action_controller.py`)
+  - [ ] Test each high-level action
+  - [ ] Test complex workflows
+  - [ ] Test state management
+  - [ ] Test error handling
+  - [ ] Integration tests
+  - [ ] Performance benchmarks
+  
+- [ ] **Documentation** (`docs/ACTION_CONTROLLER.md`)
+  - [ ] Overview section
+  - [ ] Architecture diagram
+  - [ ] API reference
+  - [ ] Workflow examples
+  - [ ] Best practices
+
+### Day 3-4 Deliverables Checklist
+- [ ] Vision module enhanced
+- [ ] Action Controller created
+- [ ] 2+ test files
+- [ ] Documentation updated
+- [ ] Integration tests passing
+- [ ] Git committed
+
+---
+
+## 🎯 Phase 3: Action Schema & System Integration (Days 5-6)
+
+### Day 5: Action Schema
+
+#### Task 3.1: Desktop Actions Schema
+- [ ] **Setup** (`core/desktop_actions.py`)
+  - [ ] Create file structure
+  - [ ] Import SystemAction base
+  - [ ] Define action types
+  
+- [ ] **Action Types**
+  - [ ] `ClickAction`
+    - [ ] target (text | coords)
+    - [ ] button, clicks
+    - [ ] verify flag
+    - [ ] Risk assessment
+    - [ ] Validation
+  
+  - [ ] `TypeAction`
+    - [ ] text, target
+    - [ ] verify flag
+    - [ ] Risk assessment
+    - [ ] Safety validation
+  
+  - [ ] `WaitAction`
+    - [ ] wait_type, target
+    - [ ] timeout
+    - [ ] Risk assessment
+  
+  - [ ] `DragDropAction`
+    - [ ] source, target
+    - [ ] verify flag
+    - [ ] Risk assessment
+  
+  - [ ] `HotkeyAction`
+    - [ ] keys list
+    - [ ] Risk assessment
+  
+- [ ] **Testing** (`tests/test_desktop_actions.py`)
+  - [ ] Test each action type
+  - [ ] Test validation
+  - [ ] Test risk assessment
+  - [ ] Test serialization
+  - [ ] Test edge cases
+  
+- [ ] **Documentation** (`docs/DESKTOP_ACTIONS.md`)
+  - [ ] Overview section
+  - [ ] Each action type documented
+  - [ ] Examples
+  - [ ] Risk levels explained
+
+### Day 6: Agent Integration
+
+#### Task 3.2: Enhance Intelligent Agent
+- [ ] **Enhance** (`core/intelligent_agent.py`)
+  - [ ] Add ActionController integration
+  - [ ] Enhance SystemActionParser
+    - [ ] Parse click requests
+    - [ ] Parse type requests
+    - [ ] Parse drag requests
+    - [ ] Parse complex workflows
+  
+  - [ ] Update process_request
+    - [ ] Handle desktop actions
+    - [ ] Coordinate with ActionController
+    - [ ] State management
+  
+- [ ] **Testing** (`tests/test_intelligent_agent_enhanced.py`)
+  - [ ] Test desktop action parsing
+  - [ ] Test end-to-end workflows
+  - [ ] Test error handling
+  - [ ] Test state management
+  - [ ] Integration tests
+  
+- [ ] **Documentation**
+  - [ ] Update `docs/AI_WINDOWS_CONTROL.md`
+  - [ ] Add desktop action examples
+  - [ ] Update architecture diagram
+
+### Day 5-6 Deliverables Checklist
+- [ ] Desktop actions schema complete
+- [ ] Agent enhanced
+- [ ] 2+ test files
+- [ ] Documentation updated
+- [ ] End-to-end tests passing
+- [ ] Git committed
+
+---
+
+## 🎯 Phase 4: Safety & Reliability (Day 7)
+
+### Day 7: Safety & Recovery
+
+#### Task 4.1: Action Safety
+- [ ] **Setup** (`core/action_safety.py`)
+  - [ ] Create file structure
+  - [ ] Define ActionSafetyFilter class
+  
+- [ ] **Safety Features**
+  - [ ] `is_safe_click_area(x, y)`
+  - [ ] `is_safe_text(text)`
+  - [ ] `check_action_rate(action_type)`
+  - [ ] `validate_desktop_action(action)`
+  
+- [ ] **Policies**
+  - [ ] Click boundaries
+  - [ ] Text content rules
+  - [ ] Rate limiting
+  - [ ] Risk thresholds
+  
+- [ ] **Testing** (`tests/test_action_safety.py`)
+  - [ ] Test boundary validation
+  - [ ] Test content validation
+  - [ ] Test rate limiting
+  - [ ] Test risk assessment
+  - [ ] Test edge cases
+
+#### Task 4.2: Error Recovery
+- [ ] **Setup** (`core/action_recovery.py`)
+  - [ ] Create file structure
+  - [ ] Define ActionRecovery class
+  
+- [ ] **Recovery Strategies**
+  - [ ] `retry_click(action, max_retries)`
+  - [ ] `fallback_to_keyboard(action)`
+  - [ ] `recover_from_state(checkpoint)`
+  
+- [ ] **Monitoring**
+  - [ ] `detect_ui_freeze()`
+  - [ ] `detect_permission_error()`
+  
+- [ ] **Testing** (`tests/test_action_recovery.py`)
+  - [ ] Test retry mechanism
+  - [ ] Test fallback strategies
+  - [ ] Test state recovery
+  - [ ] Test error detection
+
+#### Task 4.3: Integration
+- [ ] Update ExecutionManager
+- [ ] Add safety checks to all actions
+- [ ] Add recovery to ActionController
+- [ ] End-to-end safety tests
+
+### Day 7 Deliverables Checklist
+- [ ] Safety module complete
+- [ ] Recovery module complete
+- [ ] All modules secured
+- [ ] Security tests passing
+- [ ] Documentation updated
+- [ ] Git committed
+
+---
+
+## 🎯 Phase 5: Advanced Features (Days 8-9)
+
+### Day 8: Multi-Monitor & Context-Aware
+
+#### Task 5.1: Multi-Monitor Support
+- [ ] **Setup** (`core/multi_monitor.py`)
+  - [ ] Create file structure
+  - [ ] Define MultiMonitorManager class
+  
+- [ ] **Features**
+  - [ ] `get_monitors()`
+  - [ ] `find_element_across_monitors(target)`
+  - [ ] `move_mouse_to_monitor(monitor_id, x, y)`
+  
+- [ ] **Testing**
+  - [ ] Test with single monitor
+  - [ ] Test with multiple monitors
+  - [ ] Test monitor detection
+  
+- [ ] **Documentation**
+  - [ ] Create docs/MULTI_MONITOR.md
+
+#### Task 5.2: Context-Aware Actions
+- [ ] **Setup** (`core/context_aware_actions.py`)
+  - [ ] Create file structure
+  - [ ] Define ContextAwareActionPlanner class
+  
+- [ ] **Features**
+  - [ ] `plan_action_sequence(goal)`
+  - [ ] `adapt_to_ui_change(plan)`
+  - [ ] `learn_from_success(action, result)`
+  
+- [ ] **Testing**
+  - [ ] Test action planning
+  - [ ] Test adaptation
+  - [ ] Test learning
+
+### Day 9: Optimization & Polish
+
+#### Task 5.3: Performance Optimization
+- [ ] Profile all modules
+- [ ] Optimize hot paths
+- [ ] Cache improvements
+- [ ] Async optimization
+- [ ] Memory optimization
+
+#### Task 5.4: Code Quality
+- [ ] Code review all modules
+- [ ] Fix linting issues
+- [ ] Add missing type hints
+- [ ] Improve error messages
+- [ ] Update docstrings
+
+### Day 8-9 Deliverables Checklist
+- [ ] Advanced features complete
+- [ ] Performance optimized
+- [ ] Code quality high
+- [ ] All tests passing
+- [ ] Git committed
+
+---
+
+## 🎯 Phase 6: Testing & Documentation (Day 10)
+
+### Day 10: Final Testing & Docs
+
+#### Task 6.1: Comprehensive Testing
+- [ ] **Integration Tests** (`tests/integration/`)
+  - [ ] `test_complete_workflow.py`
+    - [ ] Notepad workflow
+    - [ ] Menu navigation
+    - [ ] Form filling
+    - [ ] Multi-monitor
+    - [ ] Error recovery
+  
+  - [ ] `test_error_scenarios.py`
+    - [ ] Network errors
+    - [ ] UI changes
+    - [ ] Permission errors
+    - [ ] Timeout scenarios
+  
+  - [ ] `test_performance.py`
+    - [ ] Benchmark all operations
+    - [ ] Memory usage
+    - [ ] CPU usage
+    - [ ] Latency tests
+  
+  - [ ] `test_safety.py`
+    - [ ] Security validation
+    - [ ] Boundary tests
+    - [ ] Rate limiting
+    - [ ] Risk assessment
+
+#### Task 6.2: Complete Documentation
+- [ ] **Update README.md**
+  - [ ] Week 2 features section
+  - [ ] Updated examples
+  - [ ] New screenshots/GIFs
+  - [ ] Updated architecture diagram
+
+- [ ] **Create New Docs**
+  - [ ] `docs/WEEK2_FEATURES.md` - Feature overview
+  - [ ] `docs/EXAMPLES.md` - Usage examples
+  - [ ] `docs/TROUBLESHOOTING.md` - Common issues
+  - [ ] `docs/API_REFERENCE.md` - Complete API
+
+- [ ] **Update Existing Docs**
+  - [ ] `docs/DESKTOP_VISION.md`
+  - [ ] `docs/WINDOWS_AUTOMATION.md`
+  - [ ] `docs/AI_WINDOWS_CONTROL.md`
+  - [ ] `docs/QUICKSTART.md`
+
+#### Task 6.3: Demo & Examples
+- [ ] **Create** (`examples/desktop_automation_demo.py`)
+  - [ ] Simple click example
+  - [ ] Type example
+  - [ ] Form filling example
+  - [ ] Drag & drop example
+  - [ ] Complex workflow example
+
+- [ ] **Record Demo Video**
+  - [ ] Feature showcase
+  - [ ] Live demonstrations
+  - [ ] Error handling demo
+
+#### Task 6.4: Final Checklist
+- [ ] All tests passing (>85% coverage)
+- [ ] All documentation complete
+- [ ] Demo working
+- [ ] README updated
+- [ ] Code reviewed
+- [ ] Performance acceptable
+- [ ] Security validated
+- [ ] Git clean
+
+### Day 10 Deliverables Checklist
+- [ ] Test coverage >85%
+- [ ] All docs written
+- [ ] Demo created
+- [ ] Video recorded
+- [ ] Final review complete
+- [ ] Ready for release
+
+---
+
+## 📊 Overall Progress
+
+### Modules (9 total)
+- [ ] `mouse_control.py` - 0%
+- [ ] `keyboard_control.py` - 0%
+- [ ] `smart_wait.py` - 0%
+- [ ] `action_controller.py` - 0%
+- [ ] `desktop_actions.py` - 0%
+- [ ] `action_safety.py` - 0%
+- [ ] `action_recovery.py` - 0%
+- [ ] Enhanced `desktop_vision.py` - 0%
+- [ ] Enhanced `intelligent_agent.py` - 0%
+
+### Tests (20+ files)
+- [ ] Unit tests - 0/9 modules
+- [ ] Integration tests - 0/4 files
+- [ ] Coverage >85% - No
+
+### Documentation (10+ files)
+- [ ] Module docs - 0/7 files
+- [ ] Updated docs - 0/4 files
+- [ ] Examples - 0/1 files
+- [ ] API Reference - 0/1 files
+
+### Overall Completion: 0%
+
+---
+
+## 🎯 Daily Goals Template
+
+### Day X Goals
+**Date**: [Insert date]
+
+**Yesterday's Progress**:
+- Completed: [List items]
+- Issues: [List issues]
+
+**Today's Plan**:
+1. [ ] Task 1
+2. [ ] Task 2
+3. [ ] Task 3
+
+**Blockers**:
+- [List any blockers]
+
+**Notes**:
+- [Any important notes]
+
+---
+
+## 🚀 Quick Actions
+
+### Mark Task Complete
+```markdown
+- [x] Task name ✅ DONE (Date: YYYY-MM-DD)
+```
+
+### Add Note
+```markdown
+**Note**: Important observation or decision
+```
+
+### Report Issue
+```markdown
+**Issue**: Description of problem
+**Solution**: How it was resolved
+```
+
+---
+
+## 📈 Metrics Tracking
+
+### Daily Metrics
+- Lines of code written: 0
+- Tests written: 0
+- Tests passing: 0/0
+- Coverage: 0%
+- Commits: 0
+
+### Weekly Metrics (End of Week 2)
+- Total LOC: Target 2000+
+- Test coverage: Target >85%
+- Documentation: Target 100%
+- Performance: Target <500ms avg
+
+---
+
+## 🎉 Milestones
+
+- [ ] **Milestone 1**: Foundation Complete (End of Day 2)
+- [ ] **Milestone 2**: Vision Integration Complete (End of Day 4)
+- [ ] **Milestone 3**: Agent Integration Complete (End of Day 6)
+- [ ] **Milestone 4**: Safety Complete (End of Day 7)
+- [ ] **Milestone 5**: Advanced Features Complete (End of Day 9)
+- [ ] **Milestone 6**: Week 2 Complete! (End of Day 10) 🎊
+
+---
+
+**این فایل را هر روز به‌روز کن! ✅**
+
+**Progress tracking = Success guarantee! 📈**
+
+---
+
+*Created: Week 2 Planning Phase*  
+*Status: Ready to start*  
+*Next: Begin Day 1 - Mouse Control*
+
+**Let's track our way to success! 🎯**

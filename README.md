@@ -78,10 +78,14 @@ text_position = vision.find_text("OK")
 ```
 
 📖 **راهنماهای کامل:**
-- [Desktop Vision Guide](docs/DESKTOP_VISION.md) - سیستم بینایی رایانه 👁️ **NEW**
+- [Desktop Vision Guide](docs/DESKTOP_VISION.md) - سیستم بینایی رایانه 👁️
 - [Windows Automation Guide](docs/WINDOWS_AUTOMATION.md) - معماری و API
 - [AI Control Guide](docs/AI_WINDOWS_CONTROL.md) - نحوه استفاده با AI
 - [Quick Start](docs/QUICKSTART.md) - شروع سریع
+
+🚀 **Development Roadmap:**
+- [Week 2 Plan](docs/WEEK2_ACTION_LAYER_PLAN.md) - Action Layer: Click, Type, Smart Wait 🔥 **NEXT**
+- [Week 2 Executive Summary](docs/WEEK2_EXECUTIVE_SUMMARY.md) - خلاصه مدیریتی
 
 ---
 

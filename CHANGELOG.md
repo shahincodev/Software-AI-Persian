@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### 🚀 Week 2: Action Layer (Planned)
+### 🚀 WinAuto: Action Layer (Planned)
 > **Focus**: Click, Type, Smart Wait - Complete Desktop Automation
 
 #### Added (Planned)
@@ -30,9 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `docs/DESKTOP_VISION.md` - Updated with new capabilities
 
 #### Documentation (Planned)
-- `docs/WEEK2_ACTION_LAYER_PLAN.md` - Complete Week 2 roadmap
-- `docs/WEEK2_EXECUTIVE_SUMMARY.md` - Executive overview
-- `docs/WEEK2_QUICK_REFERENCE.md` - Developer quick reference
+- `docs/WINAUTO_ACTION_LAYER_PLAN.md` - Complete WinAuto roadmap
+- `docs/WINAUTO_EXECUTIVE_SUMMARY.md` - Executive overview
+- `docs/WINAUTO_QUICK_REFERENCE.md` - Developer quick reference
 - `docs/MOUSE_CONTROL.md` - Mouse control API documentation
 - `docs/KEYBOARD_CONTROL.md` - Keyboard control API documentation
 - `docs/SMART_WAIT.md` - Smart wait strategies documentation
@@ -41,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `docs/EXAMPLES.md` - Usage examples
 - `docs/TROUBLESHOOTING.md` - Common issues and solutions
 - `docs/API_REFERENCE.md` - Complete API reference
-- `WEEK2_TODO.md` - Week 2 progress tracker
+- `WINAUTO_TODO.md` - WinAuto progress tracker
 
 #### Tests (Planned)
 - Unit tests for all new modules (>85% coverage)
@@ -222,7 +222,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 |---------|------|-------|--------|
 | 0.1.0 | 2025-11 | Initial Setup + Browser | ✅ Complete |
 | 0.2.0 | 2025-11-24 | Windows Automation | ✅ Complete |
-| 0.3.0 | TBD | Action Layer (Week 2) | 📋 Planned |
+| 0.3.0 | TBD | Action Layer (WinAuto) | 📋 Planned |
 | 0.4.0 | TBD | Advanced AI Vision | 🔮 Future |
 | 1.0.0 | TBD | Public Release | 🔮 Future |
 
@@ -300,7 +300,7 @@ Example entry:
 ### Project Growth
 ```
 Week 1:  ~3000 LOC, 15 modules, 5 docs
-Week 2:  ~5000 LOC, 24 modules, 15 docs (planned)
+WinAuto:  ~5000 LOC, 24 modules, 15 docs (planned)
 Week 3:  TBD
 Week 4:  TBD
 ```
@@ -308,14 +308,14 @@ Week 4:  TBD
 ### Test Coverage
 ```
 Week 1:  ~70%
-Week 2:  >85% (target)
+WinAuto:  >85% (target)
 Week 3:  >90% (target)
 ```
 
 ### Documentation
 ```
 Week 1:  5 major docs
-Week 2:  15 major docs (target)
+WinAuto:  15 major docs (target)
 Week 3:  20+ docs (target)
 ```
 
@@ -337,7 +337,7 @@ Week 3:  20+ docs (target)
 No migration needed. All changes are additive.
 
 ### Migrating to 0.3.0 (Future)
-TBD when Week 2 is released.
+TBD when WinAuto is released.
 
 ---
 
@@ -369,4 +369,4 @@ See [LICENSE](LICENSE) file for details.
 
 **Keep this file updated with every significant change!** 📝
 
-*Last Updated: 2025-11-24 (Week 2 Planning)*
+*Last Updated: 2025-11-26 (WinAuto Planning)*

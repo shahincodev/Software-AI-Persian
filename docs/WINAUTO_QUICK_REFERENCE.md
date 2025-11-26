@@ -35,9 +35,9 @@ Software-AI/
 │   └── ...
 │
 ├── docs/                           # Documentation
-│   ├── WEEK2_ACTION_LAYER_PLAN.md         # 🆕 Master plan
-│   ├── WEEK2_EXECUTIVE_SUMMARY.md         # 🆕 Executive summary
-│   ├── WEEK2_QUICK_REFERENCE.md           # 🆕 This file
+│   ├── WINAUTO_ACTION_LAYER_PLAN.md       # 🆕 Master plan
+│   ├── WINAUTO_EXECUTIVE_SUMMARY.md       # 🆕 Executive summary
+│   ├── WINAUTO_QUICK_REFERENCE.md         # 🆕 This file
 │   ├── MOUSE_CONTROL.md                   # 🆕 Mouse API
 │   ├── KEYBOARD_CONTROL.md                # 🆕 Keyboard API
 │   ├── SMART_WAIT.md                      # 🆕 Wait API
@@ -496,8 +496,8 @@ await keyboard.type_text(text)
 ## 📚 Resources
 
 ### Documentation
-- [Master Plan](WEEK2_ACTION_LAYER_PLAN.md) - Complete roadmap
-- [Executive Summary](WEEK2_EXECUTIVE_SUMMARY.md) - Overview
+- [Master Plan](WINAUTO_ACTION_LAYER_PLAN.md) - Complete roadmap
+- [Executive Summary](WINAUTO_EXECUTIVE_SUMMARY.md) - Overview
 - [API Reference](API_REFERENCE.md) - Complete API
 
 ### External Resources
@@ -613,7 +613,7 @@ git commit -m "docs: add mouse control documentation"
 
 ---
 
-*Last Updated: Week 2 Planning Phase*  
+*Last Updated: WinAuto Planning Phase*  
 *Status: Ready for Development*  
 *Next: Start Phase 1 (Mouse Control)*
 

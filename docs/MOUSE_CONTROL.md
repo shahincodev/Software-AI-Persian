@@ -763,9 +763,9 @@ Coverage: 97%
 ## 🔗 منابع مرتبط
 
 - [Desktop Vision Guide](./DESKTOP_VISION.md) - سیستم بینایی
-- [Keyboard Control](./KEYBOARD_CONTROL.md) - کنترل کیبورد (Week 2)
-- [Smart Wait](./SMART_WAIT.md) - انتظار هوشمند (Week 2)
-- [Week 2 Plan](./WEEK2_ACTION_LAYER_PLAN.md) - نقشه راه کامل
+- [Keyboard Control](./KEYBOARD_CONTROL.md) - کنترل کیبورد (WinAuto)
+- [Smart Wait](./SMART_WAIT.md) - انتظار هوشمند (WinAuto)
+- [WinAuto Plan](./WINAUTO_ACTION_LAYER_PLAN.md) - نقشه راه کامل
 
 ---
 

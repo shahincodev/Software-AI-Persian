@@ -25,6 +25,9 @@ from core.intelligent_agent import IntelligentSystemAgent
 from core.memory_system import MemoryManager
 from core.task_engine import TaskEngine
 from core.voice_io import VoiceManager
+from core.mouse_control import MouseController
+from core.keyboard_control import KeyboardController
+from core.smart_wait import SmartWaiter
 from dotenv import load_dotenv
 from core.logging_config import setup_logging, install_exception_hook
 
@@ -97,6 +100,150 @@ def _summarize_for_voice(result_text: str) -> str:
     # اگر نتوانستیم، ۱۵۰ کاراکتر اول
     return result_text[:150] + "..."
 
+
+async def handle_mouse_command(
+    command: str,
+    mouse: MouseController,
+    voice: VoiceManager,
+    lang: str,
+    input_mode: str
+) -> None:
+    """پردازش دستورات موس."""
+    try:
+        cmd_lower = command.lower()
+        
+        if "position" in cmd_lower or "موقعیت" in cmd_lower:
+            x, y = mouse.get_position()
+            msg = f"🖱️ Mouse position: ({x}, {y})"
+            print(msg)
+            if input_mode == "voice":
+                voice.speak(f"Mouse is at position {x}, {y}", lang=lang)
+        
+        elif "click" in cmd_lower or "کلیک" in cmd_lower:
+            x, y = mouse.get_position()
+            mouse.click(x, y)
+            msg = f"🖱️ Clicked at ({x}, {y})"
+            print(msg)
+            if input_mode == "voice":
+                voice.speak("Click executed", lang=lang)
+        
+        else:
+            msg = "❓ Unknown mouse command. Try: 'mouse position' or 'mouse click'"
+            print(msg)
+            if input_mode == "voice":
+                voice.speak("Unknown mouse command", lang=lang)
+    
+    except Exception as e:
+        error_msg = f"❌ Mouse error: {e}"
+        print(error_msg)
+        logger.exception("Mouse command failed")
+
+
+async def handle_keyboard_command(
+    command: str,
+    keyboard: KeyboardController,
+    voice: VoiceManager,
+    lang: str,
+    input_mode: str
+) -> None:
+    """پردازش دستورات کیبورد."""
+    try:
+        # استخراج متن برای تایپ
+        if "type" in command.lower() or "تایپ" in command:
+            # استخراج متن بعد از "type"
+            text_to_type = command.split(maxsplit=1)[1] if len(command.split()) > 1 else ""
+            
+            if text_to_type:
+                msg = f"⌨️ Typing in 3 seconds: {text_to_type}"
+                print(msg)
+                if input_mode == "voice":
+                    voice.speak("Typing in 3 seconds", lang=lang)
+                
+                await asyncio.sleep(3)
+                keyboard.type_text(text_to_type)
+                
+                success_msg = "✅ Text typed successfully"
+                print(success_msg)
+                if input_mode == "voice":
+                    voice.speak("Text typed", lang=lang)
+            else:
+                print("❓ Usage: type <your text here>")
+        
+        elif "hotkey" in command.lower() or "میانبر" in command:
+            msg = "⌨️ Example: Ctrl+C executed"
+            print(msg)
+            keyboard.hotkey('ctrl', 'c')
+            if input_mode == "voice":
+                voice.speak("Hotkey executed", lang=lang)
+        
+        else:
+            msg = "❓ Unknown keyboard command. Try: 'type <text>' or 'hotkey'"
+            print(msg)
+    
+    except Exception as e:
+        error_msg = f"❌ Keyboard error: {e}"
+        print(error_msg)
+        logger.exception("Keyboard command failed")
+
+
+async def handle_wait_command(
+    command: str,
+    smart_wait: SmartWaiter,
+    voice: VoiceManager,
+    lang: str,
+    input_mode: str
+) -> None:
+    """پردازش دستورات انتظار هوشمند."""
+    try:
+        cmd_lower = command.lower()
+        
+        if "idle" in cmd_lower or "بیکار" in cmd_lower:
+            msg = "⏳ Waiting for system to be idle..."
+            print(msg)
+            if input_mode == "voice":
+                voice.speak("Waiting for idle", lang=lang)
+            
+            result = smart_wait.wait_for_idle(cpu_threshold=10.0, timeout=30)
+            
+            if result.success:
+                success_msg = f"✅ System is idle (waited {result.duration:.1f}s)"
+                print(success_msg)
+                if input_mode == "voice":
+                    voice.speak("System is now idle", lang=lang)
+            else:
+                timeout_msg = f"⏱️ Timeout waiting for idle"
+                print(timeout_msg)
+        
+        elif "window" in cmd_lower or "پنجره" in cmd_lower:
+            # استخراج نام پنجره
+            window_name = command.split(maxsplit=1)[1] if len(command.split()) > 1 else "Notepad"
+            
+            msg = f"⏳ Waiting for window: {window_name}"
+            print(msg)
+            if input_mode == "voice":
+                voice.speak(f"Waiting for {window_name}", lang=lang)
+            
+            result = smart_wait.wait_for_window(window_name, timeout=30)
+            
+            if result.success:
+                success_msg = f"✅ Window found: {window_name}"
+                print(success_msg)
+                if input_mode == "voice":
+                    voice.speak("Window found", lang=lang)
+            else:
+                timeout_msg = f"⏱️ Timeout: {window_name} not found"
+                print(timeout_msg)
+        
+        else:
+            msg = "❓ Unknown wait command. Try: 'wait idle' or 'wait window <name>'"
+            print(msg)
+    
+    except Exception as e:
+        error_msg = f"❌ Wait error: {e}"
+        print(error_msg)
+        logger.exception("Wait command failed")
+
+
 with open('banner.txt', 'r', encoding='utf-8') as file:
     banner = file.read()
 
@@ -150,6 +297,16 @@ def parse_arguments() -> argparse.Namespace:
         default="gtts",
         help="انتخاب سرویس تبدیل متن به گفتار: 'google-cloud' (پولی، کیفیت بالا)، 'gtts' (رایگان) یا 'elevenlabs' (پولی، کیفیت بالا)"
     )
+    parser.add_argument(
+        "--enable-automation",
+        action="store_true",
+        help="فعال‌سازی قابلیت‌های خودکارسازی دسکتاپ (Mouse, Keyboard, Smart Wait)"
+    )
+    parser.add_argument(
+        "--demo-gui",
+        action="store_true",
+        help="اجرای رابط کاربری گرافیکی نمایشی"
+    )
 
     return parser.parse_args()
 
@@ -171,8 +328,18 @@ def print_banner(text=banner, color=Fore.CYAN) -> None:
         logger.error(F"Error displaying banner: {str(e)}")
         print(color + str(text) + Style.RESET_ALL)
 
-async def process_user_input(task_engine: TaskEngine, memory: MemoryManager, mode: str, input_mode: str, voice: VoiceManager, system_agent: IntelligentSystemAgent) -> None:
-    """پردازش ورودی کاربر در یک حلقه تعاملی بهبود یافته با پشتیبانی از چندزبانگی."""
+async def process_user_input(
+    task_engine: TaskEngine, 
+    memory: MemoryManager, 
+    mode: str, 
+    input_mode: str, 
+    voice: VoiceManager, 
+    system_agent: IntelligentSystemAgent,
+    mouse: Optional[MouseController] = None,
+    keyboard: Optional[KeyboardController] = None,
+    smart_wait: Optional[SmartWaiter] = None
+) -> None:
+    """پردازش ورودی کاربر در یک حلقه تعاملی بهبود یافته با پشتیبانی از چندزبانگی و خودکارسازی."""
 
     print_banner(banner, color=Fore.CYAN)
     welcome_message = "Hello! Welcome to the Artificial Intelligence System."
@@ -182,6 +349,19 @@ async def process_user_input(task_engine: TaskEngine, memory: MemoryManager, mod
     
     print(f"\n{welcome_message}")
     print("Please enter your tasks. ask or Type 'start' to execute them. Use Ctrl+C to exit.\n")
+    
+    # نمایش وضعیت خودکارسازی
+    if mouse or keyboard or smart_wait:
+        automation_status = f"{Fore.GREEN}🤖 Desktop Automation: ENABLED{Style.RESET_ALL}"
+        print(automation_status)
+        automation_features = []
+        if mouse:
+            automation_features.append("Mouse Control")
+        if keyboard:
+            automation_features.append("Keyboard Control")
+        if smart_wait:
+            automation_features.append("Smart Wait")
+        print(f"   Features: {', '.join(automation_features)}\n")
 
     try:
         while True:
@@ -242,6 +422,20 @@ async def process_user_input(task_engine: TaskEngine, memory: MemoryManager, mod
 
             elif user_text.lower() in ["exit", "quit", "خروج"]:
                 break
+            
+            # دستورات خودکارسازی
+            elif user_text.lower().startswith(("mouse", "موس")) and mouse:
+                await handle_mouse_command(user_text, mouse, voice, current_lang, input_mode)
+                continue
+            
+            elif user_text.lower().startswith(("type", "تایپ", "keyboard", "کیبورد")) and keyboard:
+                await handle_keyboard_command(user_text, keyboard, voice, current_lang, input_mode)
+                continue
+            
+            elif user_text.lower().startswith(("wait", "صبر", "انتظار")) and smart_wait:
+                await handle_wait_command(user_text, smart_wait, voice, current_lang, input_mode)
+                continue
+            
             else:
                 # تشخیص هوشمند: آیا این یک درخواست سیستمی است؟
                 is_system_task = await _is_system_request(user_text, system_agent)
@@ -308,6 +502,13 @@ async def main() -> None:
         setup_logging(level=logging.DEBUG if args.debug else None)
         install_exception_hook()
 
+        # بررسی اجرای GUI دمو
+        if args.demo_gui:
+            logger.info("Launching demo GUI...")
+            import demo_gui
+            demo_gui.main()
+            return
+        
         # راه‌اندازی اجزای اصلی
         task_engine = TaskEngine(concurrency=args.concurrency)
         memory = MemoryManager()
@@ -316,9 +517,35 @@ async def main() -> None:
         # راه‌اندازی عامل هوشمند سیستم
         system_agent = IntelligentSystemAgent(dry_run=args.debug)
         logger.info("Intelligent system agent initialized")
+        
+        # راه‌اندازی قابلیت‌های خودکارسازی (Week 2)
+        mouse = None
+        keyboard = None
+        smart_wait = None
+        
+        if args.enable_automation:
+            try:
+                mouse = MouseController()
+                keyboard = KeyboardController()
+                smart_wait = SmartWaiter()
+                logger.info("✅ Desktop automation enabled (Mouse, Keyboard, Smart Wait)")
+                print(f"{Fore.GREEN}✅ قابلیت‌های خودکارسازی دسکتاپ فعال شد{Style.RESET_ALL}")
+            except Exception as e:
+                logger.warning(f"Failed to initialize automation components: {e}")
+                print(f"{Fore.YELLOW}⚠️ خطا در فعال‌سازی خودکارسازی: {e}{Style.RESET_ALL}")
 
         # پردازش ورودی کاربر و اجرای تسک‌ها
-        await process_user_input(task_engine, memory, args.mode, args.input_mode, voice, system_agent)
+        await process_user_input(
+            task_engine, 
+            memory, 
+            args.mode, 
+            args.input_mode, 
+            voice, 
+            system_agent,
+            mouse=mouse,
+            keyboard=keyboard,
+            smart_wait=smart_wait
+        )
 
     except Exception as e:
         logger.exception("A fatal error occurred.")

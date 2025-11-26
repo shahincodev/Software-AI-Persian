@@ -53,6 +53,35 @@ python main.py --input-mode text
 ✅ اقدام 1: موفق
 ```
 
+**با خودکارسازی دسکتاپ (Week 2):**
+```bash
+python main.py --input-mode text --enable-automation
+
+# دستورات موس
+> mouse position
+🖱️ Mouse position: (640, 480)
+
+> mouse click
+🖱️ Clicked at (640, 480)
+
+# دستورات کیبورد
+> type Hello World!
+⌨️ Typing in 3 seconds: Hello World!
+✅ Text typed successfully
+
+# دستورات انتظار هوشمند
+> wait idle
+⏳ Waiting for system to be idle...
+✅ System is idle (waited 5.2s)
+```
+
+**رابط گرافیکی نمایشی:**
+```bash
+python main.py --demo-gui
+# یا
+python demo_gui.py
+```
+
 **با صدا:**
 ```bash
 python main.py --input-mode voice
@@ -84,9 +113,42 @@ text_position = vision.find_text("OK")
 - [Quick Start](docs/QUICKSTART.md) - شروع سریع
 
 🚀 **Development Roadmap:**
-- [Week 2 Plan](docs/WEEK2_ACTION_LAYER_PLAN.md) - Action Layer: Click, Type, Smart Wait 🔥 **IN PROGRESS**
+- [Week 2 Plan](docs/WEEK2_ACTION_LAYER_PLAN.md) - Action Layer: Click, Type, Smart Wait ✅ **COMPLETE**
 - [Week 2 Executive Summary](docs/WEEK2_EXECUTIVE_SUMMARY.md) - خلاصه مدیریتی
 - [Week 2 Progress](WEEK2_TODO.md) - وضعیت پیشرفت
+
+#### 🎮 قابلیت‌های جدید Week 2 (Desktop Automation) ✅
+
+**🖱️ Mouse Control** - کنترل کامل موس
+- Click (چپ، راست، دوبل)
+- Move (با انیمیشن نرم)
+- Drag & Drop
+- Scroll (افقی و عمودی)
+- دریافت موقعیت
+- ✅ 33/34 تست موفق
+
+**⌨️ Keyboard Control** - کنترل کیبورد
+- تایپ متن (فارسی/انگلیسی)
+- فشار دادن کلید
+- Hotkeys (Ctrl+C, Alt+Tab, Win+R و...)
+- نگه داشتن کلید
+- کپی/پیست هوشمند
+- ✅ 42/42 تست موفق
+
+**⏳ Smart Wait System** - انتظار هوشمند
+- انتظار برای ظاهر شدن عنصر (OCR)
+- تشخیص تغییر صفحه
+- انتظار برای پنجره
+- انتظار برای پروسه
+- تشخیص Idle CPU
+- انتظار برای رنگ خاص
+- Retry با Backoff (Linear/Exponential/Fibonacci)
+- ✅ 38/38 تست موفق
+
+📖 **مستندات کامل:**
+- [Mouse Control Guide](docs/MOUSE_CONTROL.md) - راهنمای کنترل موس 🖱️
+- [Keyboard Control Guide](docs/KEYBOARD_CONTROL.md) - راهنمای کنترل کیبورد ⌨️
+- [Automation Guide](AUTOMATION_GUIDE.md) - راهنمای استفاده از خودکارسازی 🤖
 
 ---
 

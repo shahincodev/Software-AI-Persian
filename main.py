@@ -302,11 +302,6 @@ def parse_arguments() -> argparse.Namespace:
         action="store_true",
         help="فعال‌سازی قابلیت‌های خودکارسازی دسکتاپ (Mouse, Keyboard, Smart Wait)"
     )
-    parser.add_argument(
-        "--demo-gui",
-        action="store_true",
-        help="اجرای رابط کاربری گرافیکی نمایشی"
-    )
 
     return parser.parse_args()
 
@@ -501,13 +496,6 @@ async def main() -> None:
         # مقداردهی اولیه گزارش‌گیری پس از آماده‌سازی محیط. با توجه به پرچم --debug
         setup_logging(level=logging.DEBUG if args.debug else None)
         install_exception_hook()
-
-        # بررسی اجرای GUI دمو
-        if args.demo_gui:
-            logger.info("Launching demo GUI...")
-            import demo_gui
-            demo_gui.main()
-            return
         
         # راه‌اندازی اجزای اصلی
         task_engine = TaskEngine(concurrency=args.concurrency)

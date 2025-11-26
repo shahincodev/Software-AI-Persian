@@ -84,8 +84,9 @@ text_position = vision.find_text("OK")
 - [Quick Start](docs/QUICKSTART.md) - شروع سریع
 
 🚀 **Development Roadmap:**
-- [WinAuto Plan](docs/WINAUTO_ACTION_LAYER_PLAN.md) - Action Layer: Click, Type, Smart Wait 🔥 **NEXT**
-- [WinAuto Executive Summary](docs/WINAUTO_EXECUTIVE_SUMMARY.md) - خلاصه مدیریتی
+- [Week 2 Plan](docs/WEEK2_ACTION_LAYER_PLAN.md) - Action Layer: Click, Type, Smart Wait 🔥 **IN PROGRESS**
+- [Week 2 Executive Summary](docs/WEEK2_EXECUTIVE_SUMMARY.md) - خلاصه مدیریتی
+- [Week 2 Progress](WEEK2_TODO.md) - وضعیت پیشرفت
 
 ---
 

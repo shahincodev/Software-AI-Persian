@@ -28,7 +28,7 @@
 
 **Gap**: نمی‌تواند با Desktop تعامل فیزیکی داشته باشد (کلیک، تایپ، کشیدن)
 
-### هدف (End of WinAuto Phase)
+### هدف (End of Week 2)
 ```
 ✅ Browser Automation (100%)
 ✅ Desktop Vision (100%) - Vision-Guided Actions
@@ -274,7 +274,7 @@ User Acceptance → Real-world scenarios
 
 ## 🚀 Go-Live Plan
 
-### WinAuto Completion Checklist
+### Week 2 Completion Checklist
 - [ ] All 9 modules completed
 - [ ] Test coverage >85%
 - [ ] All documentation written
@@ -285,7 +285,7 @@ User Acceptance → Real-world scenarios
 
 ### Rollout Strategy
 1. **Internal Testing** (Day 10)
-2. **Beta Release** (Post WinAuto)
+2. **Beta Release** (Post Week 2)
 3. **Public Announcement** (After stabilization)
 4. **Continuous Enhancement** (Ongoing)
 

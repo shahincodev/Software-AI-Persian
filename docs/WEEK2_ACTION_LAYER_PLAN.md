@@ -57,7 +57,7 @@
 
 ---
 
-## 🏗️ معماری WinAuto - Action Layer
+## 🏗️ معماری Week 2 - Action Layer
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -398,8 +398,8 @@ class ContextAwareActionPlanner:
 
 #### Task 6.2: Complete Documentation
 **Files**:
-- Update `README.md` - WinAuto features
-- `docs/WINAUTO_FEATURES.md` - Feature overview
+- Update `README.md` - Week 2 features
+- `docs/WEEK2_FEATURES.md` - Feature overview
 - `docs/EXAMPLES.md` - Usage examples
 - `docs/TROUBLESHOOTING.md` - Common issues
 - `docs/API_REFERENCE.md` - Complete API
@@ -435,7 +435,7 @@ Fill the registration form:
 
 ### Dependencies (Add to requirements.txt)
 ```txt
-# WinAuto - Action Layer
+# Week 2 - Action Layer
 pyautogui>=0.9.54        # Mouse/Keyboard control
 pynput>=1.7.6            # Input monitoring
 opencv-python>=4.8.0     # Template matching
@@ -491,7 +491,7 @@ KEYBOARD_VERIFY_TYPING=true
 
 ---
 
-## 🎯 WinAuto Deliverables Checklist
+## 🎯 Week 2 Deliverables Checklist
 
 ### Code
 - [ ] `core/mouse_control.py` ✓ Complete + Tests + Docs
@@ -517,7 +517,7 @@ KEYBOARD_VERIFY_TYPING=true
 - [ ] `docs/SMART_WAIT.md`
 - [ ] `docs/ACTION_CONTROLLER.md`
 - [ ] `docs/DESKTOP_ACTIONS.md`
-- [ ] `docs/WINAUTO_FEATURES.md`
+- [ ] `docs/WEEK2_FEATURES.md`
 - [ ] `docs/EXAMPLES.md`
 - [ ] `docs/TROUBLESHOOTING.md`
 - [ ] `docs/API_REFERENCE.md`

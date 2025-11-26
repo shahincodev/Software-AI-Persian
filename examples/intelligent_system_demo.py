@@ -75,7 +75,7 @@ async def demo_mixed_scenario():
     و در آخر مشخصات سیستمم رو ببینم
     """
     
-    print(f"\n📋 سناریو:\n{scenario}")
+    print(f"\n📋 Scenario:\n{scenario}")
     print("\n" + "─" * 70)
     
     result = await agent.process_request(scenario)

@@ -28,7 +28,7 @@ from core.desktop_vision import DesktopVision
 def demo_basic_operations():
     """دمو عملیات اساسی موس."""
     print("═" * 60)
-    print("🖱️  دموی عملیات اساسی MouseController")
+    print("🖱️  MouseController Basic Operations Demo")
     print("═" * 60)
     
     # ساخت MouseController ساده
@@ -37,51 +37,51 @@ def demo_basic_operations():
         human_behavior=False
     )
     
-    print("\n1️⃣  دریافت موقعیت فعلی موس...")
+    print("\n1️⃣  Getting current mouse position...")
     x, y = mouse.get_position()
-    print(f"   ✅ موقعیت: ({x}, {y})")
+    print(f"   ✅ Position: ({x}, {y})")
     
-    print("\n2️⃣  تست اعتبارسنجی امنیتی...")
+    print("\n2️⃣  Testing safety validation...")
     safe_pos = (500, 300)
     unsafe_pos = (-10, -10)
     
-    print(f"   موقعیت {safe_pos}: {'✅ امن' if mouse.is_safe_position(*safe_pos) else '❌ غیرامن'}")
-    print(f"   موقعیت {unsafe_pos}: {'✅ امن' if mouse.is_safe_position(*unsafe_pos) else '❌ غیرامن'}")
+    print(f"   Position {safe_pos}: {'✅ Safe' if mouse.is_safe_position(*safe_pos) else '❌ Unsafe'}")
+    print(f"   Position {unsafe_pos}: {'✅ Safe' if mouse.is_safe_position(*unsafe_pos) else '❌ Unsafe'}")
     
-    print("\n3️⃣  حرکت موس به موقعیت امن...")
+    print("\n3️⃣  Moving mouse to safe position...")
     if mouse.move(500, 300, duration=1.0):
-        print("   ✅ حرکت موفق")
+        print("   ✅ Move successful")
     
-    print("\n4️⃣  کلیک چپ...")
+    print("\n4️⃣  Left click...")
     if mouse.click(500, 300):
-        print("   ✅ کلیک موفق")
+        print("   ✅ Click successful")
     
-    print("\n5️⃣  دوبل کلیک...")
+    print("\n5️⃣  Double click...")
     if mouse.click(500, 300, clicks=2):
-        print("   ✅ دوبل کلیک موفق")
+        print("   ✅ Double click successful")
     
-    print("\n6️⃣  کلیک راست...")
+    print("\n6️⃣  Right click...")
     if mouse.click(500, 300, button=MouseButton.RIGHT):
-        print("   ✅ کلیک راست موفق")
+        print("   ✅ Right click successful")
     
-    print("\n7️⃣  اسکرول...")
+    print("\n7️⃣  Scrolling...")
     if mouse.scroll(5):
-        print("   ✅ اسکرول به بالا موفق")
+        print("   ✅ Scroll up successful")
     
     # نمایش آمار
-    print("\n📊 آمار عملیات:")
+    print("\n📊 Operation Statistics:")
     stats = mouse.get_stats()
     for key, value in stats.items():
         if key != 'action_history':
             print(f"   {key}: {value}")
     
-    print("\n✅ دموی عملیات اساسی تکمیل شد")
+    print("\n✅ Basic operations demo completed")
 
 
 def demo_human_behavior():
     """دمو رفتارهای انسانی."""
     print("\n" + "═" * 60)
-    print("🤖 دموی رفتار انسانی (Human-Like Behavior)")
+    print("🤖 Human-Like Behavior Demo")
     print("═" * 60)
     
     # ساخت MouseController با رفتار انسانی
@@ -90,53 +90,53 @@ def demo_human_behavior():
         human_behavior=True
     )
     
-    print("\n1️⃣  کلیک با سرعت INSTANT...")
+    print("\n1️⃣  Click with INSTANT speed...")
     start = time.time()
     mouse.click_human(500, 300, pattern=ClickPattern.INSTANT)
     duration1 = time.time() - start
-    print(f"   ⚡ زمان: {duration1:.3f}s")
+    print(f"   ⚡ Time: {duration1:.3f}s")
     
-    print("\n2️⃣  کلیک با سرعت HUMAN_FAST...")
+    print("\n2️⃣  Click with HUMAN_FAST speed...")
     start = time.time()
     mouse.click_human(500, 300, pattern=ClickPattern.HUMAN_FAST)
     duration2 = time.time() - start
-    print(f"   🏃 زمان: {duration2:.3f}s")
+    print(f"   🏃 Time: {duration2:.3f}s")
     
-    print("\n3️⃣  کلیک با سرعت HUMAN_NORMAL...")
+    print("\n3️⃣  Click with HUMAN_NORMAL speed...")
     start = time.time()
     mouse.click_human(500, 300, pattern=ClickPattern.HUMAN_NORMAL)
     duration3 = time.time() - start
-    print(f"   🚶 زمان: {duration3:.3f}s")
+    print(f"   🚶 Time: {duration3:.3f}s")
     
-    print("\n4️⃣  کلیک با سرعت HUMAN_SLOW...")
+    print("\n4️⃣  Click with HUMAN_SLOW speed...")
     start = time.time()
     mouse.click_human(500, 300, pattern=ClickPattern.HUMAN_SLOW)
     duration4 = time.time() - start
-    print(f"   🐌 زمان: {duration4:.3f}s")
+    print(f"   🐌 Time: {duration4:.3f}s")
     
-    print("\n📈 مقایسه سرعت:")
-    print(f"   INSTANT:      {duration1:.3f}s (پایه)")
-    print(f"   HUMAN_FAST:   {duration2:.3f}s ({duration2/duration1:.1f}x کندتر)")
-    print(f"   HUMAN_NORMAL: {duration3:.3f}s ({duration3/duration1:.1f}x کندتر)")
-    print(f"   HUMAN_SLOW:   {duration4:.3f}s ({duration4/duration1:.1f}x کندتر)")
+    print("\n📈 Speed Comparison:")
+    print(f"   INSTANT:      {duration1:.3f}s (baseline)")
+    print(f"   HUMAN_FAST:   {duration2:.3f}s ({duration2/duration1:.1f}x slower)")
+    print(f"   HUMAN_NORMAL: {duration3:.3f}s ({duration3/duration1:.1f}x slower)")
+    print(f"   HUMAN_SLOW:   {duration4:.3f}s ({duration4/duration1:.1f}x slower)")
     
-    print("\n5️⃣  حرکت هموار با Bezier curve...")
+    print("\n5️⃣  Smooth movement with Bezier curve...")
     start = time.time()
     mouse.move(800, 400, duration=2.0, smooth=True)
     duration = time.time() - start
-    print(f"   ✅ حرکت هموار انجام شد ({duration:.2f}s)")
+    print(f"   ✅ Smooth movement completed ({duration:.2f}s)")
     
-    print("\n✅ دموی رفتار انسانی تکمیل شد")
+    print("\n✅ Human behavior demo completed")
 
 
 def demo_vision_guided():
     """دمو عملیات Vision-guided."""
     print("\n" + "═" * 60)
-    print("👁️  دموی Vision-Guided Operations")
+    print("👁️  Vision-Guided Operations Demo")
     print("═" * 60)
     
-    print("\n⚠️  این دمو نیاز به DesktopVision دارد")
-    print("⚠️  برای تست واقعی باید OCR و template matching فعال باشد")
+    print("\n⚠️  This demo requires DesktopVision")
+    print("⚠️  For actual testing, OCR and template matching must be active")
     
     try:
         # ساخت Vision system
@@ -149,38 +149,38 @@ def demo_vision_guided():
             human_behavior=True
         )
         
-        print("\n✅ MouseController + DesktopVision آماده است")
-        print("\n📝 مثال‌های استفاده:")
-        print("   # کلیک روی دکمه 'OK'")
+        print("\n✅ MouseController + DesktopVision ready")
+        print("\n📝 Usage examples:")
+        print("   # Click on 'OK' button")
         print("   mouse.click_on_text('OK')")
         print()
-        print("   # کلیک روی آیکن بستن")
+        print("   # Click on close icon")
         print("   mouse.click_on_image('assets/close_button.png')")
         print()
-        print("   # جستجوی متن فارسی")
+        print("   # Search Persian text")
         print("   mouse.click_on_text('تایید', confidence=0.8)")
         
     except Exception as e:
-        print(f"\n❌ خطا در ساخت Vision system: {e}")
-        print("   (این طبیعی است اگر Tesseract OCR نصب نباشد)")
+        print(f"\n❌ Error creating Vision system: {e}")
+        print("   (This is normal if Tesseract OCR is not installed)")
     
-    print("\n✅ دموی Vision-Guided تکمیل شد")
+    print("\n✅ Vision-Guided demo completed")
 
 
 def demo_safety_features():
     """دمو ویژگی‌های امنیتی."""
     print("\n" + "═" * 60)
-    print("🛡️  دموی ویژگی‌های امنیتی")
+    print("🛡️  Safety Features Demo")
     print("═" * 60)
     
     mouse = MouseController(safety_enabled=True)
     
-    print("\n1️⃣  تست موقعیت‌های امن...")
+    print("\n1️⃣  Testing safe positions...")
     test_positions = [
-        (100, 100, "وسط صفحه"),
-        (10, 10, "گوشه بالا چپ (unsafe)"),
-        (-50, -50, "خارج از صفحه (unsafe)"),
-        (5000, 5000, "خیلی دور (unsafe)"),
+        (100, 100, "Screen center"),
+        (10, 10, "Top left corner (unsafe)"),
+        (-50, -50, "Outside screen (unsafe)"),
+        (5000, 5000, "Too far (unsafe)"),
     ]
     
     for x, y, desc in test_positions:
@@ -188,25 +188,25 @@ def demo_safety_features():
         icon = "✅" if safe else "❌"
         print(f"   {icon} ({x}, {y}) - {desc}")
     
-    print("\n2️⃣  تست اعتبارسنجی مختصات...")
+    print("\n2️⃣  Testing coordinate validation...")
     try:
         x, y = mouse.validate_coordinates(500, 300)
-        print(f"   ✅ (500, 300) معتبر است → ({x}, {y})")
+        print(f"   ✅ (500, 300) is valid → ({x}, {y})")
     except ValueError as e:
-        print(f"   ❌ خطا: {e}")
+        print(f"   ❌ Error: {e}")
     
     try:
         x, y = mouse.validate_coordinates(-100, -100)
-        print(f"   ✅ (-100, -100) معتبر است → ({x}, {y})")
+        print(f"   ✅ (-100, -100) is valid → ({x}, {y})")
     except ValueError as e:
-        print(f"   ❌ (-100, -100) نامعتبر: {str(e)[:50]}...")
+        print(f"   ❌ (-100, -100) invalid: {str(e)[:50]}...")
     
-    print("\n3️⃣  غیرفعال کردن امنیت...")
+    print("\n3️⃣  Disabling safety...")
     unsafe_mouse = MouseController(safety_enabled=False)
-    print("   ⚠️  امنیت غیرفعال شد - تمام موقعیت‌ها مجاز هستند")
-    print(f"   (-100, -100) با safety_enabled=False: {'✅ مجاز' if unsafe_mouse.is_safe_position(-100, -100) else '❌ ممنوع'}")
+    print("   ⚠️  Safety disabled - all positions allowed")
+    print(f"   (-100, -100) with safety_enabled=False: {'✅ Allowed' if unsafe_mouse.is_safe_position(-100, -100) else '❌ Blocked'}")
     
-    print("\n✅ دموی امنیتی تکمیل شد")
+    print("\n✅ Safety demo completed")
 
 
 def main():
@@ -215,7 +215,7 @@ def main():
     print("╔" + "═" * 58 + "╗")
     print("║" + " " * 58 + "║")
     print("║" + "  🖱️  Mouse Control Demo - Software-AI (Persian Version)  ".center(58) + "║")
-    print("║" + "  نمایش کنترل هوشمند موس با هوش مصنوعی  ".center(58) + "║")
+    print("║" + "  Intelligent Mouse Control with AI  ".center(58) + "║")
     print("║" + " " * 58 + "║")
     print("╚" + "═" * 58 + "╝")
     
@@ -237,22 +237,22 @@ def main():
         
         # خلاصه
         print("\n" + "═" * 60)
-        print("🎉 تمام دموها با موفقیت اجرا شدند!")
+        print("🎉 All demos completed successfully!")
         print("═" * 60)
-        print("\n💡 نکات کلیدی:")
-        print("   ✅ Safety Validation: جلوگیری از کلیک‌های خطرناک")
-        print("   ✅ Human Behavior: شبیه‌سازی رفتار انسانی با Bezier curves")
-        print("   ✅ Vision Integration: کلیک روی متن/تصویر با AI")
-        print("   ✅ Stats & History: ردیابی کامل تمام عملیات")
-        print("\n📚 برای اطلاعات بیشتر:")
-        print("   - مستندات: docs/MOUSE_CONTROL.md")
-        print("   - تست‌ها: tests/test_mouse_control.py")
-        print("   - کد منبع: core/mouse_control.py")
+        print("\n💡 Key Points:")
+        print("   ✅ Safety Validation: Prevent dangerous clicks")
+        print("   ✅ Human Behavior: Simulate human behavior with Bezier curves")
+        print("   ✅ Vision Integration: Click on text/image with AI")
+        print("   ✅ Stats & History: Complete tracking of all operations")
+        print("\n📚 For more information:")
+        print("   - Documentation: docs/MOUSE_CONTROL.md")
+        print("   - Tests: tests/test_mouse_control.py")
+        print("   - Source code: core/mouse_control.py")
         
     except KeyboardInterrupt:
-        print("\n\n⚠️  دمو توسط کاربر متوقف شد")
+        print("\n\n⚠️  Demo stopped by user")
     except Exception as e:
-        print(f"\n\n❌ خطا: {e}")
+        print(f"\n\n❌ Error: {e}")
         import traceback
         traceback.print_exc()
 

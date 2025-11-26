@@ -335,10 +335,10 @@ def demo_8_human_behavior():
 
 def run_all_demos():
     """اجرای همه دموها."""
-    print("\n" + "🎯"*35)
+    print("\n" + "="*70)
     print("  KeyboardController Comprehensive Demo")
-    print("  کنترلر هوشمند کیبورد - دموی جامع")
-    print("🎯"*35)
+    print("  Smart Keyboard Controller - Comprehensive Demo")
+    print("="*70)
     
     demos = [
         demo_1_language_detection,
@@ -358,9 +358,8 @@ def run_all_demos():
         except Exception as e:
             logger.error(f"Demo {i} failed: {e}")
     
-    print_section("Summary (خلاصه)")
+    print_section("Summary")
     print("All demos completed successfully! ✅")
-    print("همه دموها با موفقیت اجرا شدند! ✅")
     print("\nKeyboardController Features:")
     print("  ✓ Language detection (English/Persian/Mixed)")
     print("  ✓ Multiple typing speeds")
@@ -370,7 +369,7 @@ def run_all_demos():
     print("  ✓ Statistics tracking")
     print("  ✓ Clipboard integration")
     print("  ✓ Human behavior simulation")
-    print("\n" + "🎉"*35 + "\n")
+    print("\n" + "="*70 + "\n")
 
 
 if __name__ == "__main__":

@@ -1,95 +1,95 @@
-# ⌨️ مستندات سیستم کنترل کیبورد
-**نسخه**: 1.0.0  
-**ماژول**: `core.keyboard_control`  
-**نویسنده**: شاهین  
-**آخرین بروزرسانی**: 2025-11-27
+# ⌨️ Keyboard Control System Documentation
+**Version**: 1.0.0  
+**Module**: `core.keyboard_control`  
+**Author**: Shahin  
+**Last Updated**: 2025-11-27
 
 ---
 
-## 📋 فهرست مطالب
+## 📋 Table of Contents
 
-- [معرفی](#معرفی)
-- [ویژگی‌ها](#ویژگیها)
-- [نصب و راه‌اندازی](#نصب-و-راهاندازی)
-- [شروع سریع](#شروع-سریع)
-- [مرجع API](#مرجع-api)
-- [مثال‌های کاربردی](#مثالهای-کاربردی)
-- [پشتیبانی از زبان فارسی](#پشتیبانی-از-زبان-فارسی)
-- [استفاده‌های پیشرفته](#استفادههای-پیشرفته)
-- [ویژگی‌های امنیتی](#ویژگیهای-امنیتی)
-- [عیب‌یابی](#عیبیابی)
-- [عملکرد و بهینه‌سازی](#عملکرد-و-بهینهسازی)
-- [مراجع مرتبط](#مراجع-مرتبط)
+- [Overview](#overview)
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [API Reference](#api-reference)
+- [Examples](#examples)
+- [Persian Language Support](#persian-language-support)
+- [Advanced Usage](#advanced-usage)
+- [Safety Features](#safety-features)
+- [Troubleshooting](#troubleshooting)
+- [Performance](#performance)
+- [See Also](#see-also)
 
 ---
 
-## 🎯 معرفی
+## 🎯 Overview
 
-**سیستم کنترل کیبورد** یک کنترلر هوشمند صفحه‌کلید با پشتیبانی کامل از زبان‌های فارسی و انگلیسی است. این ماژول قابلیت‌های پیشرفته‌ای برای ورود متن، مدیریت میانبرها و یکپارچگی با Clipboard فراهم می‌کند.
+The **Keyboard Control System** is an intelligent keyboard controller with full Persian and English support. It provides advanced capabilities for text input, hotkey management, and clipboard integration.
 
-### قابلیت‌های کلیدی
+### Key Capabilities
 
 ```python
-# تایپ متن (تشخیص خودکار زبان)
+# Type text (auto language detection)
 kb.type_text("Hello World")
 kb.type_text("سلام دنیا")
 
-# فشار دادن کلیدها
+# Press keys
 kb.press_key('enter')
 kb.press_key('tab', presses=3)
 
-# میانبرهای صفحه‌کلید (Hotkeys)
+# Hotkeys
 kb.hotkey('ctrl', 'c')  # Copy
 kb.hotkey('alt', 'tab')  # Switch window
 
-# نگه داشتن کلید
+# Hold key
 kb.hold_key('shift', duration=2.0)
 ```
 
-### چرا Keyboard Controller?
+### Why Keyboard Controller?
 
-| ویژگی | pyautogui استاندارد | KeyboardController |
+| Feature | Standard pyautogui | KeyboardController |
 |---------|-------------------|-------------------|
-| تایپ پایه | ✅ | ✅ |
-| پشتیبانی فارسی | ❌ | ✅ تشخیص خودکار |
-| تشخیص زبان | ❌ | ✅ EN/FA/Mixed |
-| اعتبارسنجی امنیتی | ❌ | ✅ مسدود کردن الگوها |
-| رفتار انسانی | ❌ | ✅ Timing متغیر |
-| یکپارچگی Clipboard | محدود | ✅ پشتیبانی کامل |
-| آمار و گزارش | ❌ | ✅ ردیابی کامل |
-| سابقه عملیات | ❌ | ✅ ثبت تمام اقدامات |
+| Basic typing | ✅ | ✅ |
+| Persian support | ❌ | ✅ Auto-detection |
+| Language detection | ❌ | ✅ EN/FA/Mixed |
+| Safety validation | ❌ | ✅ Pattern blocking |
+| Human behavior | ❌ | ✅ Variable timing |
+| Clipboard integration | Limited | ✅ Full support |
+| Statistics | ❌ | ✅ Complete tracking |
+| Audit trail | ❌ | ✅ All actions logged |
 
 ---
 
-## ✨ ویژگی‌ها
+## ✨ Features
 
-### ویژگی‌های اصلی
-- ✅ **تایپ متن**: انگلیسی، فارسی، ترکیبی با تشخیص خودکار
-- ✅ **فشار کلید**: تک، چندتایی، با فاصله زمانی
-- ✅ **میانبرها**: کلیدهای ترکیبی (Ctrl+C, Alt+Tab و...)
-- ✅ **نگه داشتن**: نگه داشتن کلید برای مدت مشخص
-- ✅ **کلیدهای ویژه**: Enter, Tab, Esc, کلیدهای Function و...
+### Core Features
+- ✅ **Type Text**: English, Persian, mixed text with auto-detection
+- ✅ **Press Keys**: Single, multiple, with intervals
+- ✅ **Hotkeys**: Keyboard shortcuts (Ctrl+C, Alt+Tab, etc.)
+- ✅ **Hold Keys**: Press and hold for duration
+- ✅ **Special Keys**: Enter, Tab, Esc, Function keys, etc.
 
-### ویژگی‌های پیشرفته
-- 🌐 **تشخیص زبان**: تشخیص خودکار EN/FA/Mixed
-- 📋 **Clipboard**: کپی/پیست با اعتبارسنجی
-- 🎭 **شبیه‌سازی انسان**: سرعت تایپ متغیر، تأخیرهای تصادفی
-- 🛡️ **اعتبارسنجی امنیتی**: مسدود کردن دستورات خطرناک
-- 📊 **آمار**: ردیابی تمام اقدامات کیبورد
-- 🔍 **سابقه عملیات**: تاریخچه کامل اقدامات
-- ⚡ **عملکرد**: سرعت‌های تایپ قابل تنظیم
+### Advanced Features
+- 🌐 **Language Detection**: Auto-detect EN/FA/Mixed text
+- 📋 **Clipboard**: Copy/paste with validation
+- 🎭 **Human Simulation**: Variable typing speed, random delays
+- 🛡️ **Safety Validation**: Block dangerous commands
+- 📊 **Statistics**: Track all keyboard actions
+- 🔍 **Audit Trail**: Complete action history
+- ⚡ **Performance**: Configurable typing speeds
 
 ---
 
-## 📦 نصب و راه‌اندازی
+## 📦 Installation
 
-### نیازمندی‌ها
+### Requirements
 
 ```bash
 pip install pyautogui pynput pyperclip
 ```
 
-### Import کردن
+### Import
 
 ```python
 from core.keyboard_control import KeyboardController, TypingSpeed, Language
@@ -97,30 +97,30 @@ from core.keyboard_control import KeyboardController, TypingSpeed, Language
 
 ---
 
-## 🚀 شروع سریع
+## 🚀 Quick Start
 
-### استفاده پایه
+### Basic Usage
 
 ```python
 from core.keyboard_control import KeyboardController
 
-# مقداردهی اولیه
+# Initialize controller
 kb = KeyboardController()
 
-# تایپ متن انگلیسی
+# Type English text
 kb.type_text("Hello World")
 
-# تایپ متن فارسی
+# Type Persian text
 kb.type_text("سلام دنیا")
 
-# فشار Enter
+# Press Enter
 kb.press_key('enter')
 
-# میانبر کیبورد
+# Hotkey
 kb.hotkey('ctrl', 'c')
 ```
 
-### با رفتار انسانی
+### With Human Behavior
 
 ```python
 from core.keyboard_control import KeyboardController, TypingSpeed
@@ -130,27 +130,27 @@ kb = KeyboardController(
     default_speed=TypingSpeed.NORMAL
 )
 
-# تایپ مثل انسان
-kb.type_text("این متن با زمان‌بندی واقعی تایپ می‌شود")
+# Type like a human
+kb.type_text("This will be typed with realistic timing")
 ```
 
-### با ویژگی‌های امنیتی
+### With Safety Features
 
 ```python
 kb = KeyboardController(safety_enabled=True)
 
-# این کار ValueError ایجاد می‌کند
+# This will raise ValueError
 try:
-    kb.type_text("rm -rf /")  # دستور خطرناک مسدود شد
+    kb.type_text("rm -rf /")  # Dangerous command blocked
 except ValueError as e:
-    print(f"بررسی امنیتی ناموفق: {e}")
+    print(f"Safety check failed: {e}")
 ```
 
 ---
 
-## 📚 مرجع API
+## 📚 API Reference
 
-### کلاس KeyboardController
+### KeyboardController Class
 
 ```python
 KeyboardController(
@@ -160,13 +160,13 @@ KeyboardController(
 )
 ```
 
-**پارامترها**:
-- `safety_enabled` (bool): فعال‌سازی اعتبارسنجی امنیتی برای متن
-- `human_behavior` (bool): شبیه‌سازی رفتار تایپ انسانی
-- `default_speed` (TypingSpeed): سرعت پیش‌فرض تایپ
+**Parameters**:
+- `safety_enabled` (bool): Enable safety validation for text
+- `human_behavior` (bool): Simulate human-like typing behavior
+- `default_speed` (TypingSpeed): Default typing speed
 
-**سرعت‌های تایپ**:
-- `INSTANT` = 0.0s (بدون تأخیر)
+**Typing Speeds**:
+- `INSTANT` = 0.0s (no delay)
 - `VERY_FAST` = 0.01s (100 WPM)
 - `FAST` = 0.02s (60 WPM)
 - `NORMAL` = 0.05s (40 WPM)
@@ -175,11 +175,11 @@ KeyboardController(
 
 ---
 
-### متدهای اصلی
+### Core Methods
 
 #### `type_text(text, interval, validate)`
 
-تایپ متن با تشخیص خودکار زبان.
+Type text with automatic language detection.
 
 ```python
 def type_text(
@@ -190,14 +190,14 @@ def type_text(
 ) -> bool
 ```
 
-**پارامترها**:
-- `text` (str): متنی که باید تایپ شود
-- `interval` (Optional[float]): فاصله سفارشی بین کاراکترها (جایگزین speed)
-- `validate` (bool): اعتبارسنجی متن قبل از تایپ
+**Parameters**:
+- `text` (str): Text to type
+- `interval` (Optional[float]): Custom interval between chars (overrides speed)
+- `validate` (bool): Validate text before typing
 
-**خروجی**: `bool` - وضعیت موفقیت
+**Returns**: `bool` - Success status
 
-**مثال**:
+**Example**:
 ```python
 # Simple typing
 kb.type_text("Hello")
@@ -219,7 +219,7 @@ kb.type_text("Hello سلام World دنیا")
 
 #### `press_key(key, presses, interval)`
 
-فشار دادن یک کلید یک یا چند بار.
+Press a key one or more times.
 
 ```python
 def press_key(
@@ -230,14 +230,14 @@ def press_key(
 ) -> bool
 ```
 
-**پارامترها**:
-- `key` (str): نام کلید (نگاه کنید به نام‌های کلیدها در پایین)
-- `presses` (int): تعداد دفعات فشار دادن
-- `interval` (float): تأخیر بین فشارها
+**Parameters**:
+- `key` (str): Key name (see Key Names below)
+- `presses` (int): Number of times to press
+- `interval` (float): Delay between presses
 
-**خروجی**: `bool` - وضعیت موفقیت
+**Returns**: `bool` - Success status
 
-**نام‌های رایج کلیدها**:
+**Common Key Names**:
 - Letters: 'a' to 'z'
 - Numbers: '0' to '9'
 - Special: 'enter', 'tab', 'esc', 'space', 'backspace', 'delete'
@@ -267,7 +267,7 @@ kb.press_key('esc')
 
 #### `hotkey(*keys)`
 
-فشار همزمان چند کلید (میانبر کیبورد).
+Press multiple keys simultaneously (keyboard shortcut).
 
 ```python
 def hotkey(self, *keys: str) -> bool
@@ -278,17 +278,17 @@ def hotkey(self, *keys: str) -> bool
 
 **Returns**: `bool` - Success status
 
-**میانبرهای رایج**:
-- `Ctrl+C`: کپی
-- `Ctrl+V`: چسباندن
-- `Ctrl+X`: برش
-- `Ctrl+Z`: برگشت
-- `Ctrl+Y`: تکرار
-- `Ctrl+A`: انتخاب همه
-- `Ctrl+S`: ذخیره
-- `Alt+Tab`: تعویض پنجره
-- `Alt+F4`: بستن پنجره
-- `Win+D`: نمایش دسکتاپ
+**Common Hotkeys**:
+- `Ctrl+C`: Copy
+- `Ctrl+V`: Paste
+- `Ctrl+X`: Cut
+- `Ctrl+Z`: Undo
+- `Ctrl+Y`: Redo
+- `Ctrl+A`: Select All
+- `Ctrl+S`: Save
+- `Alt+Tab`: Switch Window
+- `Alt+F4`: Close Window
+- `Win+D`: Show Desktop
 
 **Example**:
 ```python
@@ -511,9 +511,9 @@ for action in history:
 
 ---
 
-## 💡 مثال‌های کاربردی
+## 💡 Examples
 
-### مثال 1: پر کردن فرم
+### Example 1: Form Filling
 
 ```python
 from core.keyboard_control import KeyboardController
@@ -639,11 +639,11 @@ kb.press_key('enter')
 
 ---
 
-## 🌐 پشتیبانی از زبان فارسی
+## 🌐 Persian Language Support
 
-### تشخیص خودکار زبان
+### Auto Language Detection
 
-کنترلر به صورت خودکار متن فارسی را تشخیص می‌دهد:
+The controller automatically detects Persian text:
 
 ```python
 kb = KeyboardController()
@@ -764,9 +764,9 @@ print(f"Used {len(hotkey_actions)} hotkeys")
 
 ---
 
-## 🛡️ ویژگی‌های امنیتی
+## 🛡️ Safety Features
 
-### مسدود کردن دستورات خطرناک
+### Dangerous Command Blocking
 
 ```python
 kb = KeyboardController(safety_enabled=True)
@@ -811,11 +811,11 @@ except ValueError:
 
 ---
 
-## 🐛 عیب‌یابی
+## 🐛 Troubleshooting
 
-### مشکل: متن فارسی به درستی تایپ نمی‌شود
+### Issue: Persian text not typing correctly
 
-**راه‌حل**: چیدمان کیبورد را بررسی کنید
+**Solution**: Check keyboard layout
 
 ```python
 # Method 1: Switch keyboard with hotkey
@@ -884,11 +884,11 @@ kb.press_key('ENTER')  # ❌ Wrong
 
 ---
 
-## 📊 عملکرد و بهینه‌سازی
+## 📊 Performance
 
-### معیارهای سنجش (Benchmarks)
+### Benchmarks
 
-تست شده روی Windows 11, i7-12700K:
+Tested on Windows 11, i7-12700K:
 
 | Operation | Duration | Notes |
 |-----------|----------|-------|
@@ -930,13 +930,13 @@ kb.press_key('ENTER')  # ❌ Wrong
 
 ---
 
-## 🔗 مراجع مرتبط
+## 🔗 See Also
 
-### مستندات مرتبط
-- [کنترل موس](./MOUSE_CONTROL.md) - سیستم کنترل موس
-- [بینایی دسکتاپ](./DESKTOP_VISION.md) - تحلیل صفحه نمایش
-- [انتظار هوشمند](./SMART_WAIT.md) - انتظار هوشمند (هفته 2)
-- [برنامه هفته 2](./WEEK2_ACTION_LAYER_PLAN.md) - نقشه راه کامل
+### Related Documentation
+- [Mouse Control](./MOUSE_CONTROL.md) - Mouse control system
+- [Desktop Vision](./DESKTOP_VISION.md) - Screen analysis
+- [Smart Wait](./SMART_WAIT.md) - Intelligent waiting (Week 2)
+- [Week 2 Plan](./WEEK2_ACTION_LAYER_PLAN.md) - Complete roadmap
 
 ### Related Modules
 - `core.mouse_control` - Mouse operations

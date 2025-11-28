@@ -145,9 +145,18 @@ text_position = vision.find_text("OK")
 - Retry با Backoff (Linear/Exponential/Fibonacci)
 - ✅ 38/38 تست موفق
 
+**🔍 Enhanced Desktop Vision** - بینایی پیشرفته رایانه
+- 🎯 **Template Matching**: تطبیق الگو و یافتن تصاویر
+- 🎨 **Color Detection**: تشخیص رنگ و تحلیل پیکسل
+- 🔲 **UI Recognition**: شناسایی عناصر رابط کاربری با OCR
+- ✓ **Visual Validation**: اعتبارسنجی بصری عملیات
+- ✅ 27/27 تست موفق
+
 📖 **مستندات کامل:**
 - [Mouse Control Guide](docs/MOUSE_CONTROL.md) - راهنمای کنترل موس 🖱️
+- [Desktop Vision Guide](docs/DESKTOP_VISION.md) - راهنمای بینایی رایانه 👁️
 - [Keyboard Control Guide](docs/KEYBOARD_CONTROL.md) - راهنمای کنترل کیبورد ⌨️
+- [Smart Wait Guide](docs/SMART_WAIT.md) - راهنمای انتظار هوشمند ⏳
 - [Automation Guide](AUTOMATION_GUIDE.md) - راهنمای استفاده از خودکارسازی 🤖
 
 ---

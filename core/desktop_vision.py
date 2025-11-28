@@ -46,6 +46,13 @@ try:
 except ImportError:
     logger.warning("pygetwindow not available. Install with: pip install pygetwindow")
 
+try:
+    import cv2
+    CV2_AVAILABLE = True
+except ImportError:
+    logger.warning("OpenCV not available. Install with: pip install opencv-python")
+    CV2_AVAILABLE = False
+
 
 @dataclass
 class TextBox:
@@ -77,6 +84,31 @@ class WindowInfo:
     def center(self) -> tuple[int, int]:
         """مرکز پنجره."""
         return (self.x + self.width // 2, self.y + self.height // 2)
+
+
+@dataclass
+class ImageMatch:
+    """نتیجه تطابق تصویر."""
+    x: int
+    y: int
+    width: int
+    height: int
+    confidence: float
+    
+    @property
+    def center(self) -> tuple[int, int]:
+        """مرکز تصویر پیدا شده."""
+        return (self.x + self.width // 2, self.y + self.height // 2)
+    
+    @property
+    def top_left(self) -> tuple[int, int]:
+        """گوشه بالا چپ."""
+        return (self.x, self.y)
+    
+    @property
+    def bottom_right(self) -> tuple[int, int]:
+        """گوشه پایین راست."""
+        return (self.x + self.width, self.y + self.height)
 
 
 class DesktopVision:
@@ -576,6 +608,554 @@ class DesktopVision:
                 # صفحه تغییر کرد، ریست کردن timer
                 stable_start = None
                 baseline = current
+    
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # بخش 5: Template Matching - پیدا کردن تصویر
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    
+    def find_image(self, template_path: str, confidence: float = 0.8, 
+                   region: Optional[tuple[int, int, int, int]] = None) -> Optional[ImageMatch]:
+        """پیدا کردن تصویر template روی صفحه.
+        
+        Args:
+            template_path: مسیر فایل template
+            confidence: حداقل اطمینان (0-1)
+            region: ناحیه جستجو (اختیاری)
+        
+        Returns:
+            ImageMatch اگر پیدا شود، None در غیر این صورت
+        
+        Example:
+            >>> vision = DesktopVision()
+            >>> match = vision.find_image("button.png", confidence=0.9)
+            >>> if match:
+            ...     print(f"Found at {match.center}")
+        """
+        if not CV2_AVAILABLE:
+            logger.error("OpenCV not available. Install with: pip install opencv-python")
+            return None
+        
+        try:
+            # خواندن template
+            template = cv2.imread(template_path)
+            if template is None:
+                logger.error("Failed to load template: %s", template_path)
+                return None
+            
+            # گرفتن screenshot
+            screenshot = self.capture_screen(region=region)
+            screenshot_cv = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+            
+            # Template matching
+            result = cv2.matchTemplate(screenshot_cv, template, cv2.TM_CCOEFF_NORMED)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+            
+            if max_val >= confidence:
+                h, w = template.shape[:2]
+                x, y = max_loc
+                
+                # اگر region مشخص شده، offset اضافه کن
+                if region:
+                    x += region[0]
+                    y += region[1]
+                
+                match = ImageMatch(
+                    x=x,
+                    y=y,
+                    width=w,
+                    height=h,
+                    confidence=float(max_val)
+                )
+                
+                logger.info("Found image at (%d, %d) with confidence %.2f", x, y, max_val)
+                return match
+            else:
+                logger.debug("Image not found (max confidence: %.2f)", max_val)
+                return None
+        
+        except Exception as e:
+            logger.exception("Failed to find image: %s", e)
+            return None
+    
+    def find_all_images(self, template_path: str, confidence: float = 0.8,
+                        region: Optional[tuple[int, int, int, int]] = None,
+                        max_results: int = 10) -> list[ImageMatch]:
+        """پیدا کردن تمام نمونه‌های یک template روی صفحه.
+        
+        Args:
+            template_path: مسیر فایل template
+            confidence: حداقل اطمینان (0-1)
+            region: ناحیه جستجو (اختیاری)
+            max_results: حداکثر تعداد نتایج
+        
+        Returns:
+            لیست ImageMatch
+        """
+        if not CV2_AVAILABLE:
+            logger.error("OpenCV not available")
+            return []
+        
+        try:
+            # خواندن template
+            template = cv2.imread(template_path)
+            if template is None:
+                logger.error("Failed to load template: %s", template_path)
+                return []
+            
+            # گرفتن screenshot
+            screenshot = self.capture_screen(region=region)
+            screenshot_cv = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+            
+            # Template matching
+            result = cv2.matchTemplate(screenshot_cv, template, cv2.TM_CCOEFF_NORMED)
+            
+            # پیدا کردن تمام موارد بالای threshold
+            h, w = template.shape[:2]
+            matches = []
+            
+            while len(matches) < max_results:
+                min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+                
+                if max_val < confidence:
+                    break
+                
+                x, y = max_loc
+                
+                # اگر region مشخص شده، offset اضافه کن
+                if region:
+                    x += region[0]
+                    y += region[1]
+                
+                match = ImageMatch(
+                    x=x,
+                    y=y,
+                    width=w,
+                    height=h,
+                    confidence=float(max_val)
+                )
+                matches.append(match)
+                
+                # Suppress این ناحیه برای پیدا کردن match بعدی
+                x1, y1 = max_loc
+                result[max(0, y1-h//2):min(result.shape[0], y1+h//2),
+                       max(0, x1-w//2):min(result.shape[1], x1+w//2)] = 0
+            
+            logger.info("Found %d image matches", len(matches))
+            return matches
+        
+        except Exception as e:
+            logger.exception("Failed to find all images: %s", e)
+            return []
+    
+    def wait_for_image(self, template_path: str, confidence: float = 0.8,
+                      timeout: int = 30, check_interval: float = 0.5) -> Optional[ImageMatch]:
+        """منتظر ماندن تا تصویر ظاهر شود.
+        
+        Args:
+            template_path: مسیر فایل template
+            confidence: حداقل اطمینان
+            timeout: حداکثر زمان انتظار (ثانیه)
+            check_interval: فاصله بررسی (ثانیه)
+        
+        Returns:
+            ImageMatch اگر پیدا شود
+        """
+        logger.info("Waiting for image: %s (timeout: %ds)", template_path, timeout)
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            match = self.find_image(template_path, confidence=confidence)
+            if match:
+                logger.info("Image found after %.1fs", time.time() - start_time)
+                return match
+            time.sleep(check_interval)
+        
+        logger.warning("Image not found within timeout")
+        return None
+    
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # بخش 6: Color Detection - تشخیص رنگ
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    
+    def get_pixel_color(self, x: int, y: int) -> tuple[int, int, int]:
+        """دریافت رنگ یک پیکسل مشخص.
+        
+        Args:
+            x: مختصات X
+            y: مختصات Y
+        
+        Returns:
+            (R, G, B) رنگ پیکسل
+        
+        Example:
+            >>> vision = DesktopVision()
+            >>> color = vision.get_pixel_color(100, 200)
+            >>> print(f"RGB: {color}")
+        """
+        try:
+            screenshot = self.capture_screen()
+            pixel = screenshot.getpixel((x, y))
+            
+            # getpixel ممکن است RGB یا RGBA برگرداند
+            if len(pixel) == 4:
+                r, g, b, _ = pixel
+            else:
+                r, g, b = pixel
+            
+            logger.debug("Pixel at (%d, %d): RGB(%d, %d, %d)", x, y, r, g, b)
+            return (r, g, b)
+        
+        except Exception as e:
+            logger.exception("Failed to get pixel color: %s", e)
+            return (0, 0, 0)
+    
+    def find_color(self, target_color: tuple[int, int, int], tolerance: int = 10,
+                   region: Optional[tuple[int, int, int, int]] = None) -> list[tuple[int, int]]:
+        """پیدا کردن تمام پیکسل‌های با رنگ مشخص.
+        
+        Args:
+            target_color: رنگ مورد نظر (R, G, B)
+            tolerance: تلرانس رنگ (0-255)
+            region: ناحیه جستجو (اختیاری)
+        
+        Returns:
+            لیست مختصات (x, y)
+        
+        Example:
+            >>> vision = DesktopVision()
+            >>> red_pixels = vision.find_color((255, 0, 0), tolerance=20)
+        """
+        try:
+            screenshot = self.capture_screen(region=region)
+            screenshot_array = np.array(screenshot)
+            
+            # محاسبه فاصله رنگ
+            target = np.array(target_color)
+            distances = np.sqrt(np.sum((screenshot_array - target) ** 2, axis=2))
+            
+            # پیدا کردن پیکسل‌های در محدوده تلرانس
+            matches = np.argwhere(distances <= tolerance)
+            
+            # تبدیل به لیست (x, y)
+            positions = [(int(x), int(y)) for y, x in matches]
+            
+            # اگر region مشخص شده، offset اضافه کن
+            if region:
+                positions = [(x + region[0], y + region[1]) for x, y in positions]
+            
+            logger.debug("Found %d pixels matching color %s", len(positions), target_color)
+            return positions
+        
+        except Exception as e:
+            logger.exception("Failed to find color: %s", e)
+            return []
+    
+    def wait_for_color(self, x: int, y: int, target_color: tuple[int, int, int],
+                      tolerance: int = 10, timeout: int = 30,
+                      check_interval: float = 0.5) -> bool:
+        """منتظر ماندن تا پیکسل مشخص به رنگ خاص تبدیل شود.
+        
+        Args:
+            x: مختصات X
+            y: مختصات Y
+            target_color: رنگ مورد نظر (R, G, B)
+            tolerance: تلرانس رنگ
+            timeout: حداکثر زمان انتظار (ثانیه)
+            check_interval: فاصله بررسی (ثانیه)
+        
+        Returns:
+            True اگر رنگ ظاهر شود
+        """
+        logger.info("Waiting for color %s at (%d, %d)", target_color, x, y)
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            current_color = self.get_pixel_color(x, y)
+            
+            # بررسی فاصله رنگ
+            distance = np.sqrt(sum((c1 - c2) ** 2 for c1, c2 in zip(current_color, target_color)))
+            
+            if distance <= tolerance:
+                logger.info("Color matched after %.1fs", time.time() - start_time)
+                return True
+            
+            time.sleep(check_interval)
+        
+        logger.warning("Color not matched within timeout")
+        return False
+    
+    def get_dominant_colors(self, region: Optional[tuple[int, int, int, int]] = None,
+                           num_colors: int = 5) -> list[tuple[int, int, int]]:
+        """دریافت رنگ‌های غالب در ناحیه مشخص.
+        
+        Args:
+            region: ناحیه برای آنالیز (اختیاری)
+            num_colors: تعداد رنگ‌های غالب
+        
+        Returns:
+            لیست رنگ‌های غالب (R, G, B)
+        """
+        try:
+            screenshot = self.capture_screen(region=region)
+            screenshot_array = np.array(screenshot)
+            
+            # Reshape به لیست پیکسل‌ها
+            pixels = screenshot_array.reshape(-1, 3)
+            
+            # استفاده از K-Means برای پیدا کردن رنگ‌های غالب
+            if not CV2_AVAILABLE:
+                # بدون OpenCV، استفاده از روش ساده
+                unique_colors, counts = np.unique(pixels, axis=0, return_counts=True)
+                sorted_indices = np.argsort(counts)[::-1]
+                dominant = unique_colors[sorted_indices[:num_colors]]
+            else:
+                # استفاده از K-Means
+                pixels_float = np.float32(pixels)
+                criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+                _, labels, centers = cv2.kmeans(pixels_float, num_colors, None, criteria, 10,
+                                               cv2.KMEANS_PP_CENTERS)
+                dominant = np.uint8(centers)
+            
+            colors = [tuple(map(int, color)) for color in dominant]
+            logger.debug("Dominant colors: %s", colors)
+            return colors
+        
+        except Exception as e:
+            logger.exception("Failed to get dominant colors: %s", e)
+            return []
+    
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # بخش 7: UI Recognition - شناسایی المان‌های رابط کاربری
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    
+    def find_button(self, button_text: str, confidence: float = 0.7) -> Optional[tuple[int, int]]:
+        """پیدا کردن دکمه با متن مشخص.
+        
+        Args:
+            button_text: متن روی دکمه
+            confidence: حداقل اطمینان OCR
+        
+        Returns:
+            (x, y) مرکز دکمه یا None
+        """
+        text_boxes = self.get_all_text_boxes()
+        
+        for box in text_boxes:
+            if box.confidence < confidence * 100:
+                continue
+            
+            # جستجوی تطابق متن
+            if button_text.lower() in box.text.lower():
+                logger.info("Found button '%s' at (%d, %d)", button_text, *box.center)
+                return box.center
+        
+        logger.debug("Button '%s' not found", button_text)
+        return None
+    
+    def find_input_field(self, label_text: Optional[str] = None,
+                        region: Optional[tuple[int, int, int, int]] = None) -> Optional[tuple[int, int]]:
+        """پیدا کردن فیلد ورودی.
+        
+        اگر label_text مشخص شده باشد، فیلد نزدیک به آن label را پیدا می‌کند.
+        
+        Args:
+            label_text: برچسب فیلد (اختیاری)
+            region: ناحیه جستجو (اختیاری)
+        
+        Returns:
+            (x, y) مرکز فیلد ورودی
+        """
+        if label_text:
+            # پیدا کردن label
+            label_pos = self.find_text(label_text)
+            if label_pos:
+                # فیلد معمولاً کمی پایین‌تر یا سمت راست label است
+                # تخمین موقعیت
+                x, y = label_pos
+                return (x + 100, y)  # offset تقریبی
+        
+        # اگر label نباشد، نمی‌توانیم فیلد را پیدا کنیم
+        logger.warning("Cannot find input field without label_text or template")
+        return None
+    
+    def classify_element(self, region: tuple[int, int, int, int]) -> str:
+        """طبقه‌بندی نوع المان UI در ناحیه مشخص.
+        
+        Args:
+            region: ناحیه برای بررسی (x, y, width, height)
+        
+        Returns:
+            نوع المان: "button", "text_field", "label", "unknown"
+        """
+        try:
+            screenshot = self.capture_screen(region=region)
+            screenshot_array = np.array(screenshot)
+            
+            # بررسی ویژگی‌های ساده
+            # دکمه: معمولاً رنگ یکنواخت و border
+            # فیلد متنی: معمولاً سفید با border
+            # برچسب: فقط متن
+            
+            # محاسبه واریانس رنگ
+            variance = np.var(screenshot_array)
+            
+            # بررسی وجود متن
+            text = self.extract_text(screenshot)
+            has_text = bool(text.strip())
+            
+            # تصمیم‌گیری ساده
+            if variance < 100 and has_text:
+                return "button"
+            elif variance < 50:
+                return "text_field"
+            elif has_text:
+                return "label"
+            else:
+                return "unknown"
+        
+        except Exception as e:
+            logger.exception("Failed to classify element: %s", e)
+            return "unknown"
+    
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    # بخش 8: Visual Validation - تأیید بصری
+    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    
+    def verify_click_success(self, region: tuple[int, int, int, int],
+                            timeout: float = 2.0) -> bool:
+        """تأیید موفقیت کلیک با بررسی تغییر بصری.
+        
+        Args:
+            region: ناحیه برای بررسی تغییر
+            timeout: زمان انتظار برای تغییر (ثانیه)
+        
+        Returns:
+            True اگر تغییر مشاهده شود
+        """
+        logger.info("Verifying click success in region %s", region)
+        
+        # گرفتن اسکرین‌شات قبل
+        before = self.capture_screen(region=region)
+        
+        # صبر کردن برای تغییر
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            time.sleep(0.1)
+            after = self.capture_screen(region=region)
+            
+            if self.has_changed(before, after, threshold=0.05):
+                logger.info("Click verified: visual change detected")
+                return True
+        
+        logger.warning("Click not verified: no visual change detected")
+        return False
+    
+    def verify_text_typed(self, expected_text: str, region: Optional[tuple[int, int, int, int]] = None,
+                         timeout: float = 2.0, fuzzy: bool = True) -> bool:
+        """تأیید تایپ شدن متن با OCR.
+        
+        Args:
+            expected_text: متن مورد انتظار
+            region: ناحیه برای بررسی (اختیاری)
+            timeout: زمان انتظار (ثانیه)
+            fuzzy: استفاده از تطابق تقریبی
+        
+        Returns:
+            True اگر متن یافت شود
+        """
+        logger.info("Verifying typed text: '%s'", expected_text)
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            if region:
+                screenshot = self.capture_screen(region=region)
+                text = self.extract_text(screenshot)
+            else:
+                text = self.extract_text()
+            
+            # بررسی تطابق
+            if fuzzy:
+                from difflib import SequenceMatcher
+                similarity = SequenceMatcher(None, expected_text.lower(), text.lower()).ratio()
+                if similarity >= 0.8:
+                    logger.info("Text verified with %.0f%% similarity", similarity * 100)
+                    return True
+            else:
+                if expected_text.lower() in text.lower():
+                    logger.info("Text verified: exact match found")
+                    return True
+            
+            time.sleep(0.2)
+        
+        logger.warning("Text not verified within timeout")
+        return False
+    
+    def verify_element_visible(self, element_desc: str, 
+                              method: str = "text",
+                              confidence: float = 0.8,
+                              timeout: float = 5.0) -> bool:
+        """تأیید قابل مشاهده بودن المان.
+        
+        Args:
+            element_desc: شرح المان (متن یا مسیر تصویر)
+            method: روش جستجو ("text" یا "image")
+            confidence: حداقل اطمینان
+            timeout: زمان انتظار (ثانیه)
+        
+        Returns:
+            True اگر المان قابل مشاهده باشد
+        """
+        logger.info("Verifying element visibility: %s (method: %s)", element_desc, method)
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            if method == "text":
+                if self.find_text(element_desc, confidence_threshold=confidence * 100):
+                    logger.info("Element verified visible by text")
+                    return True
+            elif method == "image":
+                if self.find_image(element_desc, confidence=confidence):
+                    logger.info("Element verified visible by image")
+                    return True
+            
+            time.sleep(0.3)
+        
+        logger.warning("Element not visible within timeout")
+        return False
+    
+    def compare_screenshots(self, screenshot1: Image.Image, screenshot2: Image.Image,
+                           threshold: float = 0.95) -> float:
+        """مقایسه دو اسکرین‌شات و محاسبه شباهت.
+        
+        Args:
+            screenshot1: تصویر اول
+            screenshot2: تصویر دوم
+            threshold: آستانه شباهت (0-1)
+        
+        Returns:
+            درصد شباهت (0-1)
+        """
+        try:
+            # تبدیل به numpy array
+            array1 = np.array(screenshot1)
+            array2 = np.array(screenshot2)
+            
+            # اگر سایز متفاوت باشد، resize کن
+            if array1.shape != array2.shape:
+                screenshot2_resized = screenshot2.resize(screenshot1.size)
+                array2 = np.array(screenshot2_resized)
+            
+            # محاسبه شباهت (1 - normalized difference)
+            diff = np.abs(array1.astype(float) - array2.astype(float))
+            max_diff = 255.0 * array1.size
+            similarity = 1.0 - (np.sum(diff) / max_diff)
+            
+            logger.debug("Screenshot similarity: %.2f%%", similarity * 100)
+            return similarity
+        
+        except Exception as e:
+            logger.exception("Failed to compare screenshots: %s", e)
+            return 0.0
 
 
-__all__ = ["DesktopVision", "TextBox", "WindowInfo"]
+__all__ = ["DesktopVision", "TextBox", "WindowInfo", "ImageMatch"]

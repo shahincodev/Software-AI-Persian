@@ -115,7 +115,7 @@ text_position = vision.find_text("OK")
 🚀 **Development Roadmap:**
 - [Week 2 Plan](docs/WEEK2_ACTION_LAYER_PLAN.md) - Action Layer: Click, Type, Smart Wait ✅ **COMPLETE**
 - [Week 2 Executive Summary](docs/WEEK2_EXECUTIVE_SUMMARY.md) - خلاصه مدیریتی
-- [Week 2 Progress](WEEK2_TODO.md) - وضعیت پیشرفت
+- [Week 2 Progress](WEEK2_TODO.md) - وضعیت پیشرفت (40% - Days 1-4 Complete)
 
 #### 🎮 قابلیت‌های جدید Week 2 (Desktop Automation) ✅
 
@@ -152,11 +152,19 @@ text_position = vision.find_text("OK")
 - ✓ **Visual Validation**: اعتبارسنجی بصری عملیات
 - ✅ 27/27 تست موفق
 
+**🎮 Action Controller** - کنترلر اکشن‌های سطح بالا
+- ⚡ **High-Level Actions**: کلیک روی متن/تصویر، تایپ در فیلد، انتخاب منو
+- 🔄 **Complex Workflows**: پر کردن فرم، Drag & Drop، پیمایش UI
+- 💾 **State Management**: ذخیره/بازیابی وضعیت، Checkpoint System
+- 📊 **Performance Tracking**: آمار و تحلیل عملکرد
+- ✅ 41/41 تست موفق
+
 📖 **مستندات کامل:**
 - [Mouse Control Guide](docs/MOUSE_CONTROL.md) - راهنمای کنترل موس 🖱️
 - [Desktop Vision Guide](docs/DESKTOP_VISION.md) - راهنمای بینایی رایانه 👁️
 - [Keyboard Control Guide](docs/KEYBOARD_CONTROL.md) - راهنمای کنترل کیبورد ⌨️
 - [Smart Wait Guide](docs/SMART_WAIT.md) - راهنمای انتظار هوشمند ⏳
+- [Action Controller Guide](docs/ACTION_CONTROLLER.md) - راهنمای کنترلر اکشن 🎮
 - [Automation Guide](AUTOMATION_GUIDE.md) - راهنمای استفاده از خودکارسازی 🤖
 
 ---

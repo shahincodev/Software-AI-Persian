@@ -29,6 +29,7 @@ from core.mouse_control import MouseController
 from core.keyboard_control import KeyboardController
 from core.smart_wait import SmartWaiter
 from core.desktop_vision import DesktopVision
+from core.action_controller import ActionController
 from dotenv import load_dotenv
 from core.logging_config import setup_logging, install_exception_hook
 
@@ -440,7 +441,8 @@ async def process_user_input(
     mouse: Optional[MouseController] = None,
     keyboard: Optional[KeyboardController] = None,
     smart_wait: Optional[SmartWaiter] = None,
-    vision: Optional[DesktopVision] = None
+    vision: Optional[DesktopVision] = None,
+    action_controller: Optional[ActionController] = None
 ) -> None:
     """پردازش ورودی کاربر در یک حلقه تعاملی بهبود یافته با پشتیبانی از چندزبانگی و خودکارسازی."""
 
@@ -463,6 +465,8 @@ async def process_user_input(
         automation_features.append("Smart Wait")
     if vision:
         automation_features.append("Enhanced Vision")
+    if action_controller:
+        automation_features.append("Action Controller")
     
     if automation_features:
         automation_status = f"{Fore.GREEN}🤖 Desktop Automation: ENABLED{Style.RESET_ALL}"
@@ -626,6 +630,7 @@ async def main() -> None:
         keyboard = None
         smart_wait = None
         vision = None
+        action_controller = None
         
         if args.enable_automation:
             try:
@@ -633,8 +638,9 @@ async def main() -> None:
                 keyboard = KeyboardController()
                 smart_wait = SmartWaiter()
                 vision = DesktopVision()
-                logger.info("✅ Desktop automation enabled (Mouse, Keyboard, Smart Wait, Enhanced Vision)")
-                print(f"{Fore.GREEN}✅ قابلیت‌های خودکارسازی دسکتاپ فعال شد (شامل Enhanced Vision){Style.RESET_ALL}")
+                action_controller = ActionController()
+                logger.info("✅ Desktop automation enabled (Mouse, Keyboard, Smart Wait, Enhanced Vision, Action Controller)")
+                print(f"{Fore.GREEN}✅ قابلیت‌های خودکارسازی دسکتاپ فعال شد (شامل Action Controller){Style.RESET_ALL}")
             except Exception as e:
                 logger.warning(f"Failed to initialize automation components: {e}")
                 print(f"{Fore.YELLOW}⚠️ خطا در فعال‌سازی خودکارسازی: {e}{Style.RESET_ALL}")
@@ -650,7 +656,8 @@ async def main() -> None:
             mouse=mouse,
             keyboard=keyboard,
             smart_wait=smart_wait,
-            vision=vision
+            vision=vision,
+            action_controller=action_controller
         )
 
     except Exception as e:

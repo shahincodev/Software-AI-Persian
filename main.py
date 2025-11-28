@@ -28,6 +28,7 @@ from core.voice_io import VoiceManager
 from core.mouse_control import MouseController
 from core.keyboard_control import KeyboardController
 from core.smart_wait import SmartWaiter
+from core.desktop_vision import DesktopVision
 from dotenv import load_dotenv
 from core.logging_config import setup_logging, install_exception_hook
 
@@ -244,6 +245,112 @@ async def handle_wait_command(
         logger.exception("Wait command failed")
 
 
+async def handle_vision_command(
+    command: str,
+    vision: DesktopVision,
+    mouse: Optional[MouseController],
+    voice: VoiceManager,
+    lang: str,
+    input_mode: str
+) -> None:
+    """پردازش دستورات بینایی رایانه (Enhanced Vision)."""
+    try:
+        cmd_lower = command.lower()
+        
+        if "find image" in cmd_lower or "پیدا کردن تصویر" in cmd_lower:
+            # find image <path> [confidence]
+            parts = command.split(maxsplit=2)
+            if len(parts) < 3:
+                print("❓ Usage: vision find image <path> [confidence]")
+                return
+            
+            image_path = parts[2]
+            confidence = 0.8
+            
+            msg = f"🔍 Finding image: {image_path}"
+            print(msg)
+            if input_mode == "voice":
+                voice.speak("Searching for image", lang=lang)
+            
+            match = vision.find_image(image_path, confidence=confidence)
+            
+            if match:
+                success_msg = f"✅ Image found at ({match.x}, {match.y}) confidence {match.confidence:.0%}"
+                print(success_msg)
+                if input_mode == "voice":
+                    voice.speak("Image found", lang=lang)
+                
+                # اختیاری: کلیک اگر mouse فعال باشد
+                if mouse:
+                    mouse.click(*match.center)
+                    print(f"🖱️ Clicked at {match.center}")
+            else:
+                not_found_msg = "❌ Image not found"
+                print(not_found_msg)
+        
+        elif "get color" in cmd_lower or "رنگ" in cmd_lower:
+            # vision get color <x> <y>
+            parts = command.split()
+            if len(parts) < 4:
+                print("❓ Usage: vision get color <x> <y>")
+                return
+            
+            x, y = int(parts[2]), int(parts[3])
+            color = vision.get_pixel_color(x, y)
+            
+            msg = f"🎨 Color at ({x}, {y}): RGB{color}"
+            print(msg)
+            if input_mode == "voice":
+                voice.speak(f"Color is {color[0]} {color[1]} {color[2]}", lang=lang)
+        
+        elif "find button" in cmd_lower or "پیدا کردن دکمه" in cmd_lower:
+            # vision find button <text>
+            parts = command.split(maxsplit=2)
+            if len(parts) < 3:
+                print("❓ Usage: vision find button <text>")
+                return
+            
+            button_text = parts[2]
+            
+            msg = f"🔍 Finding button: {button_text}"
+            print(msg)
+            
+            pos = vision.find_button(button_text)
+            
+            if pos:
+                success_msg = f"✅ Button found at {pos}"
+                print(success_msg)
+                if mouse:
+                    mouse.click(*pos)
+                    print(f"🖱️ Clicked button")
+            else:
+                print("❌ Button not found")
+        
+        elif "screenshot" in cmd_lower or "اسکرین‌شات" in cmd_lower:
+            # vision screenshot [path]
+            parts = command.split()
+            save_path = parts[1] if len(parts) > 1 else "screenshot.png"
+            
+            msg = f"📸 Capturing screenshot to: {save_path}"
+            print(msg)
+            
+            if vision.save_screenshot(save_path):
+                print(f"✅ Screenshot saved: {save_path}")
+                if input_mode == "voice":
+                    voice.speak("Screenshot saved", lang=lang)
+            else:
+                print("❌ Failed to save screenshot")
+        
+        else:
+            msg = "❓ Vision commands: 'find image <path>', 'get color <x> <y>', 'find button <text>', 'screenshot [path]'"
+            print(msg)
+    
+    except Exception as e:
+        error_msg = f"❌ Vision error: {e}"
+        print(error_msg)
+        logger.exception("Vision command failed")
+
+
 with open('banner.txt', 'r', encoding='utf-8') as file:
     banner = file.read()
 
@@ -332,7 +439,8 @@ async def process_user_input(
     system_agent: IntelligentSystemAgent,
     mouse: Optional[MouseController] = None,
     keyboard: Optional[KeyboardController] = None,
-    smart_wait: Optional[SmartWaiter] = None
+    smart_wait: Optional[SmartWaiter] = None,
+    vision: Optional[DesktopVision] = None
 ) -> None:
     """پردازش ورودی کاربر در یک حلقه تعاملی بهبود یافته با پشتیبانی از چندزبانگی و خودکارسازی."""
 
@@ -346,16 +454,19 @@ async def process_user_input(
     print("Please enter your tasks. ask or Type 'start' to execute them. Use Ctrl+C to exit.\n")
     
     # نمایش وضعیت خودکارسازی
-    if mouse or keyboard or smart_wait:
+    automation_features = []
+    if mouse:
+        automation_features.append("Mouse Control")
+    if keyboard:
+        automation_features.append("Keyboard Control")
+    if smart_wait:
+        automation_features.append("Smart Wait")
+    if vision:
+        automation_features.append("Enhanced Vision")
+    
+    if automation_features:
         automation_status = f"{Fore.GREEN}🤖 Desktop Automation: ENABLED{Style.RESET_ALL}"
         print(automation_status)
-        automation_features = []
-        if mouse:
-            automation_features.append("Mouse Control")
-        if keyboard:
-            automation_features.append("Keyboard Control")
-        if smart_wait:
-            automation_features.append("Smart Wait")
         print(f"   Features: {', '.join(automation_features)}\n")
 
     try:
@@ -429,6 +540,10 @@ async def process_user_input(
             
             elif user_text.lower().startswith(("wait", "صبر", "انتظار")) and smart_wait:
                 await handle_wait_command(user_text, smart_wait, voice, current_lang, input_mode)
+                continue
+            
+            elif user_text.lower().startswith(("vision", "بینایی", "find", "screenshot")) and vision:
+                await handle_vision_command(user_text, vision, mouse, voice, current_lang, input_mode)
                 continue
             
             else:
@@ -510,14 +625,16 @@ async def main() -> None:
         mouse = None
         keyboard = None
         smart_wait = None
+        vision = None
         
         if args.enable_automation:
             try:
                 mouse = MouseController()
                 keyboard = KeyboardController()
                 smart_wait = SmartWaiter()
-                logger.info("✅ Desktop automation enabled (Mouse, Keyboard, Smart Wait)")
-                print(f"{Fore.GREEN}✅ قابلیت‌های خودکارسازی دسکتاپ فعال شد{Style.RESET_ALL}")
+                vision = DesktopVision()
+                logger.info("✅ Desktop automation enabled (Mouse, Keyboard, Smart Wait, Enhanced Vision)")
+                print(f"{Fore.GREEN}✅ قابلیت‌های خودکارسازی دسکتاپ فعال شد (شامل Enhanced Vision){Style.RESET_ALL}")
             except Exception as e:
                 logger.warning(f"Failed to initialize automation components: {e}")
                 print(f"{Fore.YELLOW}⚠️ خطا در فعال‌سازی خودکارسازی: {e}{Style.RESET_ALL}")
@@ -532,7 +649,8 @@ async def main() -> None:
             system_agent,
             mouse=mouse,
             keyboard=keyboard,
-            smart_wait=smart_wait
+            smart_wait=smart_wait,
+            vision=vision
         )
 
     except Exception as e:

@@ -613,19 +613,7 @@ DesktopVision
 - Error handling پیشرفته
 - Logging کامل
 - Documentation کامل
-- تست‌های جامع
-
-## کمک‌های بیشتر
-
-برای سوالات و مشکلات:
-- [GitHub Issues](https://github.com/tahanilishahin/Software-AI-Persian/issues)
-- [QUICKSTART.md](QUICKSTART.md)
-- [AI_WINDOWS_CONTROL.md](AI_WINDOWS_CONTROL.md)
-
----
-**نکته:** این سیستم هنوز در Week 1 است. قابلیت‌های پیشرفته‌تر در هفته‌های آینده اضافه خواهند شد.
-
----
+-
 
 **توسعه‌دهندگان**: Shahin  
 **نسخه**: 1.0  

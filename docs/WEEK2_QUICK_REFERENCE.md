@@ -621,4 +621,15 @@ git commit -m "docs: add mouse control documentation"
 *وضعیت: آماده برای توسعه*  
 *بعدی: شروع فاز ۱ (کنترل ماوس)*
 
-**بیا کد بزنیم!** 💻
+---
+
+**توسعه‌دهندگان**: Shahin  
+**نسخه**: 1.0  
+**تاریخ**: November 2025  
+**وضعیت**: Production Ready ✅
+
+---
+
+## 📄 مجوز
+
+Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION

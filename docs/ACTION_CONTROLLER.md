@@ -1249,3 +1249,16 @@ ActionController یک **Unified API** برای اتوماسیون دسکتاپ �
 > **تاریخ:** هفته 2 - روز 4  
 > **نسخه:** 1.0.0  
 > **تست‌ها:** ✅ 41/41 Passing (100%)
+
+---
+
+**توسعه‌دهندگان**: Shahin  
+**نسخه**: 1.0  
+**تاریخ**: November 2025  
+**وضعیت**: Production Ready ✅
+
+---
+
+## 📄 مجوز
+
+Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION

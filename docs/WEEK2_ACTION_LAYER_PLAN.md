@@ -652,4 +652,15 @@ KEYBOARD_VERIFY_TYPING=true
 *تست و مستندسازی به اندازه کد اهمیت دارند.*  
 *امنیت در هر مرحله در اولویت است.*
 
-**Let's build something amazing! 🚀**
+---
+
+**توسعه‌دهندگان**: Shahin  
+**نسخه**: 1.0  
+**تاریخ**: November 2025  
+**وضعیت**: Production Ready ✅
+
+---
+
+## 📄 مجوز
+
+Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION

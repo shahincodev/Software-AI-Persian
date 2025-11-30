@@ -298,10 +298,15 @@ data/logs/audit.jsonl
 - **Error handling**: خطاها را مدیریت کنید
 - **Resource cleanup**: منابع را پاکسازی کنید
 
-## 📄 مجوز
+---
 
-Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION
+**توسعه‌دهندگان**: Shahin  
+**نسخه**: 1.0  
+**تاریخ**: November 2025  
+**وضعیت**: Production Ready ✅
 
 ---
 
-**ساخته شده با ❤️ توسط تیم Shahin**
+## 📄 مجوز
+
+Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION

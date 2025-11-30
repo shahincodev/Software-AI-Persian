@@ -262,20 +262,15 @@ monitor = MonitoringService(
 monitor.start()
 ```
 
-## 🌟 ویژگی‌های آینده
+---
 
-- [ ] پشتیبانی از macOS و Linux
-- [ ] رابط گرافیکی (GUI)
-- [ ] پلاگین‌های شخص ثالث
-- [ ] یادگیری الگوهای استفاده کاربر
-- [ ] اتوماسیون بر اساس زمان (Scheduled tasks)
-
-## 📞 پشتیبانی
-
-- مستندات کامل: [WINDOWS_AUTOMATION.md](../docs/WINDOWS_AUTOMATION.md)
-- مسائل: GitHub Issues
-- ایمیل: support@shahin-ai.ir
+**توسعه‌دهندگان**: Shahin  
+**نسخه**: 1.0  
+**تاریخ**: November 2025  
+**وضعیت**: Production Ready ✅
 
 ---
 
-**ساخته شده با ❤️ توسط Shahin - نسل آینده اتوماسیون هوشمند**
+## 📄 مجوز
+
+Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION

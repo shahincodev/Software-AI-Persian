@@ -636,4 +636,4 @@ DesktopVision
 
 ## 📄 مجوز
 
-Copyright (c) 2025 Shahin - SPDX-License-Ide
+Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION

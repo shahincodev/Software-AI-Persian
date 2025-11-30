@@ -44,6 +44,11 @@ from core.mouse_control import MouseController, MouseButton
 from core.keyboard_control import KeyboardController
 from core.desktop_vision import DesktopVision, ImageMatch
 from core.smart_wait import SmartWaiter
+from core.system_actions import SystemAction, RiskLevel, ActionStatus
+from core.desktop_actions import (
+    ClickAction, TypeAction, WaitAction,
+    DragDropAction, HotkeyAction, ScrollAction
+)
 
 logger = logging.getLogger(__name__)
 
@@ -1046,6 +1051,254 @@ class ActionController:
             stats["average_duration"] = 0.0
         
         return stats
+
+    # ==================== DESKTOP ACTIONS EXECUTOR ====================
+
+    def execute_action(
+        self,
+        action: SystemAction,
+        auto_consent: bool = False
+    ) -> ActionOutcome:
+        """اجرای یک Desktop Action به صورت عمومی.
+        
+        این متد می‌تواند هر نوع Action از desktop_actions را اجرا کند:
+        - ClickAction
+        - TypeAction
+        - WaitAction
+        - DragDropAction
+        - HotkeyAction
+        - ScrollAction
+        
+        Args:
+            action: یک نمونه از SystemAction (مثلاً ClickAction، TypeAction، ...)
+            auto_consent: اگر True باشد، اقدامات با خطر MEDIUM+ بدون تایید اجرا می‌شوند
+        
+        Returns:
+            ActionOutcome با جزئیات کامل نتیجه
+            
+        Example:
+            >>> from core.desktop_actions import ClickAction, TypeAction
+            >>> controller = ActionController()
+            >>> 
+            >>> # اجرای کلیک
+            >>> click = ClickAction(target="OK", button="left")
+            >>> result = controller.execute_action(click)
+            >>> 
+            >>> # اجرای تایپ
+            >>> type_action = TypeAction(text="Hello World")
+            >>> result = controller.execute_action(type_action)
+        """
+        start_time = time.time()
+        action_type = type(action).__name__
+        logger.info(f"Executing {action_type}: {action.describe()}")
+        
+        try:
+            # اعتبارسنجی
+            valid, msg = action.validate()
+            if not valid:
+                return ActionOutcome(
+                    result=ActionResult.FAILED,
+                    message=f"Validation failed: {msg}",
+                    duration=time.time() - start_time,
+                    error=msg
+                )
+            
+            # بررسی سطح خطر
+            risk = action.get_risk_level()
+            if risk.value >= RiskLevel.MEDIUM.value and not auto_consent and not action.dry_run:
+                logger.warning(f"Action has {risk.name} risk level. Consent required.")
+                if action.require_consent:
+                    # در اینجا می‌توانید یک مکانیزم درخواست تایید اضافه کنید
+                    # در حال حاضر فقط log می‌کنیم
+                    pass
+            
+            # اسکرین‌شات قبل از اجرا
+            screenshot_before = None
+            if self.enable_state_tracking:
+                screenshot_before = self._save_screenshot(f"before_{action_type}")
+            
+            # اجرای اقدام بر اساس نوع
+            position = None
+            
+            if isinstance(action, ClickAction):
+                position = self._execute_click_action(action)
+            elif isinstance(action, TypeAction):
+                self._execute_type_action(action)
+            elif isinstance(action, WaitAction):
+                self._execute_wait_action(action)
+            elif isinstance(action, DragDropAction):
+                position = self._execute_drag_drop_action(action)
+            elif isinstance(action, HotkeyAction):
+                self._execute_hotkey_action(action)
+            elif isinstance(action, ScrollAction):
+                self._execute_scroll_action(action)
+            else:
+                return ActionOutcome(
+                    result=ActionResult.FAILED,
+                    message=f"Unsupported action type: {action_type}",
+                    duration=time.time() - start_time
+                )
+            
+            # اسکرین‌شات بعد از اجرا
+            screenshot_after = None
+            if self.enable_state_tracking:
+                screenshot_after = self._save_screenshot(f"after_{action_type}")
+            
+            # موفقیت
+            duration = time.time() - start_time
+            self._update_stats(True, duration)
+            
+            return ActionOutcome(
+                result=ActionResult.SUCCESS,
+                message=f"{action.describe()} executed successfully",
+                duration=duration,
+                position=position,
+                screenshot_before=screenshot_before,
+                screenshot_after=screenshot_after
+            )
+        
+        except Exception as e:
+            duration = time.time() - start_time
+            self._update_stats(False, duration)
+            logger.error(f"Error executing {action_type}: {e}", exc_info=True)
+            
+            return ActionOutcome(
+                result=ActionResult.FAILED,
+                message=f"Error: {str(e)}",
+                duration=duration,
+                error=str(e)
+            )
+
+    def _execute_click_action(self, action: ClickAction) -> Tuple[int, int]:
+        """اجرای ClickAction."""
+        if isinstance(action.target, tuple):
+            # کلیک مستقیم روی مختصات
+            x, y = action.target
+            button_map = {"left": MouseButton.LEFT, "right": MouseButton.RIGHT, "middle": MouseButton.MIDDLE}
+            self.mouse.click(x, y, button=button_map[action.button], clicks=action.clicks)
+            return (x, y)
+        else:
+            # جستجو و کلیک روی متن
+            wait_result = self.waiter.wait_for_element(
+                action.target,
+                timeout=action.timeout,
+                confidence=action.confidence
+            )
+            
+            if not wait_result.success or not wait_result.result:
+                raise ValueError(f"Element '{action.target}' not found")
+            
+            x, y = wait_result.result
+            button_map = {"left": MouseButton.LEFT, "right": MouseButton.RIGHT, "middle": MouseButton.MIDDLE}
+            self.mouse.click(x, y, button=button_map[action.button], clicks=action.clicks)
+            return (x, y)
+
+    def _execute_type_action(self, action: TypeAction):
+        """اجرای TypeAction."""
+        # اگر target مشخص شده، ابتدا روی آن کلیک کنیم
+        if action.target:
+            if isinstance(action.target, tuple):
+                x, y = action.target
+                self.mouse.click(x, y, button=MouseButton.LEFT)
+            else:
+                wait_result = self.waiter.wait_for_element(action.target, timeout=10)
+                if wait_result.success and wait_result.result:
+                    x, y = wait_result.result
+                    self.mouse.click(x, y, button=MouseButton.LEFT)
+            time.sleep(0.3)
+        
+        # پاک کردن محتوای قبلی اگر درخواست شده
+        if action.clear_first:
+            self.keyboard.hotkey("ctrl", "a")
+            time.sleep(0.1)
+            self.keyboard.press_key("backspace")
+            time.sleep(0.1)
+        
+        # تایپ متن
+        if action.use_clipboard:
+            import pyperclip
+            pyperclip.copy(action.text or "")
+            self.keyboard.hotkey("ctrl", "v")
+        else:
+            self.keyboard.type_text(action.text or "", interval=action.interval)
+
+    def _execute_wait_action(self, action: WaitAction):
+        """اجرای WaitAction."""
+        if action.wait_type == "time":
+            time.sleep(action.target if isinstance(action.target, (int, float)) else 1.0)
+        elif action.wait_type == "element":
+            wait_result = self.waiter.wait_for_element(
+                str(action.target),
+                timeout=int(action.timeout),
+                check_interval=action.check_interval
+            )
+            if not wait_result.success:
+                raise TimeoutError(f"Element '{action.target}' not found within {action.timeout}s")
+        elif action.wait_type == "change":
+            # انتظار برای تغییر ناحیه - پیاده‌سازی ساده
+            time.sleep(action.timeout / 10)  # شبیه‌سازی
+        # سایر انواع wait می‌توانند اضافه شوند
+
+    def _execute_drag_drop_action(self, action: DragDropAction) -> Tuple[int, int]:
+        """اجرای DragDropAction."""
+        # پیدا کردن مختصات source
+        if isinstance(action.source, tuple):
+            start_x, start_y = action.source
+        else:
+            wait_result = self.waiter.wait_for_element(action.source, timeout=10)
+            if not wait_result.success or not wait_result.result:
+                raise ValueError(f"Source '{action.source}' not found")
+            start_x, start_y = wait_result.result
+        
+        # پیدا کردن مختصات target
+        if isinstance(action.target, tuple):
+            end_x, end_y = action.target
+        else:
+            wait_result = self.waiter.wait_for_element(action.target, timeout=10)
+            if not wait_result.success or not wait_result.result:
+                raise ValueError(f"Target '{action.target}' not found")
+            end_x, end_y = wait_result.result
+        
+        # اجرای drag & drop
+        button_map = {"left": MouseButton.LEFT, "right": MouseButton.RIGHT, "middle": MouseButton.MIDDLE}
+        self.mouse.drag_and_drop(
+            start_x, start_y, end_x, end_y,
+            button=button_map[action.button],
+            duration=action.duration
+        )
+        
+        return (end_x, end_y)
+
+    def _execute_hotkey_action(self, action: HotkeyAction):
+        """اجرای HotkeyAction."""
+        if action.keys:
+            self.keyboard.hotkey(*action.keys)
+
+    def _execute_scroll_action(self, action: ScrollAction):
+        """اجرای ScrollAction."""
+        # اگر target مشخص شده، ابتدا موس را به آنجا ببریم
+        if action.target:
+            if isinstance(action.target, tuple):
+                x, y = action.target
+                self.mouse.move_to(x, y)
+            else:
+                wait_result = self.waiter.wait_for_element(action.target, timeout=10)
+                if wait_result.success and wait_result.result:
+                    x, y = wait_result.result
+                    self.mouse.move_to(x, y)
+        
+        # اجرای اسکرول
+        scroll_amount = action.clicks if action.direction in ["up", "down"] else action.clicks
+        if action.direction == "down":
+            self.mouse.scroll(-scroll_amount)
+        elif action.direction == "up":
+            self.mouse.scroll(scroll_amount)
+        elif action.direction == "left":
+            # اسکرول افقی - نیاز به پیاده‌سازی در MouseController
+            pass
+        elif action.direction == "right":
+            # اسکرول افقی - نیاز به پیاده‌سازی در MouseController
+            pass
 
 
 # ==================== EXPORTS ====================

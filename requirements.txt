@@ -21,15 +21,22 @@ PyAutoGUI>=0.9.54  # Alias (case-sensitive systems)
 
 # Voice support (optional)
 langdetect>=1.0.9
-SpeechRecognition>=3.10.0
-elevenlabs>=2.23.0
+SpeechRecognition>=3.8.0
+pyttsx3>=2.90
+elevenlabs>=1.0.0
 google-cloud-texttospeech>=2.14.0
-gTTS>=2.4.0
+gTTS>=2.3.0
 pydub>=0.25.1
 sounddevice>=0.4.6
 soundfile>=0.12.1
 pyaudio>=0.2.13; platform_system == "Windows"  # for Windows
 # For non-Windows systems, install pyaudio using system package manager
+
+# AI/LLM Support
+google-generativeai>=0.3.0  # Google Gemini API
+openai>=1.0.0  # OpenAI API (optional)
+langchain>=0.1.0  # LangChain framework (optional)
+groq>=0.4.0  # Groq API (optional)
 
 # Optional (platform helpers)
 pywin32>=305; platform_system == "Windows"

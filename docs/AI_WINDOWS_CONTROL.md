@@ -7,32 +7,193 @@
 
 ## ✨ امکانات
 
-### 1. **باز کردن برنامه‌ها**
+### 🎯 بخش 1: اتوماسیون سیستم (System Actions)
+
+#### 1.1 **باز کردن برنامه‌ها**
 ```
 باز کردن Notepad
 open Photoshop
 launch Visual Studio Code
 ```
 
-### 2. **نصب نرم‌افزار**
+#### 1.2 **نصب نرم‌افزار**
 ```
 نصب Git
 install Python 3.11
 setup Node.js با npm
 ```
 
-### 3. **دریافت اطلاعات سیستم**
+#### 1.3 **دریافت اطلاعات سیستم**
 ```
 چقدر RAM دارم؟
 show CPU usage
 مشخصات کامل سیستم رو بده
 ```
 
-### 4. **مدیریت فرآیندها**
+#### 1.4 **مدیریت فرآیندها**
 ```
 بستن Chrome
 kill all notepad processes
 ```
+
+---
+
+### 🖱️ بخش 2: اتوماسیون رابط کاربری (Desktop Actions)
+
+> **جدید در Week 2!** کنترل کامل UI با زبان طبیعی ✨
+
+#### 2.1 **دستورات کلیک (Click Commands)**
+
+**انگلیسی:**
+```
+click on OK
+right click on File.txt
+double click on MyApp.exe
+click on Submit button
+```
+
+**فارسی:**
+```
+کلیک روی دکمه تایید
+کلیک راست روی فایل
+دابل کلیک روی برنامه
+بزن روی OK
+```
+
+**پشتیبانی از:**
+- ✅ کلیک چپ (left click)
+- ✅ کلیک راست (right click) 
+- ✅ کلیک وسط (middle click)
+- ✅ دابل کلیک (double click)
+- ✅ پیدا کردن خودکار عنصر با OCR
+
+---
+
+#### 2.2 **دستورات تایپ (Type Commands)**
+
+**انگلیسی:**
+```
+type 'Hello World'
+type 'admin@example.com' in Username field
+write 'My Document Title'
+```
+
+**فارسی:**
+```
+تایپ 'سلام دنیا'
+بنویس 'test@email.com' در فیلد ایمیل
+تایپ کن 'متن فارسی'
+```
+
+**قابلیت‌ها:**
+- ✅ تایپ متن انگلیسی و فارسی
+- ✅ تایپ در فیلد خاص
+- ✅ پشتیبانی از کاراکترهای ویژه
+- ✅ اعتبارسنجی خودکار
+
+---
+
+#### 2.3 **دستورات Drag & Drop**
+
+**انگلیسی:**
+```
+drag 'File.txt' to 'Documents'
+move 'Image.png' to 'Pictures folder'
+drag 'report.pdf' to 'Archive'
+```
+
+**فارسی:**
+```
+بکش 'فایل.txt' به 'پوشه اسناد'
+انتقال 'عکس.jpg' به 'تصاویر'
+بکش فایل به پوشه
+```
+
+**کاربردها:**
+- ✅ انتقال فایل‌ها
+- ✅ سازماندهی پوشه‌ها
+- ✅ Upload در مرورگر
+- ✅ جابجایی عناصر UI
+
+---
+
+#### 2.4 **دستورات انتظار (Wait Commands)**
+
+**انتظار زمانی:**
+```
+wait 5 seconds
+صبر کن 3 ثانیه
+wait for 2 seconds
+```
+
+**انتظار برای عنصر:**
+```
+wait for 'Save Button'
+wait for 'Loading...' to disappear
+منتظر بمان تا دکمه ظاهر شود
+```
+
+**قابلیت‌ها:**
+- ✅ انتظار زمان‌دار
+- ✅ انتظار برای ظاهر شدن عنصر
+- ✅ انتظار برای ناپدید شدن عنصر
+- ✅ Timeout قابل تنظیم
+
+---
+
+#### 2.5 **میانبرهای کیبورد (Hotkey Commands)**
+
+**میانبرهای رایج:**
+```
+copy          → Ctrl+C
+paste         → Ctrl+V
+cut           → Ctrl+X
+save          → Ctrl+S
+undo          → Ctrl+Z
+alt tab       → Alt+Tab
+```
+
+**فارسی:**
+```
+کپی          → Ctrl+C
+پیست         → Ctrl+V
+ذخیره        → Ctrl+S
+برگشت        → Ctrl+Z
+جابجایی پنجره → Alt+Tab
+```
+
+**پشتیبانی کامل از:**
+- ✅ Ctrl + کلید
+- ✅ Alt + کلید
+- ✅ Shift + کلید
+- ✅ ترکیب سه کلیده (Ctrl+Shift+S)
+- ✅ کلیدهای تابعی (F1-F12)
+
+---
+
+#### 2.6 **دستورات اسکرول (Scroll Commands)**
+
+**انگلیسی:**
+```
+scroll down
+scroll up 5 times
+scroll to bottom
+scroll to top
+```
+
+**فارسی:**
+```
+اسکرول پایین
+اسکرول بالا 10 بار
+برو به انتهای صفحه
+برو به ابتدای صفحه
+```
+
+**امکانات:**
+- ✅ اسکرول بالا/پایین
+- ✅ کنترل تعداد دفعات
+- ✅ اسکرول در ناحیه خاص
+- ✅ اسکرول سریع/آهسته
 
 ## 🚀 نحوه استفاده
 
@@ -83,28 +244,239 @@ asyncio.run(main())
 
 ## 🧠 چگونه کار می‌کند؟
 
-1. **تشخیص هوشمند**: سیستم خودش تشخیص می‌دهد درخواست شما مربوط به:
-   - اتوماسیون ویندوز 🪟
-   - مرورگر وب 🌐
-   - کدنویسی 💻
+### معماری سیستم (Architecture)
 
-2. **تحلیل با AI**: اگر درخواست سیستمی بود:
+```
+دستور کاربر (فارسی/انگلیسی)
+         ↓
+┌────────────────────────────────┐
+│   IntelligentSystemAgent       │ ← تشخیص نوع درخواست
+│  (Natural Language Parser)     │
+└────────────────────────────────┘
+         ↓                    ↓
+    Desktop Action      System Action
+         ↓                    ↓
+┌──────────────────┐  ┌────────────────┐
+│ ActionController │  │ ExecutionMgr   │
+│  - Vision OCR    │  │  - Launch App  │
+│  - Mouse Click   │  │  - Install Pkg │
+│  - Keyboard      │  │  - Query HW    │
+│  - SmartWait     │  │  - Kill Process│
+└──────────────────┘  └────────────────┘
+         ↓                    ↓
+    ┌─────────────────────────────┐
+    │    Safety Filter            │ ← بررسی امنیت
+    │  - Risk Assessment          │
+    │  - Boundary Validation      │
+    │  - Rate Limiting            │
+    └─────────────────────────────┘
+              ↓
+         اجرای اقدام
+```
+
+### جریان کار (Workflow)
+
+1. **تشخیص هوشمند**: سیستم خودش تشخیص می‌دهد درخواست شما مربوط به:
+   - 🖱️ **Desktop Actions**: کلیک، تایپ، Drag & Drop
+   - 🪟 **System Actions**: باز کردن برنامه، نصب، مدیریت
+   - 🌐 **Browser Actions**: مرورگر وب
+   - 💻 **Code Actions**: کدنویسی
+
+2. **تجزیه با Natural Language Parser**:
+   ```python
+   "click on OK" → ClickAction(target="OK", button="left")
+   "تایپ سلام" → TypeAction(text="سلام")
+   "باز کردن Notepad" → LaunchApp(app_name="notepad")
+   ```
+
+3. **تحلیل با AI** (اگر درخواست پیچیده بود):
    - از مدل Gemini استفاده می‌کند
    - درخواست را به اقدامات قابل اجرا تبدیل می‌کند
    - اولویت‌بندی می‌کند
 
-3. **بررسی امنیت**: قبل از اجرا:
+4. **مسیریابی به کنترلر مناسب**:
+   - Desktop Actions → `ActionController`
+     - استفاده از `DesktopVision` برای OCR
+     - استفاده از `MouseController` برای کلیک
+     - استفاده از `KeyboardController` برای تایپ
+     - استفاده از `SmartWaiter` برای انتظار
+   
+   - System Actions → `ExecutionManager`
+     - استفاده از `SystemCapabilityRegistry`
+     - اجرای فرآیندها
+     - مدیریت وضعیت
+
+5. **بررسی امنیت**: قبل از اجرا:
    - فیلتر امنیتی بررسی می‌کند
    - در صورت نیاز، تأیید می‌گیرد
    - خطرات را ارزیابی می‌کند
 
-4. **اجرا**: اقدامات به ترتیب اولویت اجرا می‌شوند
+6. **اجرا**: اقدامات به ترتیب اولویت اجرا می‌شوند
 
-5. **گزارش**: نتایج ذخیره و گزارش می‌شود
+7. **گزارش**: نتایج ذخیره و گزارش می‌شود
+
+---
+
+### ماژول‌های اصلی
+
+#### 1. `IntelligentSystemAgent`
+- پارس کردن زبان طبیعی
+- تشخیص نوع اقدام
+- مدیریت جریان کار
+
+#### 2. `ActionController`
+- اجرای Desktop Actions
+- هماهنگی بین ماژول‌ها
+- مدیریت وضعیت UI
+
+#### 3. `DesktopVision`
+- OCR برای پیدا کردن متن
+- Template Matching برای تصاویر
+- تشخیص عناصر UI
+
+#### 4. `MouseController` + `KeyboardController`
+- کنترل سخت‌افزار
+- حرکت smooth
+- ایمنی و اعتبارسنجی
+
+#### 5. `SmartWaiter`
+- انتظار هوشمند
+- تشخیص تغییرات UI
+- Timeout management
 
 ## 📋 مثال‌های کاربردی
 
-### مثال 1: راه‌اندازی محیط توسعه
+### 🎯 سناریو 1: ورود به سیستم (Login Workflow)
+
+```python
+# کد پایتون
+from core.intelligent_agent import IntelligentSystemAgent
+import asyncio
+
+async def login_demo():
+    agent = IntelligentSystemAgent(dry_run=False)
+    
+    # مرحله 1: کلیک روی فیلد Username
+    await agent.process_request("click on 'Username'")
+    
+    # مرحله 2: تایپ ایمیل
+    await agent.process_request("type 'user@example.com'")
+    
+    # مرحله 3: رفتن به فیلد بعدی (Tab)
+    await agent.process_request("press tab")
+    
+    # مرحله 4: تایپ رمز عبور
+    await agent.process_request("type 'MyPassword123'")
+    
+    # مرحله 5: کلیک روی دکمه Login
+    await agent.process_request("click on 'Login'")
+    
+    # مرحله 6: منتظر بمان تا لود شود
+    await agent.process_request("wait for 'Welcome' message")
+
+asyncio.run(login_demo())
+```
+
+**یا با یک دستور:**
+```
+کلیک روی Username، تایپ user@example.com، Tab، تایپ MyPassword123، کلیک روی Login
+```
+
+---
+
+### 🎯 سناریو 2: پر کردن فرم (Form Filling)
+
+```python
+async def fill_form_demo():
+    agent = IntelligentSystemAgent()
+    
+    # اطلاعات فرم
+    form_data = {
+        "Name": "علی محمدی",
+        "Email": "ali@example.com",
+        "Phone": "09123456789",
+        "Address": "تهران، خیابان آزادی"
+    }
+    
+    for field, value in form_data.items():
+        await agent.process_request(f"click on '{field}'")
+        await agent.process_request(f"type '{value}'")
+        await agent.process_request("press tab")
+    
+    # ارسال فرم
+    await agent.process_request("click on 'Submit'")
+```
+
+---
+
+### 🎯 سناریو 3: مدیریت فایل‌ها (File Management)
+
+**Drag & Drop چندین فایل:**
+```
+1. drag 'Report1.pdf' to 'Archive Folder'
+2. drag 'Report2.pdf' to 'Archive Folder'  
+3. drag 'Report3.pdf' to 'Archive Folder'
+```
+
+**یا با زبان طبیعی:**
+```
+تمام فایل‌های PDF رو به پوشه Archive منتقل کن
+```
+
+---
+
+### 🎯 سناریو 4: تست اتوماتیک UI
+
+```python
+async def test_ui():
+    agent = IntelligentSystemAgent()
+    
+    # باز کردن برنامه
+    await agent.process_request("open MyApp.exe")
+    await agent.process_request("wait 2 seconds")
+    
+    # تست دکمه‌ها
+    await agent.process_request("click on 'New Document'")
+    await agent.process_request("wait for 'Untitled' window")
+    
+    # تایپ محتوا
+    await agent.process_request("type 'Test Content'")
+    
+    # ذخیره
+    await agent.process_request("save")  # Ctrl+S
+    await agent.process_request("type 'test.txt' in filename")
+    await agent.process_request("click on 'Save'")
+    
+    # بستن
+    await agent.process_request("alt f4")
+```
+
+---
+
+### 🎯 سناریو 5: راه‌اندازی محیط توسعه
+
+**یک دستور کامل:**
+```
+باز کردن Visual Studio Code، باز کردن Terminal، 
+تایپ 'cd my-project'، Enter، تایپ 'npm start'
+```
+
+**یا مرحله به مرحله:**
+
+**یا مرحله به مرحله:**
+```
+1. open Visual Studio Code
+2. wait for VS Code window
+3. press ctrl+`  (باز کردن Terminal)
+4. type 'cd my-project'
+5. press enter
+6. type 'npm start'
+7. press enter
+```
+
+---
+
+### 🎯 سناریو 6: بررسی وضعیت سیستم + باز کردن برنامه
 
 ```
 نصب Visual Studio Code، نصب Git، و باز کردن VS Code
@@ -115,7 +487,25 @@ asyncio.run(main())
 2. VS Code را نصب می‌کند
 3. VS Code را اجرا می‌کند
 
-### مثال 2: بررسی وضعیت سیستم
+---
+
+### 🎯 سناریو 7: مدیریت پنجره‌ها
+
+```python
+# جابجایی بین برنامه‌ها
+await agent.process_request("alt tab")
+await agent.process_request("alt tab")  # برنامه قبلی
+
+# بزرگ کردن پنجره
+await agent.process_request("win up")  # Maximize
+
+# کوچک کردن
+await agent.process_request("win down")  # Minimize
+```
+
+---
+
+### مثال 7: بررسی وضعیت سیستم
 
 ```
 مشخصات کامل سیستم من چیه؟
@@ -130,7 +520,7 @@ asyncio.run(main())
 - GPU: NVIDIA RTX 3060
 ```
 
-### مثال 3: مدیریت برنامه‌ها
+### مثال 8: مدیریت برنامه‌ها
 
 ```
 بستن همه برنامه‌های Chrome که بیش از 500MB RAM مصرف می‌کنند
@@ -265,9 +655,59 @@ monitor.start()
 ---
 
 **توسعه‌دهندگان**: Shahin  
-**نسخه**: 1.0  
+**نسخه**: 2.0 (Week 2 Complete)  
 **تاریخ**: November 2025  
 **وضعیت**: Production Ready ✅
+
+---
+
+## 📚 مستندات مرتبط
+
+### مستندات ماژول‌های اصلی
+- 📖 [DESKTOP_ACTIONS.md](DESKTOP_ACTIONS.md) - راهنمای کامل Desktop Actions
+- 📖 [ACTION_CONTROLLER.md](ACTION_CONTROLLER.md) - راهنمای Action Controller
+- 📖 [DESKTOP_VISION.md](DESKTOP_VISION.md) - سیستم بینایی کامپیوتر
+- 📖 [MOUSE_CONTROL.md](MOUSE_CONTROL.md) - کنترل موس
+- 📖 [KEYBOARD_CONTROL.md](KEYBOARD_CONTROL.md) - کنترل کیبورد
+- 📖 [SMART_WAIT.md](SMART_WAIT.md) - سیستم انتظار هوشمند
+
+### راهنماهای کلی
+- 📖 [QUICKSTART.md](QUICKSTART.md) - شروع سریع
+- 📖 [WINDOWS_AUTOMATION.md](WINDOWS_AUTOMATION.md) - اتوماسیون ویندوز
+- 📖 [WEEK2_QUICK_REFERENCE.md](WEEK2_QUICK_REFERENCE.md) - مرجع سریع Week 2
+
+### مثال‌های کاربردی
+- 💻 `examples/intelligent_system_demo.py` - نمایش سیستم هوشمند
+- 💻 `examples/windows_automation_demo.py` - نمایش اتوماسیون ویندوز
+- 💻 `examples/keyboard_demo.py` - مثال‌های کیبورد
+- 💻 `examples/mouse_demo.py` - مثال‌های موس
+
+---
+
+## 🆘 پشتیبانی
+
+### گزارش مشکل
+اگر مشکلی پیدا کردید:
+1. بررسی کنید که [TROUBLESHOOTING.md](TROUBLESHOOTING.md) کمک می‌کند؟
+2. لاگ‌ها را در `data/logs/` بررسی کنید
+3. Issue جدید در GitHub بسازید
+
+### درخواست قابلیت جدید
+ایده‌ای دارید؟ در GitHub Discussion مطرح کنید!
+
+---
+
+## 🎓 یادگیری بیشتر
+
+### ویدیوهای آموزشی
+- 🎥 معرفی سیستم (Coming Soon)
+- 🎥 Desktop Actions Tutorial (Coming Soon)
+- 🎥 مثال‌های پیشرفته (Coming Soon)
+
+### وبلاگ
+- 📝 معماری سیستم
+- 📝 Natural Language Processing چگونه کار می‌کند
+- 📝 بهترین شیوه‌های اتوماسیون UI
 
 ---
 

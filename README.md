@@ -389,3 +389,16 @@ python main.py --input-mode voice --mode browser
 تذکر: با توجه به ماهیت اختصاصی پروژه، هرگونه مشارکت یا ارسال کد باید با هماهنگی و اجازهٔ مالک انجام شود. لطفاً قبل از باز کردن Pull Request ابتدا از طریق issue یا ایمیل با مالک هماهنگ کنید.
 
 ---
+
+---
+
+**توسعه‌دهندگان**: Shahin  
+**نسخه**: 1.0  
+**تاریخ**: November 2025  
+**وضعیت**: Production Ready ✅
+
+---
+
+## 📄 مجوز
+
+Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION

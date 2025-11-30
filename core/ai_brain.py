@@ -179,14 +179,20 @@ class AIBrain:
         try:
             model = self.get_model(purpose=mode)
             
+            # تبدیل prompt به فرمت مورد انتظار (Message object)
+            # برای Google Gemini باید از langchain messages استفاده کنیم
+            from langchain_core.messages import HumanMessage, SystemMessage
+            
+            messages = [HumanMessage(content=prompt)]
+            
             # فراخوانی مدل - سازگار با APIهای مختلف
             if hasattr(model, 'ainvoke'):
-                response = await model.ainvoke(prompt)
+                response = await model.ainvoke(messages)
                 if hasattr(response, 'content'):
                     return response.content.strip()
                 return str(response).strip()
             elif hasattr(model, 'invoke'):
-                response = model.invoke(prompt)
+                response = model.invoke(messages)
                 if hasattr(response, 'content'):
                     return response.content.strip()
                 return str(response).strip()

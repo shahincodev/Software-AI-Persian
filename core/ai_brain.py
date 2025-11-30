@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import os
 import logging
+import json
+import re
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -162,3 +164,97 @@ class AIBrain:
             self._models[key] = self._load_model(key)
 
         return self._models[key]
+    
+    async def ask(self, prompt: str, mode: str = "normal", max_tokens: int = 500) -> str:
+        """پرسش ساده از AI و دریافت پاسخ متنی.
+        
+        Args:
+            prompt: سوال یا دستور
+            mode: نوع مدل ('system', 'normal', 'reasoning', 'fast')
+            max_tokens: حداکثر طول پاسخ
+        
+        Returns:
+            پاسخ متنی AI
+        """
+        try:
+            model = self.get_model(purpose=mode)
+            
+            # فراخوانی مدل - سازگار با APIهای مختلف
+            if hasattr(model, 'ainvoke'):
+                response = await model.ainvoke(prompt)
+                if hasattr(response, 'content'):
+                    return response.content.strip()
+                return str(response).strip()
+            elif hasattr(model, 'invoke'):
+                response = model.invoke(prompt)
+                if hasattr(response, 'content'):
+                    return response.content.strip()
+                return str(response).strip()
+            else:
+                logger.error("Model does not support invoke/ainvoke")
+                return ""
+        
+        except Exception as e:
+            logger.exception("AI ask failed: %s", e)
+            return ""
+    
+    async def interpret_system_request(self, user_request: str) -> list[dict[str, Any]]:
+        """تفسیر درخواست کاربر و تبدیل به لیست اقدامات.
+        
+        Args:
+            user_request: درخواست طبیعی کاربر (فارسی یا انگلیسی)
+        
+        Returns:
+            لیست اقدامات در قالب JSON
+        """
+        prompt = f"""You are a Windows automation system. Convert the user's natural language request into structured actions.
+
+User Request: {user_request}
+
+Supported Actions:
+1. LaunchApp: Open an application
+   {{"type": "LaunchApp", "params": {{"app_name": "app.exe", "arguments": []}}, "priority": "normal", "description": "Open app"}}
+
+2. DesktopClick: Click on UI element
+   {{"type": "DesktopClick", "params": {{"target": "button text", "button": "left", "clicks": 1}}, "priority": "normal", "description": "Click button"}}
+
+3. DesktopType: Type text
+   {{"type": "DesktopType", "params": {{"text": "hello", "target": null}}, "priority": "normal", "description": "Type hello"}}
+
+4. InstallPackage: Install software
+   {{"type": "InstallPackage", "params": {{"package_name": "git", "package_manager": "winget", "silent": true}}, "priority": "normal", "description": "Install git"}}
+
+5. TerminateProcess: Close application
+   {{"type": "TerminateProcess", "params": {{"process_name": "app.exe", "force": false}}, "priority": "normal", "description": "Close app"}}
+
+6. QueryHardware: Get system info
+   {{"type": "QueryHardware", "params": {{"query_type": "all"}}, "priority": "normal", "description": "Get hardware info"}}
+
+Return ONLY a valid JSON array of actions, nothing else. Example:
+[{{"type": "LaunchApp", "params": {{"app_name": "steam.exe", "arguments": []}}, "priority": "normal", "description": "Open Steam"}}]
+
+JSON Array:"""
+
+        try:
+            response = await self.ask(prompt, mode="system", max_tokens=500)
+            
+            # تلاش برای parse کردن JSON
+            import json
+            import re
+            
+            # استخراج JSON از پاسخ
+            json_match = re.search(r'\[.*\]', response, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(0)
+                actions = json.loads(json_str)
+                
+                if isinstance(actions, list):
+                    logger.info("✅ AI parsed %d actions successfully", len(actions))
+                    return actions
+            
+            logger.warning("⚠️ AI response is not valid JSON: %s", response[:200])
+            return []
+        
+        except Exception as e:
+            logger.exception("❌ AI interpretation failed: %s", e)
+            return []

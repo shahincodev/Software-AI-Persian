@@ -69,112 +69,102 @@ class SystemActionParser:
         ]
     
     async def parse_request(self, user_request: str) -> list[dict[str, Any]]:
-        """تجزیه درخواست کاربر و استخراج اقدامات.
+        """تجزیه درخواست کاربر و استخراج اقدامات با AI.
         
-        این متد هم اقدامات سیستمی (نصب، اجرا) و هم اقدامات Desktop (کلیک، تایپ) را پشتیبانی می‌کند.
+        این متد از هوش مصنوعی برای تفسیر درخواست استفاده می‌کند.
         
         Returns:
             لیستی از اقدامات در قالب دیکشنری
         """
+        logger.info("🤖 Processing request with AI: %s", user_request)
+        
+        # استفاده از AI برای تجزیه درخواست
+        try:
+            ai_response = await self.ai_brain.interpret_system_request(user_request)
+            
+            if ai_response and isinstance(ai_response, list):
+                logger.info("✅ AI extracted %d actions", len(ai_response))
+                return ai_response
+            
+            logger.warning("⚠️ AI returned invalid response, trying fallback")
+            
+        except Exception as e:
+            logger.error("❌ AI interpretation failed: %s", e)
+        
+        # Fallback: تلاش برای تشخیص ساده
+        actions = await self._simple_fallback_parse(user_request)
+        logger.info("Extracted %d actions from fallback", len(actions))
+        return actions
+    
+    async def _simple_fallback_parse(self, user_request: str) -> list[dict[str, Any]]:
+        """تجزیه ساده بدون AI برای موارد اضطراری."""
         user_lower = user_request.lower()
         actions = []
         
-        # ========== Desktop Actions (اولویت بالاتر) ==========
-        
-        # الگو: کلیک
+        # Desktop Actions با Regex
         click_action = self._parse_click_action(user_request)
         if click_action:
-            actions.append(click_action)
-            return actions  # معمولاً یک کلیک کافیه
+            return [click_action]
         
-        # الگو: تایپ
         type_action = self._parse_type_action(user_request)
         if type_action:
-            actions.append(type_action)
-            return actions
+            return [type_action]
         
-        # الگو: Drag & Drop
         drag_action = self._parse_drag_action(user_request)
         if drag_action:
-            actions.append(drag_action)
-            return actions
+            return [drag_action]
         
-        # الگو: انتظار
         wait_action = self._parse_wait_action(user_request)
         if wait_action:
-            actions.append(wait_action)
-            return actions
+            return [wait_action]
         
-        # الگو: میانبر کیبورد
         hotkey_action = self._parse_hotkey_action(user_request)
         if hotkey_action:
-            actions.append(hotkey_action)
-            return actions
+            return [hotkey_action]
         
-        # الگو: اسکرول
         scroll_action = self._parse_scroll_action(user_request)
         if scroll_action:
-            actions.append(scroll_action)
-            return actions
+            return [scroll_action]
         
-        # ========== System Actions (قدیمی) ==========
-        
-        # الگو 1: باز کردن برنامه
-        if any(keyword in user_lower for keyword in ['open', 'launch', 'start', 'run', 'باز', 'اجرا', 'شروع']):
-            # استخراج نام برنامه
-            app_name = self._extract_app_name(user_request)
+        # System Actions - استفاده از AI برای استخراج نام
+        if any(kw in user_lower for kw in ['open', 'launch', 'start', 'run', 'باز', 'اجرا', 'شروع']):
+            app_name = await self._ai_extract_app_name(user_request)
             if app_name:
                 actions.append({
                     "type": "LaunchApp",
-                    "params": {
-                        "app_name": app_name,
-                        "arguments": []
-                    },
+                    "params": {"app_name": app_name, "arguments": []},
                     "priority": "normal",
                     "description": f"Open {app_name}"
                 })
         
-        # الگو 2: نصب نرم‌افزار
-        elif any(keyword in user_lower for keyword in ['install', 'setup', 'نصب']):
-            package_name = self._extract_package_name(user_request)
-            if package_name:
+        elif any(kw in user_lower for kw in ['install', 'setup', 'نصب']):
+            package = await self._ai_extract_package_name(user_request)
+            if package:
                 actions.append({
                     "type": "InstallPackage",
-                    "params": {
-                        "package_name": package_name,
-                        "package_manager": "winget",
-                        "silent": True
-                    },
+                    "params": {"package_name": package, "package_manager": "winget", "silent": True},
                     "priority": "normal",
-                    "description": f"Install {package_name}"
+                    "description": f"Install {package}"
                 })
         
-        # الگو 3: اطلاعات سخت‌افزار
-        elif any(keyword in user_lower for keyword in ['hardware', 'سخت‌افزار', 'cpu', 'ram', 'memory', 'حافظه', 'disk', 'مشخصات', 'info', 'اطلاعات']):
+        elif any(kw in user_lower for kw in ['close', 'kill', 'terminate', 'stop', 'بستن', 'توقف']):
+            process = await self._ai_extract_app_name(user_request)
+            if process:
+                actions.append({
+                    "type": "TerminateProcess",
+                    "params": {"process_name": process, "force": False},
+                    "priority": "normal",
+                    "description": f"Close {process}"
+                })
+        
+        elif any(kw in user_lower for kw in ['hardware', 'سخت‌افزار', 'cpu', 'ram', 'memory', 'info']):
             actions.append({
                 "type": "QueryHardware",
-                "params": {
-                    "query_type": "all"
-                },
+                "params": {"query_type": "all"},
                 "priority": "normal",
                 "description": "Get hardware information"
             })
         
-        # الگو 4: بستن فرآیند
-        elif any(keyword in user_lower for keyword in ['close', 'kill', 'terminate', 'stop', 'بستن', 'توقف']):
-            process_name = self._extract_process_name(user_request)
-            if process_name:
-                actions.append({
-                    "type": "TerminateProcess",
-                    "params": {
-                        "process_name": process_name,
-                        "force": False
-                    },
-                    "priority": "normal",
-                    "description": f"Close {process_name}"
-                })
-        
-        logger.info("Extracted %d actions from request", len(actions))
         return actions
     
     def _parse_click_action(self, request: str) -> Optional[dict[str, Any]]:
@@ -398,60 +388,86 @@ class SystemActionParser:
             "description": f"Scroll {direction} {clicks} times"
         }
     
+    
+    async def _ai_extract_app_name(self, request: str) -> Optional[str]:
+        """استخراج نام برنامه با AI."""
+        try:
+            prompt = f"""Extract the application name from this request and return ONLY the executable name with .exe extension.
+If the app is common, use standard Windows executable names.
+
+Request: {request}
+
+Examples:
+- "open steam" → steam.exe
+- "باز کن استیم" → steam.exe
+- "launch chrome" → chrome.exe
+- "run notepad" → notepad.exe
+- "اجرا کن فتوشاپ" → photoshop.exe
+
+Return ONLY the .exe filename, nothing else:"""
+            
+            response = await self.ai_brain.ask(prompt, mode="system", max_tokens=50)
+            
+            if response:
+                # پاکسازی و استخراج نام exe
+                exe_name = response.strip().lower()
+                if not exe_name.endswith('.exe'):
+                    exe_name += '.exe'
+                logger.info("🤖 AI extracted app name: %s", exe_name)
+                return exe_name
+        
+        except Exception as e:
+            logger.error("AI app extraction failed: %s", e)
+        
+        return None
+    
+    async def _ai_extract_package_name(self, request: str) -> Optional[str]:
+        """استخراج نام پکیج با AI."""
+        try:
+            prompt = f"""Extract the package/software name from this installation request.
+Return ONLY the package name that can be used with winget or pip.
+
+Request: {request}
+
+Examples:
+- "install git" → git
+- "نصب پایتون" → python
+- "setup nodejs" → nodejs
+- "نصب کن docker" → docker
+
+Return ONLY the package name:"""
+            
+            response = await self.ai_brain.ask(prompt, mode="system", max_tokens=30)
+            
+            if response:
+                package = response.strip().lower()
+                logger.info("🤖 AI extracted package: %s", package)
+                return package
+        
+        except Exception as e:
+            logger.error("AI package extraction failed: %s", e)
+        
+        return None
+    
     def _extract_app_name(self, request: str) -> Optional[str]:
-        """استخراج نام برنامه از درخواست."""
-        request_lower = request.lower()
-        
-        # لیست برنامه‌های شناخته‌شده
-        known_apps = {
-            'notepad': 'notepad.exe',
-            'calculator': 'calc.exe',
-            'calc': 'calc.exe',
-            'chrome': 'chrome.exe',
-            'firefox': 'firefox.exe',
-            'edge': 'msedge.exe',
-            'vscode': 'code.exe',
-            'code': 'code.exe',
-            'photoshop': 'photoshop.exe',
-            'فتوشاپ': 'photoshop.exe',
-            'word': 'winword.exe',
-            'excel': 'excel.exe',
-            'powerpoint': 'powerpnt.exe',
-        }
-        
-        for app_key, app_exe in known_apps.items():
-            if app_key in request_lower:
-                return app_exe
-        
-        # اگر .exe در درخواست بود
+        """DEPRECATED: Use _ai_extract_app_name instead."""
+        # فقط برای سازگاری با کد قدیمی - چک می‌کند .exe در متن باشد
         import re
         exe_match = re.search(r'(\w+\.exe)', request, re.IGNORECASE)
         if exe_match:
             return exe_match.group(1)
-        
         return None
     
     def _extract_package_name(self, request: str) -> Optional[str]:
-        """استخراج نام بسته از درخواست."""
-        request_lower = request.lower()
-        
-        # پکیج‌های محبوب
-        known_packages = ['git', 'python', 'nodejs', 'node', 'vscode', 'chrome', 'firefox', 'docker']
-        
-        for pkg in known_packages:
-            if pkg in request_lower:
-                return pkg
-        
-        # اگر نام خاصی نبود، آخرین کلمه را برمی‌گردانیم
+        """DEPRECATED: Use _ai_extract_package_name instead."""
+        # آخرین کلمه را برمی‌گرداند
         words = request.split()
         if words:
             return words[-1]
-        
         return None
     
     def _extract_process_name(self, request: str) -> Optional[str]:
-        """استخراج نام فرآیند از درخواست."""
-        # مشابه _extract_app_name
+        """DEPRECATED: Use _ai_extract_app_name instead."""
         return self._extract_app_name(request)
     
     def _build_system_context(self) -> str:

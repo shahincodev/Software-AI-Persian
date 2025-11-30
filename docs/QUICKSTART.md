@@ -1,33 +1,35 @@
-# 🚀 شروع سریع - Windows Automation
+# 🚀 شروع سریع - AI-Powered Windows Automation
+
+## 🧠 ویژگی جدید: 100% AI-Powered!
+
+**تفاوت با نسخه قبلی:**
+- ❌ **قبلاً**: لیست hard-coded با 13 برنامه
+- ✅ **الان**: AI هر برنامه‌ای را می‌شناسد!
+- 🤖 **مثال**: "باز کن استیم" → AI می‌فهمد → steam.exe
 
 ## نصب سریع
 
 ```powershell
-# نصب وابستگی‌ها
-pip install psutil>=5.9.0
-
-# یا
+# نصب وابستگی‌ها (شامل AI)
 pip install -r requirements.txt
 ```
 
-## اولین اجرا
+## اولین اجرا - با AI
 
 ```python
 import asyncio
-from core import (
-    QueryHardwareAction,
-    ExecutionManager,
-)
+from core.intelligent_agent import IntelligentSystemAgent
 
 async def main():
-    # دریافت اطلاعات سخت‌افزار
-    action = QueryHardwareAction(query_type="all")
+    # سیستم AI-Powered
+    agent = IntelligentSystemAgent()
     
-    manager = ExecutionManager()
-    manager.submit(action)
+    # هر دستوری که بخواهید!
+    result = await agent.process_request("باز کن استیم")
+    print(result)  # ✅ Steam باز می‌شود
     
-    result = await manager.execute_next()
-    print(result.output)
+    result = await agent.process_request("Open Discord")
+    print(result)  # ✅ Discord باز می‌شود
 
 asyncio.run(main())
 ```
@@ -44,13 +46,14 @@ python examples/windows_automation_demo.py
 
 ## قابلیت‌های اصلی
 
-✅ باز کردن برنامه‌ها  
-✅ نصب نرم‌افزار  
-✅ دریافت اطلاعات سخت‌افزار  
-✅ مدیریت فرآیندها  
-✅ نظارت real-time  
-✅ فیلتر امنیتی هوشمند  
-✅ یکپارچگی با AI  
+✅ **باز کردن هر برنامه‌ای** (Steam, Discord, Telegram، هرچیزی!) - AI-Powered  
+✅ **نصب نرم‌افزار** - هوشمند  
+✅ **دریافت اطلاعات سخت‌افزار** - لحظه‌ای  
+✅ **مدیریت فرآیندها** - خودکار  
+✅ **نظارت real-time** - CPU, RAM, Disk  
+✅ **فیلتر امنیتی هوشمند** - چندلایه  
+✅ **100% AI-Powered** - بدون hard-coding  
+✅ **چندزبانه** - فارسی/انگلیسی کامل  
 
 ---
 

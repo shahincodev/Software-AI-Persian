@@ -640,7 +640,7 @@ async def main() -> None:
                 vision = DesktopVision()
                 action_controller = ActionController()
                 logger.info("✅ Desktop automation enabled (Mouse, Keyboard, Smart Wait, Enhanced Vision, Action Controller)")
-                print(f"{Fore.GREEN}✅ قابلیت‌های خودکارسازی دسکتاپ فعال شد (شامل Action Controller){Style.RESET_ALL}")
+                print(f"{Fore.GREEN}✅ Desktop automation features enabled (including Action Controller){Style.RESET_ALL}")
             except Exception as e:
                 logger.warning(f"Failed to initialize automation components: {e}")
                 print(f"{Fore.YELLOW}⚠️ خطا در فعال‌سازی خودکارسازی: {e}{Style.RESET_ALL}")

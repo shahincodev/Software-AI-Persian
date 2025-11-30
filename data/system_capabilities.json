@@ -1,5 +1,5 @@
 {
-  "last_scan": "2025-11-22T22:15:05.446425",
+  "last_scan": "2025-11-30T19:03:52.369365",
   "capabilities": [
     {
       "name": "notepad.exe",
@@ -7,7 +7,7 @@
       "path": "C:\\WINDOWS\\system32\\notepad.exe",
       "version": null,
       "metadata": {},
-      "discovered_at": "2025-11-22T22:15:03.619116"
+      "discovered_at": "2025-11-30T19:03:50.688214"
     },
     {
       "name": "calc.exe",
@@ -15,7 +15,7 @@
       "path": "C:\\WINDOWS\\system32\\calc.exe",
       "version": null,
       "metadata": {},
-      "discovered_at": "2025-11-22T22:15:03.619824"
+      "discovered_at": "2025-11-30T19:03:50.689006"
     },
     {
       "name": "mspaint.exe",
@@ -23,7 +23,7 @@
       "path": "C:\\Users\\nilit\\AppData\\Local\\Microsoft\\WindowsApps\\mspaint.exe",
       "version": null,
       "metadata": {},
-      "discovered_at": "2025-11-22T22:15:03.621488"
+      "discovered_at": "2025-11-30T19:03:50.691018"
     },
     {
       "name": "winget",
@@ -33,7 +33,7 @@
       "metadata": {
         "category": "package_manager"
       },
-      "discovered_at": "2025-11-22T22:15:03.805758"
+      "discovered_at": "2025-11-30T19:03:50.879741"
     },
     {
       "name": "choco",
@@ -43,7 +43,7 @@
       "metadata": {
         "category": "package_manager"
       },
-      "discovered_at": "2025-11-22T22:15:04.357105"
+      "discovered_at": "2025-11-30T19:03:51.425537"
     },
     {
       "name": "pip",
@@ -53,7 +53,7 @@
       "metadata": {
         "category": "package_manager"
       },
-      "discovered_at": "2025-11-22T22:15:04.849562"
+      "discovered_at": "2025-11-30T19:03:51.824065"
     },
     {
       "name": "npm",
@@ -63,119 +63,7 @@
       "metadata": {
         "category": "package_manager"
       },
-      "discovered_at": "2025-11-22T22:15:05.144761"
-    },
-    {
-      "name": "operating_system",
-      "type": "hardware",
-      "path": null,
-      "version": "10.0.26200",
-      "metadata": {
-        "system": "Windows",
-        "release": "11",
-        "machine": "AMD64",
-        "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel"
-      },
-      "discovered_at": "2025-11-20T10:20:26.583199"
-    },
-    {
-      "name": "cpu",
-      "type": "hardware",
-      "path": null,
-      "version": null,
-      "metadata": {
-        "physical_cores": 16,
-        "logical_cores": 24,
-        "frequency_mhz": 2200.0
-      },
-      "discovered_at": "2025-11-22T22:15:05.187782"
-    },
-    {
-      "name": "memory",
-      "type": "hardware",
-      "path": null,
-      "version": null,
-      "metadata": {
-        "total_gb": 15.73,
-        "available_gb": 4.65
-      },
-      "discovered_at": "2025-11-22T22:15:05.188182"
-    },
-    {
-      "name": "disk",
-      "type": "hardware",
-      "path": null,
-      "version": null,
-      "metadata": {
-        "partitions": [
-          {
-            "device": "C:\\",
-            "total_gb": 194.38,
-            "free_gb": 67.52
-          },
-          {
-            "device": "D:\\",
-            "total_gb": 341.8,
-            "free_gb": 333.28
-          },
-          {
-            "device": "E:\\",
-            "total_gb": 416.76,
-            "free_gb": 403.69
-          }
-        ]
-      },
-      "discovered_at": "2025-11-22T22:15:05.188449"
-    },
-    {
-      "name": "python",
-      "type": "tool",
-      "path": "C:\\Users\\nilit\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
-      "version": "Python 3.13.7",
-      "metadata": {
-        "category": "development"
-      },
-      "discovered_at": "2025-11-22T22:15:05.197829"
-    },
-    {
-      "name": "node",
-      "type": "tool",
-      "path": "C:\\Program Files\\nodejs\\node.exe",
-      "version": "v24.11.1",
-      "metadata": {
-        "category": "development"
-      },
-      "discovered_at": "2025-11-22T22:15:05.214451"
-    },
-    {
-      "name": "git",
-      "type": "tool",
-      "path": "C:\\Program Files\\Git\\cmd\\git.exe",
-      "version": "git version 2.51.0.windows.1",
-      "metadata": {
-        "category": "development"
-      },
-      "discovered_at": "2025-11-22T22:15:05.235436"
-    },
-    {
-      "name": "java",
-      "type": "tool",
-      "path": "C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\java8path\\java.exe",
-      "version": null,
-      "metadata": {
-        "category": "development"
-      },
-      "discovered_at": "2025-11-22T22:15:05.426370"
-    },
-    {
-      "name": "dotnet",
-      "type": "tool",
-      "path": "C:\\Program Files\\dotnet\\dotnet.exe",
-      "version": null,
-      "metadata": {
-        "category": "development"
-      },
-      "discovered_at": "2025-11-22T22:15:05.446420"
+      "discovered_at": "2025-11-30T19:03:52.084956"
     },
     {
       "name": "operating_system",
@@ -189,6 +77,118 @@
         "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel"
       },
       "discovered_at": "2025-11-22T22:15:05.187516"
+    },
+    {
+      "name": "cpu",
+      "type": "hardware",
+      "path": null,
+      "version": null,
+      "metadata": {
+        "physical_cores": 16,
+        "logical_cores": 24,
+        "frequency_mhz": 1466.0
+      },
+      "discovered_at": "2025-11-30T19:03:52.107026"
+    },
+    {
+      "name": "memory",
+      "type": "hardware",
+      "path": null,
+      "version": null,
+      "metadata": {
+        "total_gb": 15.73,
+        "available_gb": 4.48
+      },
+      "discovered_at": "2025-11-30T19:03:52.107173"
+    },
+    {
+      "name": "disk",
+      "type": "hardware",
+      "path": null,
+      "version": null,
+      "metadata": {
+        "partitions": [
+          {
+            "device": "C:\\",
+            "total_gb": 194.38,
+            "free_gb": 49.92
+          },
+          {
+            "device": "D:\\",
+            "total_gb": 341.8,
+            "free_gb": 333.12
+          },
+          {
+            "device": "E:\\",
+            "total_gb": 416.76,
+            "free_gb": 347.64
+          }
+        ]
+      },
+      "discovered_at": "2025-11-30T19:03:52.107433"
+    },
+    {
+      "name": "python",
+      "type": "tool",
+      "path": "C:\\Users\\nilit\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "version": "Python 3.13.7",
+      "metadata": {
+        "category": "development"
+      },
+      "discovered_at": "2025-11-30T19:03:52.116362"
+    },
+    {
+      "name": "node",
+      "type": "tool",
+      "path": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v24.11.1",
+      "metadata": {
+        "category": "development"
+      },
+      "discovered_at": "2025-11-30T19:03:52.132863"
+    },
+    {
+      "name": "git",
+      "type": "tool",
+      "path": "C:\\Program Files\\Git\\cmd\\git.exe",
+      "version": "git version 2.51.0.windows.1",
+      "metadata": {
+        "category": "development"
+      },
+      "discovered_at": "2025-11-30T19:03:52.155078"
+    },
+    {
+      "name": "java",
+      "type": "tool",
+      "path": "C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\java8path\\java.exe",
+      "version": null,
+      "metadata": {
+        "category": "development"
+      },
+      "discovered_at": "2025-11-30T19:03:52.346813"
+    },
+    {
+      "name": "dotnet",
+      "type": "tool",
+      "path": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "version": null,
+      "metadata": {
+        "category": "development"
+      },
+      "discovered_at": "2025-11-30T19:03:52.369359"
+    },
+    {
+      "name": "operating_system",
+      "type": "hardware",
+      "path": null,
+      "version": "10.0.26200",
+      "metadata": {
+        "system": "Windows",
+        "release": "11",
+        "machine": "AMD64",
+        "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel"
+      },
+      "discovered_at": "2025-11-30T19:03:52.106960"
     }
   ]
 }

@@ -419,6 +419,15 @@ waiter.wait_for_element("Success", timeout=10)
 
 ---
 
-**توسعه‌دهندگان:** Shahin  
-**نسخه:** 2.0 (Week 2 - Desktop Automation)  
-**تاریخ:** November 2025
+---
+
+**توسعه‌دهندگان**: Shahin  
+**نسخه**: 1.0  
+**تاریخ**: November 2025  
+**وضعیت**: Production Ready ✅
+
+---
+
+## 📄 مجوز
+
+Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION

@@ -187,6 +187,53 @@ text_position = vision.find_text("OK")
 - [Action Controller Guide](docs/ACTION_CONTROLLER.md) - راهنمای کنترلر اکشن 🎮
 - [Automation Guide](AUTOMATION_GUIDE.md) - راهنمای استفاده از خودکارسازی 🤖
 
+#### 🚀 قابلیت‌های پیشرفته Week 2 (Days 7-9) ✅ **NEW!**
+
+**🛡️ Action Safety System** - سیستم ایمنی اقدامات
+- ✓ فیلتر اقدامات خطرناک (حذف فایل‌های سیستمی، فرمت دیسک، و...)
+- ✓ بررسی پوشه‌های ممنوعه (Windows/System32، Program Files)
+- ✓ محافظت از فرآیندهای حیاتی (explorer.exe، csrss.exe)
+- ✓ تشخیص دستورات مخرب (format، del /f /s، rm -rf)
+- ✓ اعتبارسنجی batch اقدامات
+- 📖 **NEW!** 520 خط کد
+
+**🔄 Action Recovery System** - سیستم بازیابی خودکار
+- ✓ Retry هوشمند با Exponential Backoff
+- ✓ Rollback خودکار در صورت خطا
+- ✓ تشخیص شدت خطا (LOW, MEDIUM, HIGH, CRITICAL)
+- ✓ انتخاب استراتژی بازیابی مناسب
+- ✓ آمار و تاریخچه کامل اجراها
+- 📖 **NEW!** 485 خط کد
+
+**🖥️ Multi-Monitor Support** - پشتیبانی چند مانیتور
+- ✓ شناسایی خودکار تمام مانیتورها
+- ✓ تبدیل مختصات بین مانیتورها
+- ✓ کلیک و حرکت موس در مانیتور مشخص
+- ✓ دریافت اطلاعات کامل layout مانیتورها
+- ✓ پشتیبانی از صفحه‌نمایش‌های مختلف
+- 📖 **NEW!** 445 خط کد
+
+**🧠 Context-Aware Actions** - اقدامات هوشمند بر اساس Context
+- ✓ تشخیص وضعیت سیستم (IDLE, BUSY, GAMING, WORKING)
+- ✓ دسته‌بندی خودکار برنامه‌ها (Browser, Editor, Game, ...)
+- ✓ تصمیم‌گیری هوشمند برای اجرای اقدامات
+- ✓ تنظیم timing بر اساس Context
+- ✓ انتظار برای زمان مناسب اجرا
+- 📖 **NEW!** 520 خط کد
+
+**🤖 AI Brain Enhancements** - تقویت هوشمصنوعی
+- ✓ **Fallback System**: Gemini → OpenAI → Groq → Reasoning
+- ✓ تلاش خودکار با مدل‌های مختلف در صورت خطا
+- ✓ لاگ کامل از تلاش‌ها و موفقیت/فیل
+- ✓ پشتیبانی از محدودیت‌های جغرافیایی API
+- 📖 **ENHANCED!** 314 خط کد
+
+📊 **آمار Week 2:**
+- ✅ 12 ماژول کامل شده
+- ✅ 9,000+ خط کد نوشته شده
+- ✅ 221 تست واحد (همه PASS)
+- ✅ 90% پیشرفت (Days 1-9 کامل)
+
 ---
 
 ## شروع سریع (Quickstart)

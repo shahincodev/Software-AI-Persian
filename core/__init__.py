@@ -36,6 +36,33 @@ from .monitoring_service import MonitoringService, SystemSnapshot
 # AI Brain
 from .ai_brain import AIBrain
 
+# Week 2: Action Layer (Days 1-10)
+from .mouse_control import MouseController
+from .keyboard_control import KeyboardController
+from .smart_wait import SmartWaiter, WaitStrategy
+from .desktop_vision import DesktopVision, MatchMethod
+from .action_controller import ActionController
+from .desktop_actions import DesktopActions
+
+# Week 2: Safety & Recovery (Day 7)
+from .action_safety import ActionSafety
+from .action_recovery import (
+    ActionRecovery,
+    RecoveryConfig,
+    RecoveryStrategy,
+    ErrorSeverity,
+    ActionResult as RecoveryActionResult,
+)
+
+# Week 2: Advanced Features (Days 8-9)
+from .multi_monitor import MultiMonitor, MonitorInfo
+from .context_aware_actions import (
+    ContextAwareActions,
+    ContextInfo,
+    SystemState,
+    ApplicationCategory,
+)
+
 __all__ = [
     # Actions
     "RiskLevel",
@@ -64,4 +91,27 @@ __all__ = [
     "SystemSnapshot",
     # AI
     "AIBrain",
+    # Week 2: Action Layer
+    "MouseController",
+    "KeyboardController",
+    "SmartWaiter",
+    "WaitStrategy",
+    "DesktopVision",
+    "MatchMethod",
+    "ActionController",
+    "DesktopActions",
+    # Week 2: Safety & Recovery
+    "ActionSafety",
+    "ActionRecovery",
+    "RecoveryConfig",
+    "RecoveryStrategy",
+    "ErrorSeverity",
+    "RecoveryActionResult",
+    # Week 2: Advanced Features
+    "MultiMonitor",
+    "MonitorInfo",
+    "ContextAwareActions",
+    "ContextInfo",
+    "SystemState",
+    "ApplicationCategory",
 ]

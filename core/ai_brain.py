@@ -165,6 +165,53 @@ class AIBrain:
 
         return self._models[key]
     
+    async def ask_with_fallback(self, prompt: str, mode: str = "normal", max_tokens: int = 500) -> str:
+        """پرسش هوشمند با fallback خودکار به مدل‌های دیگر.
+        
+        اگر یک مدل فیل شد، خودکار مدل بعدی را امتحان می‌کند.
+        
+        Args:
+            prompt: سوال یا دستور
+            mode: نوع مدل اولیه ('system', 'normal', 'reasoning', 'fast')
+            max_tokens: حداکثر طول پاسخ
+        
+        Returns:
+            پاسخ متنی AI (از اولین مدل موفق)
+        """
+        # لیست اولویت مدل‌ها برای fallback
+        fallback_order = {
+            "system": ["system", "normal", "fast", "reasoning"],  # Gemini → OpenAI → Groq → Gemini Reasoning
+            "normal": ["normal", "fast", "system", "reasoning"],  # OpenAI → Groq → Gemini → Reasoning
+            "fast": ["fast", "normal", "system", "reasoning"],    # Groq → OpenAI → Gemini → Reasoning
+            "reasoning": ["reasoning", "system", "normal", "fast"] # Reasoning → Gemini → OpenAI → Groq
+        }
+        
+        models_to_try = fallback_order.get(mode, ["normal", "fast", "system"])
+        
+        for i, model_mode in enumerate(models_to_try):
+            try:
+                logger.info(f"🤖 Trying model {i+1}/{len(models_to_try)}: {model_mode}")
+                
+                result = await self.ask(prompt, mode=model_mode, max_tokens=max_tokens)
+                
+                if result and result.strip():
+                    if i > 0:
+                        logger.info(f"✅ Success with fallback model: {model_mode}")
+                    return result
+                else:
+                    logger.warning(f"⚠️ Model {model_mode} returned empty response")
+                    
+            except Exception as e:
+                logger.warning(f"❌ Model {model_mode} failed: {e}")
+                if i == len(models_to_try) - 1:
+                    # آخرین مدل هم فیل شد
+                    logger.error("💥 All models failed!")
+                    return ""
+                # ادامه به مدل بعدی
+                continue
+        
+        return ""
+    
     async def ask(self, prompt: str, mode: str = "normal", max_tokens: int = 500) -> str:
         """پرسش ساده از AI و دریافت پاسخ متنی.
         
@@ -202,7 +249,7 @@ class AIBrain:
         
         except Exception as e:
             logger.exception("AI ask failed: %s", e)
-            return ""
+            raise  # Re-raise برای fallback
     
     async def interpret_system_request(self, user_request: str) -> list[dict[str, Any]]:
         """تفسیر درخواست کاربر و تبدیل به لیست اقدامات.
@@ -242,7 +289,8 @@ Return ONLY a valid JSON array of actions, nothing else. Example:
 JSON Array:"""
 
         try:
-            response = await self.ask(prompt, mode="system", max_tokens=500)
+            # استفاده از fallback برای اطمینان از دریافت پاسخ
+            response = await self.ask_with_fallback(prompt, mode="system", max_tokens=500)
             
             # تلاش برای parse کردن JSON
             import json

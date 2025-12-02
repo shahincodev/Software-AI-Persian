@@ -410,11 +410,20 @@ Return ONLY the .exe filename, nothing else:"""
             
             if response:
                 # پاکسازی و استخراج نام exe
-                # Make sure we're working with string content, not the response object
-                if hasattr(response, 'content'):
+                # Response should be a string from ai_brain.ask()
+                # If it's not a string, try to extract the content
+                if isinstance(response, str):
+                    exe_name = response.strip().lower()
+                elif hasattr(response, 'content'):
                     exe_name = response.content.strip().lower()
+                elif hasattr(response, 'completion'):
+                    exe_name = response.completion.strip().lower()
                 else:
+                    logger.error("Unexpected response type: %s", type(response))
                     exe_name = str(response).strip().lower()
+                
+                # Clean up any quotation marks or extra whitespace
+                exe_name = exe_name.strip("\"'` \n\t")
                 
                 if not exe_name.endswith('.exe'):
                     exe_name += '.exe'

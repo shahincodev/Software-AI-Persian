@@ -235,14 +235,28 @@ class AIBrain:
             # فراخوانی مدل - سازگار با APIهای مختلف
             if hasattr(model, 'ainvoke'):
                 response = await model.ainvoke(messages)
-                if hasattr(response, 'content'):
-                    return response.content.strip()
-                return str(response).strip()
+                # Extract string content from response
+                if isinstance(response, str):
+                    return response.strip()
+                elif hasattr(response, 'content'):
+                    return str(response.content).strip()
+                elif hasattr(response, 'completion'):
+                    return str(response.completion).strip()
+                else:
+                    logger.warning("Unexpected response type from ainvoke: %s", type(response))
+                    return str(response).strip()
             elif hasattr(model, 'invoke'):
                 response = model.invoke(messages)
-                if hasattr(response, 'content'):
-                    return response.content.strip()
-                return str(response).strip()
+                # Extract string content from response
+                if isinstance(response, str):
+                    return response.strip()
+                elif hasattr(response, 'content'):
+                    return str(response.content).strip()
+                elif hasattr(response, 'completion'):
+                    return str(response.completion).strip()
+                else:
+                    logger.warning("Unexpected response type from invoke: %s", type(response))
+                    return str(response).strip()
             else:
                 logger.error("Model does not support invoke/ainvoke")
                 return ""

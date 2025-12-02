@@ -168,6 +168,22 @@ class AdvancedLogger:
         )
         file_handler.setLevel(level)
         file_handler.setFormatter(formatter)
+        
+        # Force flush برای ذخیره فوری (حتی با Ctrl+C)
+        class FlushingHandler(logging.handlers.RotatingFileHandler):
+            def emit(self, record):
+                super().emit(record)
+                self.flush()  # فوری ذخیره می‌شه
+        
+        # جایگزین کردن با handler که flush می‌کنه
+        file_handler = FlushingHandler(
+            filename=str(log_file),
+            maxBytes=max_bytes,
+            backupCount=backup_count,
+            encoding="utf-8"
+        )
+        file_handler.setLevel(level)
+        file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
         
         # Console handler برای خطاها

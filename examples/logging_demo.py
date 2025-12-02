@@ -186,10 +186,10 @@ def main():
         
         print("\n✅ All examples completed!")
         print(f"📁 Check logs in: data/logs/")
-        print(f"   - full_trace.jsonl (همه چیز)")
-        print(f"   - errors.log (خطاها)")
-        print(f"   - user_actions.jsonl (اقدامات کاربر)")
-        print(f"   - session_*.jsonl (این session)")
+        print(f"   - full_trace.jsonl (everything)")
+        print(f"   - errors.log (errors only)")
+        print(f"   - user_actions.jsonl (user actions)")
+        print(f"   - session_*.jsonl (this session)")
     
     finally:
         # بستن لاگر

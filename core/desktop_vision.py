@@ -262,16 +262,20 @@ class DesktopVision:
             logger.exception("Failed to get text boxes: %s", e)
             return []
     
-    def find_text(self, search_text: str, confidence_threshold: float = 60.0) -> Optional[tuple[int, int]]:
+    def find_text(self, search_text: str, confidence_threshold: float = 60.0, confidence: Optional[float] = None) -> Optional[tuple[int, int]]:
         """پیدا کردن مختصات یک متن خاص روی صفحه.
         
         Args:
             search_text: متن مورد جستجو
             confidence_threshold: حداقل اطمینان OCR (0-100)
+            confidence: Alias for confidence_threshold (for compatibility)
         
         Returns:
             (x, y) مرکز متن یافت شده یا None
         """
+        # Use confidence parameter if provided (for backward compatibility)
+        if confidence is not None:
+            confidence_threshold = confidence
         text_boxes = self.get_all_text_boxes()
         
         for box in text_boxes:

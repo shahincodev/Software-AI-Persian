@@ -343,6 +343,7 @@ class KeyboardController:
         text: str,
         speed: Optional[TypingSpeed] = None,
         validate: bool = True,
+        interval: Optional[float] = None,
     ) -> bool:
         """تایپ متن با تشخیص خودکار زبان.
         
@@ -350,6 +351,7 @@ class KeyboardController:
             text: متن برای تایپ
             speed: سرعت تایپ (None = default)
             validate: فعال‌سازی اعتبارسنجی
+            interval: فاصله زمانی بین کاراکترها (برای سازگاری)
             
         Returns:
             True اگر موفق باشد

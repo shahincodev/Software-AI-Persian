@@ -292,6 +292,9 @@ JSON Array:"""
             # استفاده از fallback برای اطمینان از دریافت پاسخ
             response = await self.ask_with_fallback(prompt, mode="system", max_tokens=500)
             
+            # Log the raw response for debugging
+            logger.debug(f"📋 Raw AI response: {response[:500]}")
+            
             # تلاش برای parse کردن JSON
             import json
             import re
@@ -300,6 +303,7 @@ JSON Array:"""
             json_match = re.search(r'\[.*\]', response, re.DOTALL)
             if json_match:
                 json_str = json_match.group(0)
+                logger.debug(f"📋 Extracted JSON: {json_str[:200]}")
                 actions = json.loads(json_str)
                 
                 if isinstance(actions, list):

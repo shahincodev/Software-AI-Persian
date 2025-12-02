@@ -410,7 +410,12 @@ Return ONLY the .exe filename, nothing else:"""
             
             if response:
                 # پاکسازی و استخراج نام exe
-                exe_name = response.strip().lower()
+                # Make sure we're working with string content, not the response object
+                if hasattr(response, 'content'):
+                    exe_name = response.content.strip().lower()
+                else:
+                    exe_name = str(response).strip().lower()
+                
                 if not exe_name.endswith('.exe'):
                     exe_name += '.exe'
                 logger.info("🤖 AI extracted app name: %s", exe_name)

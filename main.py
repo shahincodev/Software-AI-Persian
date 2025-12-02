@@ -397,7 +397,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--input-mode",
         choices=["text", "voice"],
-        default="voice",
+        default="text",
         help="Input type: 'text' for keyboard, 'voice' for microphone"
     )
     

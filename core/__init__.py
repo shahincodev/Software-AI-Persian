@@ -40,9 +40,16 @@ from .ai_brain import AIBrain
 from .mouse_control import MouseController
 from .keyboard_control import KeyboardController
 from .smart_wait import SmartWaiter, WaitStrategy
-from .desktop_vision import DesktopVision, MatchMethod
+from .desktop_vision import DesktopVision
 from .action_controller import ActionController
-from .desktop_actions import DesktopActions
+from .desktop_actions import (
+    ClickAction,
+    TypeAction,
+    WaitAction,
+    DragDropAction,
+    HotkeyAction,
+    ScrollAction,
+)
 
 # Week 2: Safety & Recovery (Day 7)
 from .action_safety import ActionSafety
@@ -97,9 +104,13 @@ __all__ = [
     "SmartWaiter",
     "WaitStrategy",
     "DesktopVision",
-    "MatchMethod",
     "ActionController",
-    "DesktopActions",
+    "ClickAction",
+    "TypeAction",
+    "WaitAction",
+    "DragDropAction",
+    "HotkeyAction",
+    "ScrollAction",
     # Week 2: Safety & Recovery
     "ActionSafety",
     "ActionRecovery",

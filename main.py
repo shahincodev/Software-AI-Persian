@@ -3,8 +3,8 @@
 # Copyright (c) 2025 Shahin
 
 """
-نقطه ورودی اصلی سیستم نرم‌افزاری هوش مصنوعی.
-این ماژول یک رابط خط فرمان (CLI) برای تعامل با قابلیت‌های اصلی سیستم فراهم می‌کند.
+Main entry point for the AI-Powered Windows Automation System.
+This module provides a CLI interface for interacting with system capabilities.
 """
 
 from __future__ import annotations
@@ -33,39 +33,39 @@ from core.action_controller import ActionController
 from dotenv import load_dotenv
 from core.logging_config import setup_logging, install_exception_hook
 
-colorama_init(autoreset=True) # در ویندوز، فعال کردن مدیریت ANSI
+colorama_init(autoreset=True)  # Enable ANSI support on Windows
 
 logger = logging.getLogger(__name__)
 
 
 async def _is_system_request(user_text: str, system_agent: IntelligentSystemAgent) -> bool:
-    """تشخیص هوشمند آیا درخواست کاربر مربوط به سیستم است یا نه.
+    """Intelligently detect if user request is system-related.
     
     Args:
-        user_text: متن درخواست کاربر
-        system_agent: عامل سیستم برای دسترسی به AIBrain
+        user_text: User request text
+        system_agent: System agent for AI access
     
     Returns:
-        True اگر درخواست سیستمی باشد
+        True if it's a system request
     """
-    # کلمات کلیدی سیستمی (فارسی و انگلیسی)
+    # System keywords (English and Persian)
     system_keywords = [
         # Actions
-        "open", "launch", "start", "run", "باز", "اجرا", "شروع",
-        "install", "نصب", "setup",
-        "close", "kill", "terminate", "stop", "بستن", "توقف",
-        "hardware", "سخت‌افزار", "cpu", "ram", "memory", "disk", "gpu",
+        "open", "launch", "start", "run",
+        "install", "setup",
+        "close", "kill", "terminate", "stop",
+        "hardware", "cpu", "ram", "memory", "disk", "gpu",
         # Apps
         "notepad", "calculator", "chrome", "firefox", "edge",
-        "photoshop", "فتوشاپ", "word", "excel", "powerpoint",
-        "vscode", "visual studio", "برنامه",
+        "photoshop", "word", "excel", "powerpoint",
+        "vscode", "visual studio", "app", "application",
         # System operations
-        "process", "فرآیند", "task manager", "مدیریت", "system", "سیستم"
+        "process", "task manager", "system"
     ]
     
     user_lower = user_text.lower()
     
-    # چک سریع با کلمات کلیدی
+    # Quick check with keywords
     for keyword in system_keywords:
         if keyword in user_lower:
             return True
@@ -74,19 +74,19 @@ async def _is_system_request(user_text: str, system_agent: IntelligentSystemAgen
 
 
 def _summarize_for_voice(result_text: str) -> str:
-    """خلاصه‌سازی پاسخ طولانی برای خروجی صوتی.
+    """Summarize long response for voice output.
     
     Args:
-        result_text: متن کامل نتیجه
+        result_text: Full result text
     
     Returns:
-        خلاصه مناسب برای گفتار
+        Summarized text suitable for speech
     """
-    # اگر خیلی کوتاه است، همان را برگردان
+    # If already short, return as is
     if len(result_text) < 150:
         return result_text
     
-    # استخراج خط اول که معمولاً خلاصه است
+    # Extract first meaningful line (usually the summary)
     lines = result_text.split('\n')
     first_meaningful_line = ""
     
@@ -99,7 +99,7 @@ def _summarize_for_voice(result_text: str) -> str:
     if first_meaningful_line:
         return first_meaningful_line
     
-    # اگر نتوانستیم، ۱۵۰ کاراکتر اول
+    # Fallback: return first 150 characters
     return result_text[:150] + "..."
 
 
@@ -110,21 +110,21 @@ async def handle_mouse_command(
     lang: str,
     input_mode: str
 ) -> None:
-    """پردازش دستورات موس."""
+    """Process mouse commands."""
     try:
         cmd_lower = command.lower()
         
-        if "position" in cmd_lower or "موقعیت" in cmd_lower:
+        if "position" in cmd_lower:
             x, y = mouse.get_position()
-            msg = f"🖱️ Mouse position: ({x}, {y})"
+            msg = f"🖱️  Mouse position: ({x}, {y})"
             print(msg)
             if input_mode == "voice":
                 voice.speak(f"Mouse is at position {x}, {y}", lang=lang)
         
-        elif "click" in cmd_lower or "کلیک" in cmd_lower:
+        elif "click" in cmd_lower:
             x, y = mouse.get_position()
             mouse.click(x, y)
-            msg = f"🖱️ Clicked at ({x}, {y})"
+            msg = f"🖱️  Clicked at ({x}, {y})"
             print(msg)
             if input_mode == "voice":
                 voice.speak("Click executed", lang=lang)
@@ -148,15 +148,15 @@ async def handle_keyboard_command(
     lang: str,
     input_mode: str
 ) -> None:
-    """پردازش دستورات کیبورد."""
+    """Process keyboard commands."""
     try:
-        # استخراج متن برای تایپ
-        if "type" in command.lower() or "تایپ" in command:
-            # استخراج متن بعد از "type"
+        # Extract text to type
+        if "type" in command.lower():
+            # Extract text after "type"
             text_to_type = command.split(maxsplit=1)[1] if len(command.split()) > 1 else ""
             
             if text_to_type:
-                msg = f"⌨️ Typing in 3 seconds: {text_to_type}"
+                msg = f"⌨️  Typing in 3 seconds: {text_to_type}"
                 print(msg)
                 if input_mode == "voice":
                     voice.speak("Typing in 3 seconds", lang=lang)
@@ -171,8 +171,8 @@ async def handle_keyboard_command(
             else:
                 print("❓ Usage: type <your text here>")
         
-        elif "hotkey" in command.lower() or "میانبر" in command:
-            msg = "⌨️ Example: Ctrl+C executed"
+        elif "hotkey" in command.lower():
+            msg = "⌨️  Example: Ctrl+C executed"
             print(msg)
             keyboard.hotkey('ctrl', 'c')
             if input_mode == "voice":
@@ -195,11 +195,11 @@ async def handle_wait_command(
     lang: str,
     input_mode: str
 ) -> None:
-    """پردازش دستورات انتظار هوشمند."""
+    """Process smart wait commands."""
     try:
         cmd_lower = command.lower()
         
-        if "idle" in cmd_lower or "بیکار" in cmd_lower:
+        if "idle" in cmd_lower:
             msg = "⏳ Waiting for system to be idle..."
             print(msg)
             if input_mode == "voice":
@@ -213,11 +213,11 @@ async def handle_wait_command(
                 if input_mode == "voice":
                     voice.speak("System is now idle", lang=lang)
             else:
-                timeout_msg = f"⏱️ Timeout waiting for idle"
+                timeout_msg = f"⏱️  Timeout waiting for idle"
                 print(timeout_msg)
         
-        elif "window" in cmd_lower or "پنجره" in cmd_lower:
-            # استخراج نام پنجره
+        elif "window" in cmd_lower:
+            # Extract window name
             window_name = command.split(maxsplit=1)[1] if len(command.split()) > 1 else "Notepad"
             
             msg = f"⏳ Waiting for window: {window_name}"
@@ -233,7 +233,7 @@ async def handle_wait_command(
                 if input_mode == "voice":
                     voice.speak("Window found", lang=lang)
             else:
-                timeout_msg = f"⏱️ Timeout: {window_name} not found"
+                timeout_msg = f"⏱️  Timeout: {window_name} not found"
                 print(timeout_msg)
         
         else:
@@ -254,12 +254,12 @@ async def handle_vision_command(
     lang: str,
     input_mode: str
 ) -> None:
-    """پردازش دستورات بینایی رایانه (Enhanced Vision)."""
+    """Process enhanced vision commands."""
     try:
         cmd_lower = command.lower()
         
-        if "find image" in cmd_lower or "پیدا کردن تصویر" in cmd_lower:
-            # find image <path> [confidence]
+        if "find image" in cmd_lower:
+            # vision find image <path> [confidence]
             parts = command.split(maxsplit=2)
             if len(parts) < 3:
                 print("❓ Usage: vision find image <path> [confidence]")
@@ -281,15 +281,15 @@ async def handle_vision_command(
                 if input_mode == "voice":
                     voice.speak("Image found", lang=lang)
                 
-                # اختیاری: کلیک اگر mouse فعال باشد
+                # Optional: click if mouse is enabled
                 if mouse:
                     mouse.click(*match.center)
-                    print(f"🖱️ Clicked at {match.center}")
+                    print(f"🖱️  Clicked at {match.center}")
             else:
                 not_found_msg = "❌ Image not found"
                 print(not_found_msg)
         
-        elif "get color" in cmd_lower or "رنگ" in cmd_lower:
+        elif "get color" in cmd_lower:
             # vision get color <x> <y>
             parts = command.split()
             if len(parts) < 4:
@@ -304,7 +304,7 @@ async def handle_vision_command(
             if input_mode == "voice":
                 voice.speak(f"Color is {color[0]} {color[1]} {color[2]}", lang=lang)
         
-        elif "find button" in cmd_lower or "پیدا کردن دکمه" in cmd_lower:
+        elif "find button" in cmd_lower:
             # vision find button <text>
             parts = command.split(maxsplit=2)
             if len(parts) < 3:
@@ -323,11 +323,11 @@ async def handle_vision_command(
                 print(success_msg)
                 if mouse:
                     mouse.click(*pos)
-                    print(f"🖱️ Clicked button")
+                    print(f"🖱️  Clicked button")
             else:
                 print("❌ Button not found")
         
-        elif "screenshot" in cmd_lower or "اسکرین‌شات" in cmd_lower:
+        elif "screenshot" in cmd_lower:
             # vision screenshot [path]
             parts = command.split()
             save_path = parts[1] if len(parts) > 1 else "screenshot.png"
@@ -352,25 +352,25 @@ async def handle_vision_command(
         logger.exception("Vision command failed")
 
 
+# Load banner from file
 with open('banner.txt', 'r', encoding='utf-8') as file:
     banner = file.read()
 
-# پیکربندی ثبت وقایع در هنگام راه‌اندازی اولیه تنظیم می‌شود (به `setup_logging` مراجعه کنید)
 logger = logging.getLogger(__name__)
 
 def setup_environment() -> None:
-    """مقداردهی اولیه متغیرهای محیطی و ایجاد پوشه‌های مورد نیاز."""
-    # بارگذاری متغیرهای محیطی از فایل .env
+    """Initialize environment variables and create required directories."""
+    # Load environment variables from .env file
     load_dotenv()
     
-    # اطمینان از وجود پوشه‌های مورد نیاز
+    # Ensure required directories exist
     for dir_path in ["data/logs", "data/logs/cache"]:
         Path(dir_path).mkdir(parents=True, exist_ok=True)
 
 def parse_arguments() -> argparse.Namespace:
-    """تجزیه و تحلیل آرگومان‌های خط فرمان."""
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
-        description="سیستم نرم‌افزاری هوش مصنوعی - پردازش هوشمند تسک‌ها",
+        description="AI-Powered Windows Automation System - Intelligent Task Processing",
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     
@@ -378,57 +378,60 @@ def parse_arguments() -> argparse.Namespace:
         "--mode",
         choices=["browser", "code"],
         default="browser",
-        help="حالت عملیات: 'browser' برای تعامل با وب، 'code' برای تحلیل کد"
+        help="Operation mode: 'browser' for web interaction, 'code' for code analysis"
     )
     
     parser.add_argument(
         "--concurrency",
         type=int,
         default=3,
-        help="تعداد تسک‌های همزمان قابل اجرا (پیش‌فرض: 3)"
+        help="Number of concurrent tasks (default: 3)"
     )
     
     parser.add_argument(
         "--debug",
         action="store_true",
-        help="فعال‌سازی لاگ‌های دیباگ"
+        help="Enable debug logging"
     )
+    
     parser.add_argument(
         "--input-mode",
         choices=["text", "voice"],
         default="voice",
-        help="انتخاب نوع ورودی: 'text' برای کیبورد، 'voice' برای میکروفون"
+        help="Input type: 'text' for keyboard, 'voice' for microphone"
     )
+    
     parser.add_argument(
         "--tts-provider",
         choices=["google-cloud", "gtts", "elevenlabs"],
         default="gtts",
-        help="انتخاب سرویس تبدیل متن به گفتار: 'google-cloud' (پولی، کیفیت بالا)، 'gtts' (رایگان) یا 'elevenlabs' (پولی، کیفیت بالا)"
+        help="Text-to-speech provider: 'google-cloud' (paid, high quality), 'gtts' (free), or 'elevenlabs' (paid, high quality)"
     )
+    
     parser.add_argument(
         "--enable-automation",
         action="store_true",
-        help="فعال‌سازی قابلیت‌های خودکارسازی دسکتاپ (Mouse, Keyboard, Smart Wait)"
+        help="Enable desktop automation features (Mouse, Keyboard, Smart Wait, Enhanced Vision)"
     )
 
     return parser.parse_args()
 
 def print_banner(text=banner, color=Fore.CYAN) -> None:
-    """چاپ بنر خوش‌آمدگویی در CLI."""
+    """Print welcome banner in CLI."""
     term_width = shutil.get_terminal_size((80, 20)).columns
     
     try:
-        # اگر متن از قبل ASCII art است، مستقیماً آن را نمایش می‌دهیم
+        # If text is already ASCII art, display it directly
         lines = str(text).splitlines()
         for line in lines:
-            # محاسبه فاصله لازم برای مرکز قرار دادن متن
+            # Calculate padding for centering
             padding = (term_width - len(line)) // 2
             if padding > 0:
                 print(color + " " * padding + line + Style.RESET_ALL)
             else:
                 print(color + line + Style.RESET_ALL)
     except Exception as e:
-        logger.error(F"Error displaying banner: {str(e)}")
+        logger.error(f"Error displaying banner: {str(e)}")
         print(color + str(text) + Style.RESET_ALL)
 
 async def process_user_input(
@@ -444,18 +447,18 @@ async def process_user_input(
     vision: Optional[DesktopVision] = None,
     action_controller: Optional[ActionController] = None
 ) -> None:
-    """پردازش ورودی کاربر در یک حلقه تعاملی بهبود یافته با پشتیبانی از چندزبانگی و خودکارسازی."""
+    """Process user input in an enhanced interactive loop with multilingual support and automation."""
 
     print_banner(banner, color=Fore.CYAN)
     welcome_message = "Hello! Welcome to the Artificial Intelligence System."
-    current_lang = "en"  # زبان پیش‌فرض
+    current_lang = "en"  # Default language
     if input_mode == "voice":
         voice.speak(welcome_message, lang=current_lang, block=True)
     
     print(f"\n{welcome_message}")
-    print("Please enter your tasks. ask or Type 'start' to execute them. Use Ctrl+C to exit.\n")
+    print("Please enter your tasks or ask questions. Type 'start' to execute tasks. Use Ctrl+C to exit.\n")
     
-    # نمایش وضعیت خودکارسازی
+    # Display automation status
     automation_features = []
     if mouse:
         automation_features.append("Mouse Control")
@@ -472,37 +475,55 @@ async def process_user_input(
         automation_status = f"{Fore.GREEN}🤖 Desktop Automation: ENABLED{Style.RESET_ALL}"
         print(automation_status)
         print(f"   Features: {', '.join(automation_features)}\n")
+    
+    # Display available commands
+    print(f"{Fore.YELLOW}📋 Available Commands:{Style.RESET_ALL}")
+    print("   • start/run     - Execute queued tasks")
+    print("   • exit/quit     - Exit the application")
+    if mouse:
+        print("   • mouse <cmd>   - Mouse commands (position, click)")
+    if keyboard:
+        print("   • type <text>   - Type text using keyboard")
+    if smart_wait:
+        print("   • wait <cmd>    - Smart wait commands (idle, window)")
+    if vision:
+        print("   • vision <cmd>  - Vision commands (screenshot, find image)")
+    print()
 
     try:
         while True:
             user_text = ""
             if input_mode == "voice":
-                print("Listening for a new task...")
+                print(f"{Fore.CYAN}🎤 Listening for a new task...{Style.RESET_ALL}")
                 user_text, detected_lang = voice.listen(timeout=10)
                 if user_text and detected_lang:
                     current_lang = detected_lang
+                    print(f"{Fore.GREEN}✓ Detected: {user_text}{Style.RESET_ALL}")
                 else:
-                    print("No voice input detected. Say 'start' to start tasks or add a new one.")
+                    print(f"{Fore.YELLOW}⚠ No voice input detected. Say 'start' to execute tasks.{Style.RESET_ALL}")
                     continue
             else:
-                user_text = input("New Task (or 'run' to start) > ").strip()
-                # برای ورودی متنی، زبان را انگلیسی فرض می‌کنیم
-                current_lang = "en"
+                try:
+                    user_text = input(f"{Fore.CYAN}📝 New Task (or 'run' to start) > {Style.RESET_ALL}").strip()
+                    # For text input, assume English
+                    current_lang = "en"
+                except EOFError:
+                    break
 
             if not user_text:
                 continue
 
-            # کلمات کلیدی برای اجرا یا خروج
-            if user_text.lower() in ["run", "start", "اجرا کن"]:
+            # Command keywords for execution or exit
+            if user_text.lower() in ["run", "start"]:
                 if not task_engine.queue:
-                    message = "No tasks to run. Please add tasks first."
+                    message = "⚠ No tasks to run. Please add tasks first."
                     print(message)
                     if input_mode == "voice":
                         voice.speak(message, lang=current_lang)
                     continue
                 
-                # اجرای تسک‌ها
-                exec_message = "Executing tasks..."
+                # Execute tasks
+                exec_message = "🚀 Executing tasks..."
                 print(f"\n{exec_message}")
                 if input_mode == "voice":
                     voice.speak(exec_message, lang=current_lang)
@@ -510,122 +531,123 @@ async def process_user_input(
                 tasks_list = list(task_engine.queue)
                 results = await task_engine.run_all()
 
-                # پردازش و ذخیره نتایج
+                # Process and save results
                 for (task_text, task_mode), result in zip(tasks_list, results):
                     if result:
                         memory.remember_long(
                             content=result,
                             metadata={"type": "task_result", "original_task": task_text, "mode": task_mode}
                         )
-                        result_message = f"Task Result: {result}"
+                        result_message = f"✅ Task Result: {result}"
                         print(f"\n{result_message}\n")
                         if input_mode == "voice":
                             voice.speak(f"The task is complete. The result is: {result}", lang=current_lang, block=True)
                     else:
-                        error_message = f"Task '{task_text}' failed or had no result."
+                        error_message = f"❌ Task '{task_text}' failed or had no result."
                         print(f"\n{error_message}\n")
                         if input_mode == "voice":
                             voice.speak(error_message, lang=current_lang, block=True)
                 
                 task_engine.queue.clear()
-                print("\nAll tasks processed. You can add new tasks or exit.")
+                print(f"\n{Fore.GREEN}✓ All tasks processed. You can add new tasks or exit.{Style.RESET_ALL}\n")
 
-            elif user_text.lower() in ["exit", "quit", "خروج"]:
+            elif user_text.lower() in ["exit", "quit"]:
+                print(f"{Fore.YELLOW}👋 Goodbye!{Style.RESET_ALL}")
                 break
             
-            # دستورات خودکارسازی
-            elif user_text.lower().startswith(("mouse", "موس")) and mouse:
+            # Automation commands
+            elif user_text.lower().startswith("mouse") and mouse:
                 await handle_mouse_command(user_text, mouse, voice, current_lang, input_mode)
                 continue
             
-            elif user_text.lower().startswith(("type", "تایپ", "keyboard", "کیبورد")) and keyboard:
+            elif user_text.lower().startswith(("type", "keyboard")) and keyboard:
                 await handle_keyboard_command(user_text, keyboard, voice, current_lang, input_mode)
                 continue
             
-            elif user_text.lower().startswith(("wait", "صبر", "انتظار")) and smart_wait:
+            elif user_text.lower().startswith("wait") and smart_wait:
                 await handle_wait_command(user_text, smart_wait, voice, current_lang, input_mode)
                 continue
             
-            elif user_text.lower().startswith(("vision", "بینایی", "find", "screenshot")) and vision:
+            elif user_text.lower().startswith(("vision", "find", "screenshot")) and vision:
                 await handle_vision_command(user_text, vision, mouse, voice, current_lang, input_mode)
                 continue
             
             else:
-                # تشخیص هوشمند: آیا این یک درخواست سیستمی است؟
+                # Intelligent detection: Is this a system request?
                 is_system_task = await _is_system_request(user_text, system_agent)
                 
                 if is_system_task:
-                    # پردازش مستقیم با عامل سیستم
-                    processing_msg = "Processing system request with AI..."
-                    print(f"\n🤖 {processing_msg}")
+                    # Direct processing with system agent
+                    processing_msg = "🤖 Processing system request with AI..."
+                    print(f"\n{processing_msg}")
                     if input_mode == "voice":
                         voice.speak("Processing your system request.", lang=current_lang)
                     
                     try:
-                        # اجرای هوشمند با AI
+                        # Intelligent execution with AI
                         system_result = await system_agent.process_request(user_text)
                         
-                        # ذخیره در حافظه
+                        # Save to memory
                         memory.remember_long(
                             content=system_result,
                             metadata={"type": "system_result", "original_request": user_text}
                         )
                         
-                        # نمایش نتیجه
+                        # Display result
                         print(f"\n{system_result}\n")
                         if input_mode == "voice":
-                            # خلاصه‌سازی پاسخ برای صدا
+                            # Summarize response for voice
                             summary = _summarize_for_voice(system_result)
                             voice.speak(summary, lang=current_lang, block=True)
                     
                     except Exception as e:
-                        error_msg = f"Error executing system task: {str(e)}"
-                        print(f"\n❌ {error_msg}\n")
+                        error_msg = f"❌ Error executing system task: {str(e)}"
+                        print(f"\n{error_msg}\n")
                         logger.exception("System task execution failed")
                         if input_mode == "voice":
                             voice.speak("Sorry, the system task failed.", lang=current_lang)
                 else:
-                    # تسک عادی (browser/code) - افزودن به صف
+                    # Regular task (browser/code) - add to queue
                     memory.remember_short(
                         content=user_text,
                         ttl=3600,
                         metadata={"type": "user_task", "mode": mode, "lang": current_lang}
                     )
                     task_engine.add_task(user_text, mode=mode)
-                    added_message = f"Task added: {user_text}"
+                    added_message = f"✅ Task added: {user_text}"
                     print(added_message)
                     if input_mode == "voice":
                         voice.speak(added_message, lang=current_lang)
 
     except KeyboardInterrupt:
-        print("\nShutting down gracefully...")
+        print(f"\n{Fore.YELLOW}🛑 Shutting down gracefully...{Style.RESET_ALL}")
     finally:
         memory.shutdown()
         voice.shutdown()
 
 async def main() -> None:
-    """نقطه ورود اصلی برنامه."""
+    """Main application entry point."""
     try:
-        # تجزیه آرگومان‌های خط فرمان
+        # Parse command-line arguments
         args = parse_arguments()
 
-        # راه‌اندازی محیط
+        # Setup environment
         setup_environment()
 
-        # مقداردهی اولیه گزارش‌گیری پس از آماده‌سازی محیط. با توجه به پرچم --debug
+        # Initialize logging after environment setup, respecting --debug flag
         setup_logging(level=logging.DEBUG if args.debug else None)
         install_exception_hook()
         
-        # راه‌اندازی اجزای اصلی
+        # Initialize core components
         task_engine = TaskEngine(concurrency=args.concurrency)
         memory = MemoryManager()
         voice = VoiceManager(tts_provider=args.tts_provider)
         
-        # راه‌اندازی عامل هوشمند سیستم
+        # Initialize intelligent system agent
         system_agent = IntelligentSystemAgent(dry_run=args.debug)
         logger.info("Intelligent system agent initialized")
         
-        # راه‌اندازی قابلیت‌های خودکارسازی (Week 2)
+        # Initialize automation capabilities (Week 2)
         mouse = None
         keyboard = None
         smart_wait = None
@@ -643,9 +665,9 @@ async def main() -> None:
                 print(f"{Fore.GREEN}✅ Desktop automation features enabled (including Action Controller){Style.RESET_ALL}")
             except Exception as e:
                 logger.warning(f"Failed to initialize automation components: {e}")
-                print(f"{Fore.YELLOW}⚠️ خطا در فعال‌سازی خودکارسازی: {e}{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}⚠️ Error enabling automation: {e}{Style.RESET_ALL}")
 
-        # پردازش ورودی کاربر و اجرای تسک‌ها
+        # Process user input and execute tasks
         await process_user_input(
             task_engine, 
             memory, 

@@ -87,6 +87,7 @@ class SmartWaiter:
     def __init__(
         self,
         vision_system: Optional[DesktopVision] = None,
+        vision: Optional[DesktopVision] = None,  # Backward compatibility
         default_timeout: float = 30.0,
         default_interval: float = 0.5,
     ):
@@ -94,10 +95,12 @@ class SmartWaiter:
         
         Args:
             vision_system: سیستم بینایی برای تشخیص عناصر
+            vision: Alias for vision_system (backward compatibility)
             default_timeout: زمان انتظار پیش‌فرض (ثانیه)
             default_interval: فاصله بررسی پیش‌فرض (ثانیه)
         """
-        self.vision = vision_system or DesktopVision()
+        # Backward compatibility: support both vision and vision_system
+        self.vision = vision or vision_system or DesktopVision()
         self.default_timeout = default_timeout
         self.default_interval = default_interval
         
@@ -156,8 +159,8 @@ class SmartWaiter:
         while (time.time() - start_time) < timeout:
             attempts += 1
             
-            # جستجوی متن
-            location = self.vision.find_text(target, confidence=confidence)
+            # جستجوی متن (رفع API mismatch - استفاده از confidence_threshold)
+            location = self.vision.find_text(target, confidence_threshold=confidence)
             
             if location:
                 duration = time.time() - start_time

@@ -42,10 +42,17 @@ class SafetyPolicy:
         ]
         
         # برنامه‌های مجاز (whitelist)
+        # نکته: explorer.exe همیشه مجاز است چون برای file management ضروری است
         self.allowed_apps: set[str] = {
             "notepad.exe", "calc.exe", "mspaint.exe", "explorer.exe",
             "code.exe", "chrome.exe", "firefox.exe", "edge.exe",
             "photoshop.exe", "illustrator.exe", "winword.exe", "excel.exe",
+            "powershell.exe", "cmd.exe",  # System tools
+        }
+        
+        # برنامه‌های همیشه مجاز (بدون محدودیت)
+        self.always_allowed: set[str] = {
+            "notepad.exe", "calc.exe", "mspaint.exe", "explorer.exe"
         }
         
         # فرآیندهای ممنوع برای بستن (blacklist)

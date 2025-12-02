@@ -265,6 +265,51 @@ class AIBrain:
             logger.exception("AI ask failed: %s", e)
             raise  # Re-raise برای fallback
     
+    def _sanitize_ai_response(self, response: str) -> str:
+        """پاکسازی پاسخ AI از داده‌های مشکوک.
+        
+        Args:
+            response: پاسخ خام AI
+            
+        Returns:
+            پاسخ پاکسازی شده
+        """
+        # حذف completion= و thinking= که در لاگ‌ها دیده شده
+        import re
+        
+        # الگوهای مشکوک - به ترتیب اولویت
+        suspicious_patterns = [
+            # Pattern 1: completion='app.exe'
+            (r"completion\s*=\s*['\"]([^'\"]+\.exe)['\"]?", 1),
+            # Pattern 2: completion=app.exe (without quotes)
+            (r"completion\s*=\s*(\w+\.exe)", 1),
+            # Pattern 3: thinking='...'
+            (r"thinking\s*=\s*['\"]([^'\"]+)['\"]?", 0),  # 0 = remove completely
+            # Pattern 4: thinking=... (without quotes)
+            (r"thinking\s*=\s*(\S+)", 0),
+        ]
+        
+        cleaned = response
+        for pattern, extract_group in suspicious_patterns:
+            if extract_group > 0:
+                # استخراج مقدار
+                matches = re.findall(pattern, cleaned, re.IGNORECASE)
+                if matches:
+                    logger.warning(f"⚠️ Suspicious pattern detected: {pattern[:30]}...")
+                    # جایگزینی کل pattern با فقط مقدار استخراج شده
+                    for match in matches:
+                        if match.endswith('.exe'):
+                            cleaned = match
+                            logger.info(f"✅ Extracted clean app name: {cleaned}")
+                            break
+            else:
+                # حذف کامل
+                cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE)
+                if cleaned != response:
+                    logger.info(f"✅ Removed suspicious pattern: {pattern[:30]}...")
+        
+        return cleaned.strip()
+    
     async def interpret_system_request(self, user_request: str) -> list[dict[str, Any]]:
         """تفسیر درخواست کاربر و تبدیل به لیست اقدامات.
         
@@ -274,6 +319,9 @@ class AIBrain:
         Returns:
             لیست اقدامات در قالب JSON
         """
+        # پاکسازی ورودی کاربر
+        user_request = self._sanitize_ai_response(user_request)
+        
         prompt = f"""You are a Windows automation system. Convert the user's natural language request into structured actions.
 
 User Request: {user_request}

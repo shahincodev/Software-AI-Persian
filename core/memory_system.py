@@ -287,3 +287,102 @@ class MemoryManager:
         """شاتر داون ایمن حافظهٔ بلندمدت."""
         self.short.cleanup()
         self.long.close()
+    
+    def optimize_memory(self, max_short_term_items: int = 100, max_long_term_items: int = 10000) -> Dict[str, int]:
+        """بهینه‌سازی مصرف حافنه و پاکسازی خودکار.
+        
+        Args:
+            max_short_term_items: حداکثر آیتم‌های short-term
+            max_long_term_items: حداکثر آیتم‌های long-term
+            
+        Returns:
+            آمار پاکسازی
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        stats = {
+            "short_term_before": 0,
+            "short_term_after": 0,
+            "short_term_cleaned": 0,
+            "long_term_before": 0,
+            "long_term_after": 0,
+            "long_term_cleaned": 0
+        }
+        
+        # پاکسازی short-term
+        with self._lock:
+            short_items = self.short.all_items()
+            stats["short_term_before"] = len(short_items)
+            
+            # پاکسازی موارد منقضی
+            self.short.cleanup()
+            
+            # اگر بیش از حد مجاز، قدیمی‌ترین‌ها را حذف کن
+            current_items = self.short.all_items()
+            if len(current_items) > max_short_term_items:
+                excess = len(current_items) - max_short_term_items
+                for _ in range(excess):
+                    old_item = self.short.pop_oldest()
+                    if old_item:
+                        # انتقال به long-term به جای حذف
+                        self.long.add(content=old_item.content, metadata=old_item.metadata)
+            
+            stats["short_term_after"] = len(self.short.all_items())
+            stats["short_term_cleaned"] = stats["short_term_before"] - stats["short_term_after"]
+        
+        # پاکسازی long-term (حذف قدیمی‌ترین‌ها)
+        with self.long._lock:
+            cursor = self.long._conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM memories")
+            stats["long_term_before"] = cursor.fetchone()[0]
+            
+            if stats["long_term_before"] > max_long_term_items:
+                excess = stats["long_term_before"] - max_long_term_items
+                # حذف قدیمی‌ترین‌ها
+                cursor.execute("""
+                    DELETE FROM memories WHERE id IN (
+                        SELECT id FROM memories ORDER BY created_at ASC LIMIT ?
+                    )
+                """, (excess,))
+                self.long._conn.commit()
+            
+            cursor.execute("SELECT COUNT(*) FROM memories")
+            stats["long_term_after"] = cursor.fetchone()[0]
+            stats["long_term_cleaned"] = stats["long_term_before"] - stats["long_term_after"]
+        
+        logger.info(
+            f"✅ Memory optimized: "
+            f"Short-term: {stats['short_term_before']} → {stats['short_term_after']} "
+            f"(-{stats['short_term_cleaned']}), "
+            f"Long-term: {stats['long_term_before']} → {stats['long_term_after']} "
+            f"(-{stats['long_term_cleaned']})"
+        )
+        
+        return stats
+    
+    def get_memory_usage(self) -> Dict[str, Any]:
+        """دریافت آمار مصرف حافظه.
+        
+        Returns:
+            آمار دقیق از مصرف حافظه
+        """
+        import sys
+        
+        short_items = self.short.all_items()
+        
+        with self.long._lock:
+            cursor = self.long._conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM memories")
+            long_count = cursor.fetchone()[0]
+        
+        # تخمین حجم حافظه
+        short_size = sum(sys.getsizeof(item.content) + sys.getsizeof(str(item.metadata)) for item in short_items)
+        
+        return {
+            "short_term_count": len(short_items),
+            "long_term_count": long_count,
+            "short_term_size_bytes": short_size,
+            "short_term_size_mb": short_size / (1024 * 1024),
+            "consolidation_threshold": self._consolidation_threshold
+        }

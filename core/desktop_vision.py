@@ -36,7 +36,24 @@ except ImportError:
 
 try:
     import pytesseract
+    import os
     TESSERACT_AVAILABLE = True
+    
+    # تلاش برای تنظیم خودکار Tesseract path در Windows
+    import platform
+    if platform.system() == "Windows":
+        possible_paths = [
+            r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+            r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+            os.path.expanduser(r"~\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"),
+        ]
+        for path in possible_paths:
+            if os.path.exists(path):
+                pytesseract.pytesseract.tesseract_cmd = path
+                logger.info(f"✅ Tesseract found at: {path}")
+                break
+        else:
+            logger.warning("⚠️ Tesseract executable not found. Please install from: https://github.com/UB-Mannheim/tesseract/wiki")
 except ImportError:
     logger.warning("pytesseract not available. Install with: pip install pytesseract")
 

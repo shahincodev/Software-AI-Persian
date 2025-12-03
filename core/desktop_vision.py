@@ -74,27 +74,34 @@ except ImportError:
 @dataclass
 class TextBox:
     """باکس متنی شناسایی شده روی صفحه."""
-    text: str
-    x: int
-    y: int
-    width: int
-    height: int
-    confidence: float = 0.0
+    try:
+        import pytesseract
+        import os
+        TESSERACT_AVAILABLE = True
     
-    @property
-    def center(self) -> tuple[int, int]:
-        """مرکز باکس متنی."""
-        return (self.x + self.width // 2, self.y + self.height // 2)
-
-
-@dataclass
-class WindowInfo:
-    """اطلاعات یک پنجره."""
-    title: str
-    x: int
-    y: int
-    width: int
-    height: int
+        # تلاش برای تنظیم دستی از طریق ENV اولویت دارد
+        env_path = os.environ.get("TESSERACT_PATH")
+        if env_path and os.path.exists(env_path):
+            pytesseract.pytesseract.tesseract_cmd = env_path
+            logger.info(f"✅ Tesseract path set via ENV: {env_path}")
+        else:
+            # تلاش برای تنظیم خودکار Tesseract path در Windows
+            import platform
+            if platform.system() == "Windows":
+                possible_paths = [
+                    r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+                    r"C:\\Program Files (x86)\\Tesseract-OCR\\tesseract.exe",
+                    os.path.expanduser(r"~\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract.exe"),
+                ]
+                for path in possible_paths:
+                    if os.path.exists(path):
+                        pytesseract.pytesseract.tesseract_cmd = path
+                        logger.info(f"✅ Tesseract found at: {path}")
+                        break
+                else:
+                    logger.warning("⚠️ Tesseract executable not found. Please install from: https://github.com/UB-Mannheim/tesseract/wiki")
+    except ImportError:
+        logger.warning("pytesseract not available. Install with: pip install pytesseract")
     is_active: bool = False
     
     @property

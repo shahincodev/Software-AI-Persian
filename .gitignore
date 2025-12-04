@@ -76,8 +76,11 @@ secrets.yaml
 *.db
 *.db-journal
 
-# logs
+# Logs and data
 *.log
+data/logs/
+data/screenshots/
+data/*.sqlite3
 
 # local settings
 local_settings.py

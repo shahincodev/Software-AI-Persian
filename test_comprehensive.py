@@ -326,15 +326,28 @@ async def test_vision(result: TestResult):
     print(f"{Color.BOLD}{Color.MAGENTA}👁️  Category 7: Vision System (OCR & Screenshot){Color.RESET}")
     print(f"{Color.BOLD}{Color.MAGENTA}{'=' * 80}{Color.RESET}")
     
-    # Tesseract check
+    # Tesseract check - improved to detect auto-found paths
     tess_path = os.getenv("TESSERACT_PATH")
-    if tess_path:
-        if Path(tess_path).exists():
-            result.add_pass("Vision System", "Tesseract OCR", f"✓ at {tess_path}")
-        else:
-            result.add_fail("Vision System", "Tesseract OCR", f"invalid path: {tess_path}")
-    else:
-        result.add_warning("Vision System", "Tesseract OCR", "not configured - OCR disabled")
+    
+    # Try to import pytesseract to see if it can find Tesseract automatically
+    try:
+        import pytesseract
+        # Try to get version - if this works, Tesseract is available
+        try:
+            version = pytesseract.get_tesseract_version()
+            if tess_path:
+                result.add_pass("Vision System", "Tesseract OCR", f"✓ configured at {tess_path}")
+            else:
+                result.add_pass("Vision System", "Tesseract OCR", f"✓ auto-detected (v{version})")
+        except pytesseract.TesseractNotFoundError:
+            if tess_path and Path(tess_path).exists():
+                result.add_pass("Vision System", "Tesseract OCR", f"✓ at {tess_path}")
+            elif tess_path:
+                result.add_fail("Vision System", "Tesseract OCR", f"invalid path: {tess_path}")
+            else:
+                result.add_warning("Vision System", "Tesseract OCR", "not found - OCR disabled")
+    except ImportError:
+        result.add_warning("Vision System", "Tesseract OCR", "pytesseract not installed")
     
     # Screenshot test
     try:
@@ -342,7 +355,7 @@ async def test_vision(result: TestResult):
         vision = DesktopVision()
         
         try:
-            img = vision.take_screenshot()
+            img = vision.capture_screen()  # Fixed: use capture_screen instead of take_screenshot
             if img and hasattr(img, 'size'):
                 result.add_pass("Vision System", "Screenshot", f"✓ size={img.size}")
             else:

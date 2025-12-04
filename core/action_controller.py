@@ -57,6 +57,7 @@ class ActionResult(Enum):
     """نتیجه اجرای یک اکشن."""
     SUCCESS = "success"
     FAILED = "failed"
+    BLOCKED = "blocked"
     TIMEOUT = "timeout"
     NOT_FOUND = "not_found"
     VERIFICATION_FAILED = "verification_failed"

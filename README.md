@@ -1,11 +1,3 @@
-## OCR (Tesseract) Setup
-
-- If you use OCR features, install Tesseract on Windows:
-  - Download and install: `https://github.com/UB-Mannheim/tesseract/wiki`
-  - If `tesseract.exe` is not in PATH, set `TESSERACT_PATH` in `.env`:
-    - Example: `TESSERACT_PATH=C:\\Program Files\\Tesseract-OCR\\tesseract.exe`
-- This removes the non-blocking warning and enables reliable OCR.
-
 # Software-AI
 
 یک سامانهٔ پیشرفته و قابل توسعه برای اجرای تسک‌های هوشمند با استفاده از مدل‌های LLM و ابزار مرورگر خودکار.

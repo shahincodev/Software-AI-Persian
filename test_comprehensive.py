@@ -254,7 +254,7 @@ async def test_google_api(result: TestResult):
             result.add_pass("Google API", "ChatGoogle", f"✓ {str(content)[:20]}")
         else:
             # این فقط warning چون Direct SDK کار کرد
-            result.add_warn("Google API", "ChatGoogle", f"empty (type={type(resp).__name__})")
+            result.add_warning("Google API", "ChatGoogle", f"empty (type={type(resp).__name__})")
             
     except Exception as e:
         err = str(e)

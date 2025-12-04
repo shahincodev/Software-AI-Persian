@@ -215,8 +215,8 @@ async def test_google_api(result: TestResult):
         from browser_use.llm.google.chat import ChatGoogle
         from langchain_core.messages import HumanMessage
         
-        print(f"   {Color.CYAN}Testing: gemini-2.0-flash-exp{Color.RESET}")
-        model = ChatGoogle(model="gemini-2.0-flash-exp", temperature=0.3)
+        print(f"   {Color.CYAN}Testing: gemini-2.5-flash{Color.RESET}")
+        model = ChatGoogle(model="gemini-2.5-flash", temperature=0.3)
         msg = [HumanMessage(content="Say: OK")]
         
         resp = await model.ainvoke(msg)
@@ -467,7 +467,7 @@ async def main():
     print(f"{Color.BOLD}{Color.CYAN}🔬 Software-AI Comprehensive Test Suite{Color.RESET}")
     print(f"{Color.BOLD}{Color.CYAN}{'=' * 80}{Color.RESET}")
     print(f"{Color.WHITE}Version: v0.9.2+{Color.RESET}")
-    print(f"{Color.WHITE}Mission: مو رو از ماست بکشیم بیرون! 😁{Color.RESET}")
+    print(f"{Color.WHITE}Mission: Let's pull the hair out of our yogurt! 😁{Color.RESET}")
     print(f"{Color.BOLD}{Color.CYAN}{'=' * 80}{Color.RESET}")
     
     res = TestResult()

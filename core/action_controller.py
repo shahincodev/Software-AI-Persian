@@ -1105,12 +1105,35 @@ class ActionController:
             
             # بررسی سطح خطر
             risk = action.get_risk_level()
-            if risk.value >= RiskLevel.MEDIUM.value and not auto_consent and not action.dry_run:
-                logger.warning(f"Action has {risk.name} risk level. Consent required.")
-                if action.require_consent:
-                    # در اینجا می‌توانید یک مکانیزم درخواست تایید اضافه کنید
-                    # در حال حاضر فقط log می‌کنیم
-                    pass
+            needs_approval = risk.value >= RiskLevel.LOW.value and action.require_consent
+            
+            # درخواست تایید اگر نیاز باشد
+            if needs_approval and not auto_consent:
+                # نمایش پیام درخواست تایید
+                approval_msg = f"\n🟢 {action_type} Approval Request\n───────────────────────────────\nDescription: {action.describe()}\nRisk Level: {risk.name}\nDo you approve this action?\n(y/n): "
+                print(approval_msg, end='', flush=True)
+                
+                # دریافت تایید از کاربر
+                try:
+                    user_input = input().strip().lower()
+                    if user_input not in ['y', 'yes', 'yes please', 'approve']:
+                        duration = time.time() - start_time
+                        self._update_stats(False, duration)
+                        return ActionOutcome(
+                            result=ActionResult.FAILED,
+                            message="Action cancelled by user",
+                            duration=duration,
+                            error="User declined approval"
+                        )
+                except Exception as e:
+                    logger.error(f"Error getting user approval: {e}")
+                    duration = time.time() - start_time
+                    return ActionOutcome(
+                        result=ActionResult.FAILED,
+                        message="Failed to get user approval",
+                        duration=duration,
+                        error=str(e)
+                    )
             
             # اسکرین‌شات قبل از اجرا
             screenshot_before = None

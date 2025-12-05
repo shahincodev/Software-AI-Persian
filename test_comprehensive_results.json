@@ -1,0 +1,221 @@
+{
+  "timestamp": "2025-12-04T23:31:27.432725",
+  "duration_seconds": 26.904962,
+  "total_tests": 35,
+  "passed": 33,
+  "failed": 0,
+  "warnings": 2,
+  "health": "GOOD",
+  "details": [
+    {
+      "status": "PASS",
+      "category": "Environment",
+      "test": ".env file",
+      "message": "exists"
+    },
+    {
+      "status": "PASS",
+      "category": "Environment",
+      "test": "Python 3.13.7",
+      "message": "compatible"
+    },
+    {
+      "status": "PASS",
+      "category": "Dependencies",
+      "test": "browser-use",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Dependencies",
+      "test": "python-dotenv",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Dependencies",
+      "test": "Pillow",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Dependencies",
+      "test": "pyautogui",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Dependencies",
+      "test": "psutil",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Dependencies",
+      "test": "langchain",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "API Keys",
+      "test": "GOOGLE_API_KEY",
+      "message": "SET (len=39)"
+    },
+    {
+      "status": "PASS",
+      "category": "API Keys",
+      "test": "OPENAI_API_KEY",
+      "message": "SET (len=73)"
+    },
+    {
+      "status": "PASS",
+      "category": "API Keys",
+      "test": "GROQ_API_KEY",
+      "message": "SET (len=56)"
+    },
+    {
+      "status": "PASS",
+      "category": "Google API",
+      "test": "Direct SDK",
+      "message": "✓ OK"
+    },
+    {
+      "status": "WARN",
+      "category": "Google API",
+      "test": "ChatGoogle",
+      "warning": "empty (type=ChatInvokeCompletion)"
+    },
+    {
+      "status": "PASS",
+      "category": "Core Imports",
+      "test": "core.ai_brain.AIBrain",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Core Imports",
+      "test": "core.desktop_vision.DesktopVision",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Core Imports",
+      "test": "core.desktop_vision.TextBox",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Core Imports",
+      "test": "core.desktop_vision.WindowInfo",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Core Imports",
+      "test": "core.action_controller.ActionController",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Core Imports",
+      "test": "core.intelligent_agent.IntelligentSystemAgent",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Core Imports",
+      "test": "core.mouse_control.MouseController",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Core Imports",
+      "test": "core.keyboard_control.KeyboardController",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Dataclasses",
+      "test": "TextBox",
+      "message": "all fields + properties ✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Dataclasses",
+      "test": "WindowInfo",
+      "message": "all fields + properties ✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Action Controller",
+      "test": "ActionResult enum",
+      "message": "all states ✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Action Controller",
+      "test": "Instantiation",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "Vision System",
+      "test": "Tesseract OCR",
+      "message": "✓ configured at C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+    },
+    {
+      "status": "PASS",
+      "category": "Vision System",
+      "test": "Screenshot",
+      "message": "✓ size=(2560, 1600)"
+    },
+    {
+      "status": "PASS",
+      "category": "AI Brain",
+      "test": "Instantiation",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "AI Brain",
+      "test": "get_model()",
+      "message": "✓"
+    },
+    {
+      "status": "PASS",
+      "category": "AI Brain",
+      "test": "Task Analysis",
+      "message": "✓ type=system"
+    },
+    {
+      "status": "WARN",
+      "category": "Git",
+      "test": "Working Directory",
+      "warning": "1 uncommitted files"
+    },
+    {
+      "status": "PASS",
+      "category": "Git",
+      "test": "Latest Commit",
+      "message": "bd7b6f8 Add data/logs and data/screenshots to .git"
+    },
+    {
+      "status": "PASS",
+      "category": "Git",
+      "test": "Version Tag",
+      "message": "v0.9.2"
+    },
+    {
+      "status": "PASS",
+      "category": "Real-World",
+      "test": "'open notepad'",
+      "message": "✓ got response"
+    },
+    {
+      "status": "PASS",
+      "category": "Real-World",
+      "test": "'what is my CPU?'",
+      "message": "✓ got response"
+    }
+  ]
+}

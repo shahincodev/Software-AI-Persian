@@ -48,6 +48,10 @@ class SafetyPolicy:
             "code.exe", "chrome.exe", "firefox.exe", "edge.exe",
             "photoshop.exe", "illustrator.exe", "winword.exe", "excel.exe",
             "powershell.exe", "cmd.exe",  # System tools
+            # Gaming apps
+            "steam.exe", "steamwebhelper.exe",
+            "cs2.exe", "csgo.exe",  # Counter-Strike
+            "valorant.exe", "league of legends.exe",
         }
         
         # پسوندهای مجاز برای فایل‌های قابل اجرا
@@ -57,7 +61,8 @@ class SafetyPolicy:
         
         # برنامه‌های همیشه مجاز (بدون محدودیت)
         self.always_allowed: set[str] = {
-            "notepad.exe", "calc.exe", "mspaint.exe", "explorer.exe"
+            "notepad.exe", "calc.exe", "mspaint.exe", "explorer.exe",
+            "steam.exe", "cs2.exe", "csgo.exe"  # Gaming apps - auto-approve
         }
         
         # فرآیندهای ممنوع برای بستن (blacklist)

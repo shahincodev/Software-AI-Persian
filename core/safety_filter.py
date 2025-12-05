@@ -50,6 +50,11 @@ class SafetyPolicy:
             "powershell.exe", "cmd.exe",  # System tools
         }
         
+        # پسوندهای مجاز برای فایل‌های قابل اجرا
+        self.allowed_extensions: set[str] = {
+            ".exe", ".bat", ".cmd", ".ps1", ".vbs", ".js"
+        }
+        
         # برنامه‌های همیشه مجاز (بدون محدودیت)
         self.always_allowed: set[str] = {
             "notepad.exe", "calc.exe", "mspaint.exe", "explorer.exe"
@@ -147,6 +152,18 @@ class SafetyFilter:
         
         # در حالت strict، فقط برنامه‌های whitelist مجاز هستند
         if self.strict_mode:
+            # بررسی پسوند فایل
+            import os
+            _, ext = os.path.splitext(app_name)
+            
+            # اگر پسوند مجاز باشد (مثل .bat, .cmd)، اجازه بده
+            if ext.lower() in self.policy.allowed_extensions:
+                # فایل‌های .bat و .cmd نیاز به تایید دارند
+                if ext.lower() in {'.bat', '.cmd', '.ps1', '.vbs'}:
+                    needs_consent = True
+                    logger.info(f"Script file detected: {app_name} - requires approval")
+                return True, f"Script file '{app_name}' allowed with approval", needs_consent
+            
             # بررسی نام برنامه در whitelist
             if app_name and app_name not in self.policy.allowed_apps:
                 # اگر مسیر کامل داده شده، بررسی کن در مسیرهای مجاز باشد

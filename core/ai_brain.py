@@ -227,10 +227,18 @@ class AIBrain:
             model = self.get_model(purpose=mode)
             
             # تبدیل prompt به فرمت مورد انتظار (Message object)
-            # برای Google Gemini باید از langchain messages استفاده کنیم
+            # برای مدل‌های مختلف، فرمت متفاوت نیاز است
             from langchain_core.messages import HumanMessage, SystemMessage
             
-            messages = [HumanMessage(content=prompt)]
+            # بررسی نوع مدل برای استفاده از فرمت صحیح
+            model_type = type(model).__name__
+            
+            # برای Google از HumanMessage استفاده می‌کنیم
+            if 'Google' in model_type or 'Gemini' in model_type:
+                messages = [HumanMessage(content=prompt)]
+            # برای OpenAI و Groq از string یا dict استفاده می‌کنیم
+            else:
+                messages = prompt
             
             # فراخوانی مدل - سازگار با APIهای مختلف
             if hasattr(model, 'ainvoke'):
@@ -326,15 +334,23 @@ class AIBrain:
 
 User Request: {user_request}
 
+IMPORTANT NOTES:
+- Windows Notepad (notepad.exe) is a SIMPLE text editor with NO tabs, NO "+" button
+- To create new file in Notepad: just start typing (it's already a new file)
+- To save in Notepad: use Ctrl+S shortcut, NOT clicking menus
+- For .bat files, save with double quotes: "filename.bat" to preserve extension
+- Only use applications from the allowed list (check safety_filter.py)
+
 Supported Actions:
 1. LaunchApp: Open an application
    {{"type": "LaunchApp", "params": {{"app_name": "app.exe", "arguments": []}}, "priority": "normal", "description": "Open app"}}
 
-2. DesktopClick: Click on UI element
+2. DesktopClick: Click on UI element (use sparingly - prefer keyboard shortcuts)
    {{"type": "DesktopClick", "params": {{"target": "button text", "button": "left", "clicks": 1}}, "priority": "normal", "description": "Click button"}}
 
-3. DesktopType: Type text
+3. DesktopType: Type text or use keyboard shortcuts
    {{"type": "DesktopType", "params": {{"text": "hello", "target": null}}, "priority": "normal", "description": "Type hello"}}
+   For shortcuts: {{"text": "^s"}} for Ctrl+S, {{"text": "^o"}} for Ctrl+O
 
 4. InstallPackage: Install software
    {{"type": "InstallPackage", "params": {{"package_name": "git", "package_manager": "winget", "silent": true}}, "priority": "normal", "description": "Install git"}}
@@ -345,8 +361,19 @@ Supported Actions:
 6. QueryHardware: Get system info
    {{"type": "QueryHardware", "params": {{"query_type": "all"}}, "priority": "normal", "description": "Get hardware info"}}
 
+7. ExecuteCommand: Run shell command (requires approval)
+   {{"type": "ExecuteCommand", "params": {{"command": "dir", "shell": "cmd"}}, "priority": "normal", "description": "List files"}}
+
+BEST PRACTICES:
+- Use keyboard shortcuts instead of clicking menus (faster + more reliable)
+- For Notepad: Ctrl+S to save, Ctrl+O to open, Ctrl+N for new
+- Keep actions simple and atomic
+- Avoid clicking on elements that might not exist
+
 Return ONLY a valid JSON array of actions, nothing else. Example:
-[{{"type": "LaunchApp", "params": {{"app_name": "steam.exe", "arguments": []}}, "priority": "normal", "description": "Open Steam"}}]
+[{{"type": "LaunchApp", "params": {{"app_name": "notepad.exe", "arguments": []}}, "priority": "normal", "description": "Open Notepad"}},
+ {{"type": "DesktopType", "params": {{"text": "echo hello world", "target": null}}, "priority": "normal", "description": "Type code"}},
+ {{"type": "DesktopType", "params": {{"text": "^s", "target": null}}, "priority": "normal", "description": "Save (Ctrl+S)"}}]
 
 JSON Array:"""
 

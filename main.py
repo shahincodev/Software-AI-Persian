@@ -50,17 +50,30 @@ async def _is_system_request(user_text: str, system_agent: IntelligentSystemAgen
     """
     # System keywords (English and Persian)
     system_keywords = [
-        # Actions
+        # Actions - English
         "open", "launch", "start", "run",
         "install", "setup",
         "close", "kill", "terminate", "stop",
         "hardware", "cpu", "ram", "memory", "disk", "gpu",
-        # Apps
-        "notepad", "calculator", "chrome", "firefox", "edge",
+        # Actions - Persian
+        "باز", "اجرا", "شروع", "استارت",
+        "نصب", "راه‌اندازی",
+        "بستن", "بسته", "خاموش", "توقف",
+        "سخت‌افزار", "پردازنده", "رم", "حافظه", "هارد", "کارت گرافیک",
+        # Apps - English
+        "notepad", "calculator", "calc", "chrome", "firefox", "edge",
         "photoshop", "word", "excel", "powerpoint",
         "vscode", "visual studio", "app", "application",
-        # System operations
-        "process", "task manager", "system"
+        # Apps - Persian
+        "نوت‌پد", "دفترچه", "ماشین‌حساب", "کروم", "فایرفاکس", "اج",
+        "فتوشاپ", "ورد", "اکسل", "پاورپوینت",
+        "برنامه", "اپلیکیشن",
+        # System operations - English
+        "process", "task manager", "system",
+        # System operations - Persian
+        "فرآیند", "تسک منیجر", "سیستم", "ویندوز",
+        # Common verbs - Persian
+        "بنویس", "تایپ", "کلیک", "ذخیره", "اجرا کن"
     ]
     
     user_lower = user_text.lower()

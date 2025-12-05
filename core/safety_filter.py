@@ -81,7 +81,10 @@ class SafetyPolicy:
         ]
         
         # حداکثر سطح ریسک مجاز بدون تایید کاربر
-        self.max_auto_approve_risk = RiskLevel.LOW
+        # SAFE/LOW: Auto-approve (no user confirmation needed)
+        # MEDIUM: Auto-approve for trusted apps (notepad, calc, etc.)
+        # HIGH/CRITICAL: Always require approval
+        self.max_auto_approve_risk = RiskLevel.MEDIUM  # Changed from LOW to MEDIUM
 
 
 class SafetyFilter:
@@ -117,9 +120,10 @@ class SafetyFilter:
         if self.strict_mode and risk_level == RiskLevel.CRITICAL:
             return False, "Risk level is CRITICAL - execution is forbidden in strict mode", False
         
-        # بررسی نیاز به تایید
+        # بررسی نیاز به تایید - فقط برای HIGH و CRITICAL
+        # SAFE, LOW, MEDIUM: Auto-approve
         needs_consent = (
-            risk_level.value not in [RiskLevel.SAFE.value, RiskLevel.LOW.value]
+            risk_level.value > RiskLevel.MEDIUM.value  # Only HIGH and CRITICAL need approval
             or action.require_consent
         )
         
@@ -135,7 +139,7 @@ class SafetyFilter:
             return True, "Retrieving hardware information is safe", False
         
         # برای اقدامات ناشناخته، احتیاط کن
-        return True, "Type not registered - needs checking", True
+        return True, "Type not registered - needs checking", needs_consent
     
     def _validate_launch_app(
         self, action: LaunchAppAction, needs_consent: bool
@@ -163,6 +167,11 @@ class SafetyFilter:
                     needs_consent = True
                     logger.info(f"Script file detected: {app_name} - requires approval")
                 return True, f"Script file '{app_name}' allowed with approval", needs_consent
+            
+            # بررسی برنامه‌های always_allowed (notepad, calc, etc.) - بدون تایید!
+            if app_name in self.policy.always_allowed:
+                logger.info(f"✅ Trusted app auto-approved: {app_name}")
+                return True, f"Trusted application '{app_name}' auto-approved", False  # No consent needed!
             
             # بررسی نام برنامه در whitelist
             if app_name and app_name not in self.policy.allowed_apps:

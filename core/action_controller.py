@@ -1106,7 +1106,9 @@ class ActionController:
             
             # بررسی سطح خطر
             risk = action.get_risk_level()
-            needs_approval = risk.value >= RiskLevel.LOW.value and action.require_consent
+            # Auto-approve for SAFE and LOW risk actions
+            # Only ask approval for MEDIUM, HIGH, CRITICAL
+            needs_approval = risk.value > RiskLevel.LOW.value and action.require_consent
             
             # درخواست تایید اگر نیاز باشد
             if needs_approval and not auto_consent:

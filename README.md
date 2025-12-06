@@ -25,6 +25,7 @@
 
 برخلاف سیستم‌های سنتی که نیاز به دستورات خاص دارند، **Software-AI**:
 - ✨ **۱۰۰٪ هوشمند**: تمام تصمیمات توسط AI گرفته می‌شود
+- 🧠 **Master AI Controller**: مسیریابی هوشمند و پاسخ‌های انسانی
 - 🌍 **چندزبانه واقعی**: پشتیبانی کامل از فارسی و انگلیسی
 - 🎯 **بدون محدودیت**: هر برنامه‌ای را می‌شناسد (نه فقط لیست محدود!)
 - 👁️ **بینایی رایانه**: صفحه را می‌بیند و تصمیم می‌گیرد
@@ -536,6 +537,78 @@ result = await executor.execute_action_with_context(
 
 ## 🤖 هوش مصنوعی و پردازش
 
+### 🧠 Master AI Controller - مغز اصلی سیستم
+
+**جدید!** کنترلر اصلی هوش مصنوعی که تمام درخواست‌ها را هوشمندانه مدیریت می‌کند:
+
+```python
+from core.master_controller import MasterAIController
+
+# مقداردهی اولیه
+master = MasterAIController(
+    system_agent=system_agent,
+    autonomous_agent=autonomous_agent
+)
+
+# پردازش درخواست
+result = await master.process_request(
+    user_request="CPU چقدره؟",
+    context={"lang": "fa"}
+)
+
+print(result.human_response)
+# "پردازنده شما ۴۵٪ مشغول است، وضعیت خوبی دارید!"
+```
+
+**قابلیت‌های Master Controller:**
+
+1. **🎯 Intelligent Routing** - تشخیص خودکار نوع درخواست:
+   ```
+   "باز کن نوت‌پد" → Desktop Actions
+   "CPU چقدره؟" → System Info
+   "هوا چطوره؟" → Browser Automation
+   "هوش مصنوعی چیست؟" → AI Chat
+   ```
+
+2. **💬 Response Humanizer** - تبدیل پاسخ‌های فنی به زبان انسانی:
+   ```python
+   # خام:
+   {"cpu": 45.2, "ram_free": 8192}
+   
+   # انسانی:
+   "پردازنده شما ۴۵٪ مشغول است و ۸ گیگابایت رم آزاد دارید. 
+   وضعیت سیستم خوب است!"
+   ```
+
+3. **🔄 Smart Fallback** - اگر AI در دسترس نباشد، از الگوریتم‌های ساده استفاده می‌کند
+
+4. **📊 Multi-Tool Integration** - یکپارچه‌سازی کامل با تمام ابزارها:
+   - Desktop Actions (Mouse, Keyboard, Vision)
+   - System Tools (CPU, RAM, Disk)
+   - Browser Automation (به زودی)
+   - Autonomous Agent
+   - AI Chat
+
+**مثال استفاده:**
+
+```python
+# درخواست اطلاعات سیستم
+result = await master.process_request("چقدر RAM دارم؟")
+# پاسخ: "شما ۶۴ گیگابایت حافظه دارید که ۳۰ گیگابایت آن آزاد است."
+
+# درخواست اجرای برنامه
+result = await master.process_request("باز کن Calculator")
+# پاسخ: "ماشین‌حساب با موفقیت باز شد!"
+
+# سوال عمومی
+result = await master.process_request("هوش مصنوعی چیست؟")
+# پاسخ: "هوش مصنوعی شاخه‌ای از علوم کامپیوتر است که..."
+```
+
+📖 **[مستندات کامل Master Controller](docs/MASTER_CONTROLLER.md)** *(به زودی)*
+
+---
+
 ### 🧠 مغز هوش مصنوعی (AI Brain)
 
 سیستم چندلایه برای پردازش هوشمند:
@@ -624,7 +697,8 @@ results = memory.search_long(query="بکاپ")
 | هفته ۱ | پایه و اساس | ~2,000 | 35 |
 | هفته ۲ (روز ۱-۴) | Mouse, Keyboard, Vision | ~3,500 | 140 |
 | هفته ۲ (روز ۵-۹) | Safety, Recovery, Context | ~3,500 | 46 |
-| **مجموع** | **۱۲ ماژول اصلی** | **~9,000** | **221** |
+| هفته ۳ (روز ۱) | Master AI Controller | ~500 | - |
+| **مجموع** | **۱۳ ماژول اصلی** | **~9,500** | **221** |
 
 ---
 
@@ -657,16 +731,17 @@ results = memory.search_long(query="بکاپ")
 11. **[Action Safety](docs/ACTION_SAFETY.md)** - سیستم ایمنی
 12. **[Action Recovery](docs/ACTION_RECOVERY.md)** - سیستم بازیابی
 13. **[Context-Aware Actions](docs/CONTEXT_AWARE.md)** - اقدامات هوشمند
-
 ### 🔧 پیشرفته
 
-14. **[Multi-Monitor](docs/MULTI_MONITOR.md)** - پشتیبانی چند مانیتور
+14. **[Master AI Controller](docs/MASTER_CONTROLLER.md)** - مغز اصلی سیستم (جدید!)
+15. **[Multi-Monitor](docs/MULTI_MONITOR.md)** - پشتیبانی چند مانیتور
+16. **[Logging Best Practices](docs/LOGGING_BEST_PRACTICES.md)** - بهترین روش‌های لاگ‌گیری
 15. **[Logging Best Practices](docs/LOGGING_BEST_PRACTICES.md)** - بهترین روش‌های لاگ‌گیری
-
 ### 📋 گزارش‌ها و برنامه‌ریزی
 
-16. **[Week 2 Plan](docs/WEEK2_ACTION_LAYER_PLAN.md)** - برنامه هفته دوم
-17. **[Week 2 Summary](docs/WEEK2_EXECUTIVE_SUMMARY.md)** - خلاصه مدیریتی
+17. **[Week 2 Plan](docs/WEEK2_ACTION_LAYER_PLAN.md)** - برنامه هفته دوم
+18. **[Week 2 Summary](docs/WEEK2_EXECUTIVE_SUMMARY.md)** - خلاصه مدیریتی
+19. **[Integration Guide](docs/INTEGRATION_GUIDE.md)** - راهنمای ادغامیتی
 18. **[Integration Guide](docs/INTEGRATION_GUIDE.md)** - راهنمای ادغام
 
 ---
@@ -1144,7 +1219,6 @@ Tesseract یک برنامه جداگانه است که باید جداگانه �
 ---
 
 ## 🗺️ نقشه راه (Roadmap)
-
 ### ✅ نسخه 1.0 (فعلی) - کامل شده
 
 - [x] سیستم پایه AI
@@ -1153,14 +1227,18 @@ Tesseract یک برنامه جداگانه است که باید جداگانه �
 - [x] انتظار هوشمند
 - [x] عامل خودمختار
 - [x] سیستم ایمنی و بازیابی
+- [x] **Master AI Controller** (جدید! 🎉)
+- [x] ۲۲۱ تست واحدو بازیابی
 - [x] ۲۲۱ تست واحد
-
 ### 🚧 نسخه 1.1 (در دست توسعه)
 
+- [x] **Master AI Controller** - مسیریابی هوشمند ✅
+- [ ] یکپارچه‌سازی Browser-Use با Master Controller
 - [ ] پشتیبانی کامل macOS
 - [ ] پشتیبانی کامل Linux
 - [ ] رابط گرافیکی (GUI)
 - [ ] Plugin System
+- [ ] مستندات به زبان انگلیسی
 - [ ] مستندات به زبان انگلیسی
 
 ### 🔮 نسخه 2.0 (آینده)
@@ -1195,16 +1273,17 @@ Markdown          20    2,500      15%
 مجموع            65   11,500     100%
 ───────────────────────────────────────────────
 ```
-
-### ساختار پروژه
-
 ```
 Software-AI-Persian/
-├── 📁 core/              # ماژول‌های اصلی (۱۲ ماژول)
+├── 📁 core/              # ماژول‌های اصلی (۱۳ ماژول)
 │   ├── ai_brain.py
+│   ├── master_controller.py  # 🆕 مغز اصلی سیستم
 │   ├── autonomous_agent.py
 │   ├── desktop_vision.py
 │   ├── mouse_control.py
+│   ├── keyboard_control.py
+│   └── ...
+├── 📁 docs/              # مستندات (۱۹ فایل)
 │   ├── keyboard_control.py
 │   └── ...
 ├── 📁 docs/              # مستندات (۱۸ فایل)
@@ -1214,12 +1293,13 @@ Software-AI-Persian/
 ├── main.py              # نقطه ورود اصلی
 ├── README.md            # این فایل
 └── requirements.txt     # وابستگی‌ها
-```
-
-### تاریخچه نسخه‌ها
-
 | نسخه | تاریخ | تغییرات اصلی |
 |---|---|---|
+| **1.1.0** | دسامبر ۷، ۲۰۲۵ | 🧠 Master AI Controller - مسیریابی هوشمند |
+| **1.0.0** | دسامبر ۶، ۲۰۲۵ | انتشار اولیه - تمام قابلیت‌ها |
+| **0.9.0** | نوامبر ۲۰۲۵ | Week 2 Complete - Safety & Recovery |
+| **0.5.0** | نوامبر ۲۰۲۵ | Desktop Automation - Mouse, Keyboard, Vision |
+| **0.1.0** | نوامبر ۲۰۲۵ | Alpha - AI Brain & Base |
 | **1.0.0** | دسامبر ۲۰۲۵ | انتشار اولیه - تمام قابلیت‌ها |
 | **0.9.0** | نوامبر ۲۰۲۵ | Week 2 Complete - Safety & Recovery |
 | **0.5.0** | نوامبر ۲۰۲۵ | Desktop Automation - Mouse, Keyboard, Vision |
@@ -1253,18 +1333,19 @@ Software-AI-Persian/
 
 ## 🏆 موفقیت‌ها
 
-### 📈 آمار استفاده
-
-- ✅ **۲۲۱** تست واحد (۹۹.۵٪ موفق)
+- ✅ **۹,۵۰۰+** خط کد
+- ✅ **۱۳** ماژول اصلی (+ Master AI Controller)
+- ✅ **۱۹** فایل مستندات۹.۵٪ موفق)
 - ✅ **۹,۰۰۰+** خط کد
 - ✅ **۱۲** ماژول اصلی
-- ✅ **۱۸** فایل مستندات
-- ✅ **۶۵** فایل کد منبع
-
 ### 🎖️ ویژگی‌های منحصر به فرد
 
 1. **۱۰۰٪ AI-Powered** - تمام تصمیمات توسط AI
-2. **چندزبانه واقعی** - فارسی و انگلیسی
+2. **🧠 Master AI Controller** - مسیریابی هوشمند و پاسخ‌های انسانی (جدید!)
+3. **چندزبانه واقعی** - فارسی و انگلیسی
+4. **بینایی هوشمند** - OCR و تحلیل تصویر
+5. **عامل خودمختار** - Goal-Based Control
+6. **امنیت چندلایه** - Safety + Recovery
 3. **بینایی هوشمند** - OCR و تحلیل تصویر
 4. **عامل خودمختار** - Goal-Based Control
 5. **امنیت چندلایه** - Safety + Recovery

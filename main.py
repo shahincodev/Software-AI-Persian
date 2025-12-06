@@ -464,7 +464,8 @@ async def process_user_input(
     smart_wait: Optional[SmartWaiter] = None,
     vision: Optional[DesktopVision] = None,
     action_controller: Optional[ActionController] = None,
-    autonomous_agent: Optional[AutonomousAgent] = None
+    autonomous_agent: Optional[AutonomousAgent] = None,
+    master_controller: Optional[Any] = None  # Master AI Controller
 ) -> None:
     """Process user input in an enhanced interactive loop with multilingual support and automation."""
 
@@ -654,39 +655,70 @@ async def process_user_input(
                 continue
             
             else:
-                # Intelligent detection: Is this a system request?
-                is_system_task = await _is_system_request(user_text, system_agent)
-                
-                if is_system_task:
-                    # Direct processing with system agent
-                    processing_msg = "🤖 Processing system request with AI..."
+                # 🧠 NEW: استفاده از Master AI Controller
+                if master_controller:
+                    processing_msg = "🧠 Processing with Master AI..."
                     print(f"\n{processing_msg}")
                     if input_mode == "voice":
                         voice.speak(processing_msg, lang=current_lang)
                     
                     try:
-                        result = await system_agent.process_request(user_text)
-                        print(f"\n{result}\n")
+                        # Master Controller همه چیز را مدیریت می‌کند
+                        result = await master_controller.process_request(
+                            user_request=user_text,
+                            context={
+                                "mode": mode,
+                                "lang": current_lang,
+                                "input_mode": input_mode
+                            }
+                        )
+                        
+                        # نمایش پاسخ انسانی
+                        print(f"\n{result.human_response}\n")
                         if input_mode == "voice":
-                            voice.speak(result, lang=current_lang)
+                            voice.speak(result.human_response, lang=current_lang)
+                        
                     except Exception as e:
-                        error_msg = f"❌ Error executing system task: {str(e)}"
+                        error_msg = f"❌ Error: {str(e)}"
                         print(f"\n{error_msg}\n")
-                        logger.exception("System task execution failed")
+                        logger.exception("Master Controller failed")
                         if input_mode == "voice":
-                            voice.speak("Sorry, the system task failed.", lang=current_lang)
+                            voice.speak("Sorry, an error occurred.", lang=current_lang)
+                
                 else:
-                    # Regular task (browser/code) - add to queue
-                    memory.remember_short(
-                        content=user_text,
-                        ttl=3600,
-                        metadata={"type": "user_task", "mode": mode, "lang": current_lang}
-                    )
-                    task_engine.add_task(user_text, mode=mode)
-                    added_message = f"✅ Task added: {user_text}"
-                    print(added_message)
-                    if input_mode == "voice":
-                        voice.speak(added_message, lang=current_lang)
+                    # Fallback: روش قدیمی
+                    is_system_task = await _is_system_request(user_text, system_agent)
+                    
+                    if is_system_task:
+                        # Direct processing with system agent
+                        processing_msg = "🤖 Processing system request with AI..."
+                        print(f"\n{processing_msg}")
+                        if input_mode == "voice":
+                            voice.speak(processing_msg, lang=current_lang)
+                        
+                        try:
+                            result = await system_agent.process_request(user_text)
+                            print(f"\n{result}\n")
+                            if input_mode == "voice":
+                                voice.speak(result, lang=current_lang)
+                        except Exception as e:
+                            error_msg = f"❌ Error executing system task: {str(e)}"
+                            print(f"\n{error_msg}\n")
+                            logger.exception("System task execution failed")
+                            if input_mode == "voice":
+                                voice.speak("Sorry, the system task failed.", lang=current_lang)
+                    else:
+                        # Regular task (browser/code) - add to queue
+                        memory.remember_short(
+                            content=user_text,
+                            ttl=3600,
+                            metadata={"type": "user_task", "mode": mode, "lang": current_lang}
+                        )
+                        task_engine.add_task(user_text, mode=mode)
+                        added_message = f"✅ Task added: {user_text}"
+                        print(added_message)
+                        if input_mode == "voice":
+                            voice.speak(added_message, lang=current_lang)
 
     except KeyboardInterrupt:
         print(f"\n{Fore.YELLOW}🛑 Shutting down gracefully...{Style.RESET_ALL}")
@@ -723,6 +755,7 @@ async def main() -> None:
         vision = None
         action_controller = None
         autonomous_agent = None
+        master_controller = None  # Master AI Controller
         
         if args.enable_automation:
             try:
@@ -758,6 +791,19 @@ async def main() -> None:
             except Exception as e:
                 logger.warning(f"Failed to initialize Autonomous Agent: {e}")
                 print(f"{Fore.YELLOW}⚠️ Error enabling Autonomous Agent: {e}{Style.RESET_ALL}")
+        
+        # Initialize Master AI Controller (NEW!)
+        try:
+            from core.master_controller import MasterAIController
+            master_controller = MasterAIController(
+                system_agent=system_agent,
+                autonomous_agent=autonomous_agent
+            )
+            logger.info("🧠 Master AI Controller initialized")
+            print(f"{Fore.CYAN}🧠 Master AI Controller enabled - Intelligent routing & human responses{Style.RESET_ALL}")
+        except Exception as e:
+            logger.warning(f"Failed to initialize Master Controller: {e}")
+            print(f"{Fore.YELLOW}⚠️ Master Controller disabled: {e}{Style.RESET_ALL}")
 
         # Process user input and execute tasks
         await process_user_input(
@@ -772,7 +818,8 @@ async def main() -> None:
             smart_wait=smart_wait,
             vision=vision,
             action_controller=action_controller,
-            autonomous_agent=autonomous_agent
+            autonomous_agent=autonomous_agent,
+            master_controller=master_controller  # اضافه کردن
         )
 
     except Exception as e:

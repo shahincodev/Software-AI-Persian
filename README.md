@@ -180,12 +180,63 @@ text_position = vision.find_text("OK")
 - ✅ 41/41 تست موفق
 
 📖 **مستندات کامل:**
+- [Autonomous Agent Guide](docs/AUTONOMOUS_AGENT.md) - 🤖 کنترل هدف‌محور با بینایی (مثل browser-use!)
 - [Mouse Control Guide](docs/MOUSE_CONTROL.md) - راهنمای کنترل موس 🖱️
 - [Desktop Vision Guide](docs/DESKTOP_VISION.md) - راهنمای بینایی رایانه 👁️
 - [Keyboard Control Guide](docs/KEYBOARD_CONTROL.md) - راهنمای کنترل کیبورد ⌨️
 - [Smart Wait Guide](docs/SMART_WAIT.md) - راهنمای انتظار هوشمند ⏳
 - [Action Controller Guide](docs/ACTION_CONTROLLER.md) - راهنمای کنترلر اکشن 🎮
 - [Automation Guide](AUTOMATION_GUIDE.md) - راهنمای استفاده از خودکارسازی 🤖
+
+#### 🤖 Autonomous Agent - Vision-Based Control ✅ **LATEST!**
+
+**مثل browser-use اما برای ویندوز!** Agent هدف‌محور که با پرامپت‌های ساده کار می‌کنه:
+
+**قبل (Action-Based):**
+```python
+❌ "LaunchApp notepad.exe"
+❌ "Wait 2 seconds" 
+❌ "Click at (500, 300)"  # باید مختصات دقیق بدی!
+```
+
+**بعد (Goal-Based):**
+```python
+✅ "برو E: فولدر MyDocs بساز"  # همین!
+✅ "Open This PC and go to E:"
+```
+
+**🎯 قابلیت‌ها:**
+- ✓ **پرامپت‌های ساده**: "برو E: فولدر بساز" (بدون جزئیات!)
+- ✓ **خودتصمیم‌گیری**: Agent خودش می‌فهمه کجا کلیک کنه
+- ✓ **حلقه بازخورد**: Screenshot → Analyze → Act → Verify
+- ✓ **OCR-Based Finding**: پیدا کردن عناصر با متن
+- ✓ **Auto-Retry**: اگه فیل شد، دوباره تلاش می‌کنه
+- ✓ **فارسی + انگلیسی**: کامل پشتیبانی
+- ✓ **Interactive Demo**: 7 حالت مختلف برای تست
+
+**🚀 استفاده:**
+```python
+from core.autonomous_agent import AutonomousAgent
+
+agent = AutonomousAgent()
+
+# Simple goal
+result = await agent.execute_goal("برو This PC باز کن E:")
+
+# Complex workflow
+result = await agent.execute_goal("""
+    Navigate to E: drive.
+    Create folder MyProjects.
+    Create file README.txt inside.
+""")
+```
+
+**📖 مستندات:**
+- [Autonomous Agent Guide](docs/AUTONOMOUS_AGENT.md) - راهنمای کامل
+- [AUTONOMOUS_AGENT_README.md](AUTONOMOUS_AGENT_README.md) - شروع سریع
+- [examples/autonomous_demo.py](examples/autonomous_demo.py) - دمو تعاملی
+
+---
 
 #### 🚀 قابلیت‌های پیشرفته Week 2 (Days 7-9) ✅ **NEW!**
 

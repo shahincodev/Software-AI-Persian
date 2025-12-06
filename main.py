@@ -665,17 +665,10 @@ async def process_user_input(
                         voice.speak(processing_msg, lang=current_lang)
                     
                     try:
-                        result = await system_agent.process_task(user_text, mode="system")
-                        if result.get("success"):
-                            success_msg = f"✅ System task executed successfully!"
-                            print(f"\n{success_msg}\n")
-                            if input_mode == "voice":
-                                voice.speak("System task completed successfully", lang=current_lang)
-                        else:
-                            error_msg = f"❌ System task failed: {result.get('error', 'Unknown error')}"
-                            print(f"\n{error_msg}\n")
-                            if input_mode == "voice":
-                                voice.speak("System task failed", lang=current_lang)
+                        result = await system_agent.process_request(user_text)
+                        print(f"\n{result}\n")
+                        if input_mode == "voice":
+                            voice.speak(result, lang=current_lang)
                     except Exception as e:
                         error_msg = f"❌ Error executing system task: {str(e)}"
                         print(f"\n{error_msg}\n")

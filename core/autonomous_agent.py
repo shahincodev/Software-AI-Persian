@@ -210,7 +210,7 @@ IMPORTANT:
 - Keep steps simple and atomic
 """
         
-        response = await self.ai_brain.chat(prompt, purpose="planning")
+        response = await self.ai_brain.ask_with_fallback(prompt, mode="smart", max_tokens=1000)
         
         # Parse JSON response
         import json
@@ -430,7 +430,7 @@ Describe what you see in 1-2 sentences. What window is open? What can the user d
 Example: "I see File Explorer with drives C:, D:, E: visible. User can click on any drive to open it."
 """
         
-        description = await self.ai_brain.chat(prompt, purpose="vision")
+        description = await self.ai_brain.ask_with_fallback(prompt, mode="smart", max_tokens=500)
         logger.info(f"👁️ Screen description: {description}")
         
         return description

@@ -448,6 +448,10 @@ def print_banner(text=banner, color=Fore.CYAN) -> None:
             padding = (term_width - len(line)) // 2
             if padding > 0:
                 print(color + " " * padding + line + Style.RESET_ALL)
+    except Exception:
+        # If there's any error, just print without formatting
+        print(text)
+
 async def process_user_input(
     task_engine: TaskEngine, 
     memory: MemoryManager, 
@@ -461,12 +465,6 @@ async def process_user_input(
     vision: Optional[DesktopVision] = None,
     action_controller: Optional[ActionController] = None,
     autonomous_agent: Optional[AutonomousAgent] = None
-) -> None:_agent: IntelligentSystemAgent,
-    mouse: Optional[MouseController] = None,
-    keyboard: Optional[KeyboardController] = None,
-    smart_wait: Optional[SmartWaiter] = None,
-    vision: Optional[DesktopVision] = None,
-    action_controller: Optional[ActionController] = None
 ) -> None:
     """Process user input in an enhanced interactive loop with multilingual support and automation."""
 
@@ -510,13 +508,9 @@ async def process_user_input(
         print("   • wait <cmd>    - Smart wait commands (idle, window)")
     if vision:
         print("   • vision <cmd>  - Vision commands (screenshot, find image)")
-    print()nt("   • mouse <cmd>   - Mouse commands (position, click)")
+    print("   • mouse <cmd>   - Mouse commands (position, click)")
     if keyboard:
         print("   • type <text>   - Type text using keyboard")
-    if smart_wait:
-        print("   • wait <cmd>    - Smart wait commands (idle, window)")
-    if vision:
-        print("   • vision <cmd>  - Vision commands (screenshot, find image)")
     print()
 
     try:
@@ -668,49 +662,20 @@ async def process_user_input(
                     processing_msg = "🤖 Processing system request with AI..."
                     print(f"\n{processing_msg}")
                     if input_mode == "voice":
-        # Initialize automation capabilities (Week 2)
-        mouse = None
-        keyboard = None
-        smart_wait = None
-        vision = None
-        action_controller = None
-        autonomous_agent = None
-        
-        if args.enable_automation:
-            try:
-                mouse = MouseController()
-                keyboard = KeyboardController()
-                smart_wait = SmartWaiter()
-                vision = DesktopVision()
-                action_controller = ActionController()
-                logger.info("✅ Desktop automation enabled (Mouse, Keyboard, Smart Wait, Enhanced Vision, Action Controller)")
-                print(f"{Fore.GREEN}✅ Desktop automation features enabled (including Action Controller){Style.RESET_ALL}")
-            except Exception as e:
-                logger.warning(f"Failed to initialize automation components: {e}")
-                print(f"{Fore.YELLOW}⚠️ Error enabling automation: {e}{Style.RESET_ALL}")
-        
-        # Initialize Autonomous Agent (Latest Feature)
-        if args.enable_autonomous:
-            try:
-                # Autonomous Agent requires Vision and Mouse/Keyboard
-                if not vision:
-        # Process user input and execute tasks
-        await process_user_input(
-            task_engine, 
-            memory, 
-            args.mode, 
-            args.input_mode, 
-            voice, 
-            system_agent,
-            mouse=mouse,
-            keyboard=keyboard,
-            smart_wait=smart_wait,
-            vision=vision,
-            action_controller=action_controller,
-            autonomous_agent=autonomous_agent
-        )   except Exception as e:
-                logger.warning(f"Failed to initialize Autonomous Agent: {e}")
-                print(f"{Fore.YELLOW}⚠️ Error enabling Autonomous Agent: {e}{Style.RESET_ALL}")
+                        voice.speak(processing_msg, lang=current_lang)
+                    
+                    try:
+                        result = await system_agent.process_task(user_text, mode="system")
+                        if result.get("success"):
+                            success_msg = f"✅ System task executed successfully!"
+                            print(f"\n{success_msg}\n")
+                            if input_mode == "voice":
+                                voice.speak("System task completed successfully", lang=current_lang)
+                        else:
+                            error_msg = f"❌ System task failed: {result.get('error', 'Unknown error')}"
+                            print(f"\n{error_msg}\n")
+                            if input_mode == "voice":
+                                voice.speak("System task failed", lang=current_lang)
                     except Exception as e:
                         error_msg = f"❌ Error executing system task: {str(e)}"
                         print(f"\n{error_msg}\n")
@@ -764,6 +729,7 @@ async def main() -> None:
         smart_wait = None
         vision = None
         action_controller = None
+        autonomous_agent = None
         
         if args.enable_automation:
             try:
@@ -777,6 +743,28 @@ async def main() -> None:
             except Exception as e:
                 logger.warning(f"Failed to initialize automation components: {e}")
                 print(f"{Fore.YELLOW}⚠️ Error enabling automation: {e}{Style.RESET_ALL}")
+        
+        # Initialize Autonomous Agent (Latest Feature)
+        if args.enable_autonomous:
+            try:
+                # Autonomous Agent requires Vision and Mouse/Keyboard
+                if not vision:
+                    vision = DesktopVision()
+                if not mouse:
+                    mouse = MouseController()
+                if not keyboard:
+                    keyboard = KeyboardController()
+                
+                autonomous_agent = AutonomousAgent(
+                    vision=vision,
+                    mouse=mouse,
+                    keyboard=keyboard
+                )
+                logger.info("✅ Autonomous Agent enabled")
+                print(f"{Fore.MAGENTA}✅ Autonomous Agent enabled - Use 'goal <description>' command{Style.RESET_ALL}")
+            except Exception as e:
+                logger.warning(f"Failed to initialize Autonomous Agent: {e}")
+                print(f"{Fore.YELLOW}⚠️ Error enabling Autonomous Agent: {e}{Style.RESET_ALL}")
 
         # Process user input and execute tasks
         await process_user_input(
@@ -790,7 +778,8 @@ async def main() -> None:
             keyboard=keyboard,
             smart_wait=smart_wait,
             vision=vision,
-            action_controller=action_controller
+            action_controller=action_controller,
+            autonomous_agent=autonomous_agent
         )
 
     except Exception as e:

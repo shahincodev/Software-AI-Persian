@@ -1,4 +1,4 @@
-﻿# ⚡ Week 2 - Quick Reference
+# ⚡ Week 2 - Quick Reference
 ## Action Layer Development Guide
 
 > **مرجع سریع** برای توسعه‌دهندگان - دسترسی آسان به اطلاعات کلیدی

@@ -1,4 +1,4 @@
-﻿# 🧪 دستورات تست Master AI Controller
+# 🧪 دستورات تست Master AI Controller
 
 این فایل شامل دستورات آماده برای تست Master Controller است.
 

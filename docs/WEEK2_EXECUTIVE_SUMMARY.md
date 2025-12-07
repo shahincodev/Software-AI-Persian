@@ -1,4 +1,4 @@
-﻿# 📋 Week 2 - Executive Summary
+# 📋 Week 2 - Executive Summary
 ## Action Layer: Click, Type, Smart Wait
 
 > **خلاصه مدیریتی** - برنامه توسعه هفته دوم پروژه Software-AI

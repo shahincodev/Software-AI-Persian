@@ -1,4 +1,4 @@
-﻿# 🎯 Week 2: Action Layer Implementation Plan
+# 🎯 Week 2: Action Layer Implementation Plan
 ## Click, Type, Smart Wait - Desktop Automation Enhancement
 
 > **هدف اصلی**: توسعه لایه Action برای کنترل کامل Desktop ویندوز با قابلیت‌های Click, Type, و Smart Wait

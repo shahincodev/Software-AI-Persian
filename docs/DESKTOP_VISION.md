@@ -1,4 +1,4 @@
-﻿# راهنمای Desktop Vision System
+# راهنمای Desktop Vision System
 
 ## معرفی
 

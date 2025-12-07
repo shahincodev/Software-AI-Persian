@@ -1,4 +1,4 @@
-﻿# راهنمای MouseController
+# راهنمای MouseController
 
 کنترل هوشمند موس با یکپارچگی AI برای Software-AI (Persian Version).
 

@@ -1,4 +1,4 @@
-﻿# Autonomous Agent - Vision-Based Windows Control
+# Autonomous Agent - Vision-Based Windows Control
 
 ## 🎯 مفهوم
 

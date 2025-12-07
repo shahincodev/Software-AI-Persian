@@ -1,4 +1,4 @@
-﻿# 🎯 راهنمای استفاده بهینه از سیستم لاگ‌گیری
+# 🎯 راهنمای استفاده بهینه از سیستم لاگ‌گیری
 ## Best Practices Guide for Advanced Logging System
 
 ---

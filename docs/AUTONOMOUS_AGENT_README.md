@@ -1,4 +1,4 @@
-﻿# 🤖 Autonomous Agent - مثل browser-use اما برای ویندوز!
+# 🤖 Autonomous Agent - مثل browser-use اما برای ویندوز!
 
 ## چیه این؟
 

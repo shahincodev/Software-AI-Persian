@@ -3,6 +3,8 @@ REM ====================================
 REM Master AI Controller - Complete Test
 REM ====================================
 
+REM Set UTF-8 encoding for Python
+set PYTHONIOENCODING=utf-8
 chcp 65001 >nul
 cls
 

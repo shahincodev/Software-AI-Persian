@@ -15,6 +15,15 @@ from pathlib import Path
 from datetime import datetime
 from typing import List, Tuple
 
+# Fix Windows console encoding
+if sys.platform == 'win32':
+    try:
+        import io
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+    except:
+        pass
+
 # اضافه کردن مسیر پروژه به sys.path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))

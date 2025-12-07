@@ -705,3 +705,16 @@ Get-Content data\logs\master.log -Wait -Tail 50
 **موفق باشید! 🎉**
 
 اگر مشکلی پیش آمد، لاگ session را برای تحلیل ارسال کنید.
+
+---
+
+**توسعه‌دهندگان**: Shahin  
+**نسخه**: 1.0  
+**تاریخ**: November 2025  
+**وضعیت**: Production Ready ✅
+
+---
+
+## 📄 مجوز
+
+Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION

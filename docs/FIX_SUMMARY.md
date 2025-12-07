@@ -377,3 +377,16 @@ print(f"RAM usage: {usage['short_term_size_mb']:.2f} MB")
 
 **نسخه:** 2.1  
 **تاریخ آخرین به‌روزرسانی:** 2 دسامبر 2025
+
+---
+
+**توسعه‌دهندگان**: Shahin  
+**نسخه**: 1.0  
+**تاریخ**: November 2025  
+**وضعیت**: Production Ready ✅
+
+---
+
+## 📄 مجوز
+
+Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION

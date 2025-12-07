@@ -454,5 +454,13 @@ await recovery.execute_with_recovery(action, func, rollback_func=my_rollback)
 
 ---
 
-**نسخه:** 1.0  
-**آخرین بروزرسانی:** 2025-12-01
+**توسعه‌دهندگان**: Shahin  
+**نسخه**: 1.0  
+**تاریخ**: November 2025  
+**وضعیت**: Production Ready ✅
+
+---
+
+## 📄 مجوز
+
+Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION

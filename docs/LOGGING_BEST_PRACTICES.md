@@ -619,3 +619,16 @@ def ai_chat(user_message: str):
 **موفق باشید! 🚀**
 
 هر سوالی داشتید، لاگ‌ها پاسخ دارن! 😊
+
+---
+
+**توسعه‌دهندگان**: Shahin  
+**نسخه**: 1.0  
+**تاریخ**: November 2025  
+**وضعیت**: Production Ready ✅
+
+---
+
+## 📄 مجوز
+
+Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION

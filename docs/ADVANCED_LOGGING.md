@@ -381,3 +381,16 @@ cat data/logs/full_trace.jsonl | grep "error"
 ---
 
 **نکته:** این سیستم لاگ‌گیری کامل برای debugging، monitoring، و troubleshooting طراحی شده است. هر مشکلی که دارید، در لاگ‌ها قابل ردیابی است! 🚀
+
+---
+
+**توسعه‌دهندگان**: Shahin  
+**نسخه**: 1.0  
+**تاریخ**: November 2025  
+**وضعیت**: Production Ready ✅
+
+---
+
+## 📄 مجوز
+
+Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION

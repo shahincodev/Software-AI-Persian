@@ -368,3 +368,16 @@ Select-String "ERROR|WARNING" data\logs\sessions\session_*.log
 - `data/logs/sessions/` - لاگ هر اجرا
 
 **موفق باشید! 🎉**
+
+---
+
+**توسعه‌دهندگان**: Shahin  
+**نسخه**: 1.0  
+**تاریخ**: November 2025  
+**وضعیت**: Production Ready ✅
+
+---
+
+## 📄 مجوز
+
+Copyright (c) 2025 Shahin - SPDX-License-Identifier: NOASSERTION

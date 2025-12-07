@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 async def demo_simple_tasks():
     """دمو کارهای ساده."""
     print("\n" + "="*60)
-    print("🎯 Demo 1: Simple Tasks (کارهای ساده)")
+    print("🎯 Demo 1: Simple Tasks")
     print("="*60 + "\n")
     
     agent = AutonomousAgent()

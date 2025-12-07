@@ -30,23 +30,23 @@ def print_header(text: str):
 
 def print_result(test_name: str, request: str, result):
     """چاپ نتیجه تست"""
-    print(f"🧪 تست: {test_name}")
-    print(f"   👤 درخواست: \"{request}\"")
-    print(f"   🔧 ابزار: {result.tool_used.value}")
-    print(f"   ✅ موفقیت: {'بله' if result.success else 'خیر'}")
-    print(f"   💬 پاسخ: {result.human_response}\n")
+    print(f"🧪 Test: {test_name}")
+    print(f"   👤 Request: \"{request}\"")
+    print(f"   🔧 Tool: {result.tool_used.value}")
+    print(f"   ✅ Success: {'Yes' if result.success else 'No'}")
+    print(f"   💬 Response: {result.human_response}\n")
     print(f"   {'-'*60}\n")
 
 
 async def quick_test():
     """تست سریع"""
-    print_header("🚀 Master AI Controller - تست سریع")
+    print_header("🚀 Master AI Controller - Quick Test")
     
     # مقداردهی اولیه
-    print("⚙️  در حال مقداردهی اولیه...\n")
+    print("⚙️  Initializing...\n")
     system_agent = IntelligentSystemAgent()
     master = MasterAIController(system_agent=system_agent)
-    print("✅ آماده!\n")
+    print("✅ Ready!\n")
     
     # تست‌های اصلی
     tests = [
@@ -57,7 +57,7 @@ async def quick_test():
         ("حافظه سیستم", "چقدر RAM دارم؟", ToolType.SYSTEM),
     ]
     
-    print_header("📋 اجرای تست‌ها")
+    print_header("📋 Running Tests")
     
     passed = 0
     failed = 0
@@ -71,30 +71,30 @@ async def quick_test():
                 passed += 1
             else:
                 failed += 1
-                print(f"   ⚠️  انتظار: {expected_tool.value}, دریافت: {result.tool_used.value}\n")
+                print(f"   ⚠️  Expected: {expected_tool.value}, Got: {result.tool_used.value}\n")
         
         except Exception as e:
             failed += 1
-            print(f"   ❌ خطا: {e}\n")
+            print(f"   ❌ Error: {e}\n")
         
         # کمی صبر کنیم
         await asyncio.sleep(0.5)
     
     # نتیجه نهایی
-    print_header("📊 نتیجه")
+    print_header("📊 Results")
     total = passed + failed
     success_rate = (passed / total * 100) if total > 0 else 0
     
-    print(f"✅ موفق: {passed}/{total}")
-    print(f"❌ ناموفق: {failed}/{total}")
-    print(f"📈 درصد موفقیت: {success_rate:.1f}%\n")
+    print(f"✅ Passed: {passed}/{total}")
+    print(f"❌ Failed: {failed}/{total}")
+    print(f"📈 Success Rate: {success_rate:.1f}%\n")
     
     if success_rate >= 80:
-        print("🎉 عالی! Master Controller به خوبی کار می‌کند!\n")
+        print("🎉 Excellent! Master Controller is working great!\n")
     elif success_rate >= 60:
-        print("⚠️  قابل قبول، اما نیاز به بهبود دارد.\n")
+        print("⚠️  Acceptable, but needs improvement.\n")
     else:
-        print("❌ مشکلاتی وجود دارد. لطفاً API keys و تنظیمات را بررسی کنید.\n")
+        print("❌ Issues detected. Please check API keys and settings.\n")
 
 
 if __name__ == "__main__":
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     ║                                                          ║
     ║       🧠 Master AI Controller - Quick Test 🧪           ║
     ║                                                          ║
-    ║       این تست چند دستور ساده را بررسی می‌کند          ║
+    ║       This test checks basic functionality              ║
     ║                                                          ║
     ╚══════════════════════════════════════════════════════════╝
     """)
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     try:
         asyncio.run(quick_test())
     except KeyboardInterrupt:
-        print("\n\n⚠️  تست توسط کاربر متوقف شد.\n")
+        print("\n\n⚠️  Test interrupted by user.\n")
     except Exception as e:
-        print(f"\n\n❌ خطا: {e}\n")
+        print(f"\n\n❌ Error: {e}\n")
         sys.exit(1)

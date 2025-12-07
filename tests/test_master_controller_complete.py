@@ -52,15 +52,15 @@ class MasterControllerTester:
         print(f"{TestColors.HEADER}🧪 Master AI Controller - Complete Test Suite{TestColors.ENDC}")
         print(f"{TestColors.HEADER}{'='*60}{TestColors.ENDC}\n")
         
-        print(f"{TestColors.OKCYAN}⚙️  در حال مقداردهی اولیه...{TestColors.ENDC}")
+        print(f"{TestColors.OKCYAN}⚙️  Initializing...{TestColors.ENDC}")
         
         try:
             system_agent = IntelligentSystemAgent()
             self.master = MasterAIController(system_agent=system_agent)
-            print(f"{TestColors.OKGREEN}✅ Master Controller آماده است!{TestColors.ENDC}\n")
+            print(f"{TestColors.OKGREEN}✅ Master Controller is ready!{TestColors.ENDC}\n")
             return True
         except Exception as e:
-            print(f"{TestColors.FAIL}❌ خطا در مقداردهی: {e}{TestColors.ENDC}\n")
+            print(f"{TestColors.FAIL}❌ Initialization error: {e}{TestColors.ENDC}\n")
             return False
     
     def print_test_header(self, category: str, test_num: int, total: int):
@@ -79,10 +79,10 @@ class MasterControllerTester:
         """اجرای یک تست"""
         self.total_tests += 1
         
-        print(f"{TestColors.OKCYAN}🔍 تست: {test_name}{TestColors.ENDC}")
+        print(f"{TestColors.OKCYAN}🔍 Test: {test_name}{TestColors.ENDC}")
         if description:
             print(f"   📝 {description}")
-        print(f"   👤 درخواست: \"{request}\"")
+        print(f"   👤 Request: \"{request}\"")
         
         try:
             # اجرای درخواست
@@ -95,17 +95,17 @@ class MasterControllerTester:
             
             if is_correct:
                 self.passed_tests += 1
-                print(f"   {TestColors.OKGREEN}✅ موفق!{TestColors.ENDC}")
+                print(f"   {TestColors.OKGREEN}✅ Passed!{TestColors.ENDC}")
             else:
                 self.failed_tests += 1
-                print(f"   {TestColors.FAIL}❌ ناموفق!{TestColors.ENDC}")
-                print(f"   {TestColors.WARNING}   انتظار: {expected_tool.value}{TestColors.ENDC}")
-                print(f"   {TestColors.WARNING}   دریافت: {result.tool_used.value}{TestColors.ENDC}")
+                print(f"   {TestColors.FAIL}❌ Failed!{TestColors.ENDC}")
+                print(f"   {TestColors.WARNING}   Expected: {expected_tool.value}{TestColors.ENDC}")
+                print(f"   {TestColors.WARNING}   Got: {result.tool_used.value}{TestColors.ENDC}")
             
             # نمایش جزئیات
-            print(f"   🔧 ابزار استفاده شده: {result.tool_used.value}")
-            print(f"   ⏱️  زمان اجرا: {execution_time:.2f} ثانیه")
-            print(f"   💬 پاسخ: {result.human_response[:100]}...")
+            print(f"   🔧 Tool used: {result.tool_used.value}")
+            print(f"   ⏱️  Execution time: {execution_time:.2f} seconds")
+            print(f"   💬 Response: {result.human_response[:100]}...")
             
             # ذخیره نتیجه
             self.results.append({
@@ -123,12 +123,12 @@ class MasterControllerTester:
             
         except Exception as e:
             self.failed_tests += 1
-            print(f"   {TestColors.FAIL}❌ خطا: {e}{TestColors.ENDC}\n")
+            print(f"   {TestColors.FAIL}❌ Error: {e}{TestColors.ENDC}\n")
             return False
     
     async def test_chat_category(self):
         """تست دسته CHAT"""
-        self.print_test_header("دسته CHAT - گفتگوی عمومی", 1, 6)
+        self.print_test_header("Category CHAT - General Conversation", 1, 6)
         
         tests = [
             ("سلام ساده", "سلام، حالت چطوره؟", ToolType.CHAT, "تست سلام و احوالپرسی"),
@@ -143,7 +143,7 @@ class MasterControllerTester:
     
     async def test_system_category(self):
         """تست دسته SYSTEM"""
-        self.print_test_header("دسته SYSTEM - اطلاعات سیستم", 2, 6)
+        self.print_test_header("Category SYSTEM - System Information", 2, 6)
         
         tests = [
             ("CPU درصد", "CPU چقدره؟", ToolType.SYSTEM, "تست دریافت اطلاعات CPU"),
@@ -159,7 +159,7 @@ class MasterControllerTester:
     
     async def test_desktop_category(self):
         """تست دسته DESKTOP"""
-        self.print_test_header("دسته DESKTOP - کنترل دسکتاپ", 3, 6)
+        self.print_test_header("Category DESKTOP - Desktop Control", 3, 6)
         
         tests = [
             ("باز کردن نوت‌پد", "باز کن notepad", ToolType.DESKTOP, "باز کردن Notepad"),
@@ -169,7 +169,7 @@ class MasterControllerTester:
             ("باز کردن Chrome", "مرورگر کروم رو باز کن", ToolType.DESKTOP, "باز کردن مرورگر"),
         ]
         
-        print(f"{TestColors.WARNING}⚠️  توجه: این تست‌ها برنامه‌ها را واقعاً باز می‌کنند!{TestColors.ENDC}\n")
+        print(f"{TestColors.WARNING}⚠️  Warning: These tests will actually launch applications!{TestColors.ENDC}\n")
         
         for test_name, request, expected, desc in tests:
             await self.run_single_test(test_name, request, expected, desc)
@@ -178,7 +178,7 @@ class MasterControllerTester:
     
     async def test_browser_category(self):
         """تست دسته BROWSER"""
-        self.print_test_header("دسته BROWSER - جستجوی وب", 4, 6)
+        self.print_test_header("Category BROWSER - Web Search", 4, 6)
         
         tests = [
             ("هوای امروز", "هوا امروز چطوره؟", ToolType.BROWSER, "جستجوی وضعیت آب و هوا"),
@@ -187,14 +187,14 @@ class MasterControllerTester:
             ("Weather Check", "what's the weather today?", ToolType.BROWSER, "تست انگلیسی"),
         ]
         
-        print(f"{TestColors.WARNING}⚠️  توجه: Browser integration هنوز در حال توسعه است{TestColors.ENDC}\n")
+        print(f"{TestColors.WARNING}⚠️  Note: Browser integration is still under development{TestColors.ENDC}\n")
         
         for test_name, request, expected, desc in tests:
             await self.run_single_test(test_name, request, expected, desc)
     
     async def test_mixed_scenarios(self):
         """تست سناریوهای ترکیبی"""
-        self.print_test_header("سناریوهای ترکیبی و پیچیده", 5, 6)
+        self.print_test_header("Mixed and Complex Scenarios", 5, 6)
         
         tests = [
             ("درخواست مبهم", "نوت‌پد", ToolType.DESKTOP, "درخواست بدون فعل"),
@@ -208,7 +208,7 @@ class MasterControllerTester:
     
     async def test_edge_cases(self):
         """تست موارد خاص و لبه‌ای"""
-        self.print_test_header("موارد خاص و Edge Cases", 6, 6)
+        self.print_test_header("Special Cases and Edge Cases", 6, 6)
         
         tests = [
             ("رشته خالی", "", ToolType.CHAT, "تست ورودی خالی"),
@@ -224,16 +224,16 @@ class MasterControllerTester:
     def print_summary(self):
         """چاپ خلاصه نتایج"""
         print(f"\n{TestColors.HEADER}{'='*60}{TestColors.ENDC}")
-        print(f"{TestColors.HEADER}📊 خلاصه نتایج تست{TestColors.ENDC}")
+        print(f"{TestColors.HEADER}📊 Test Results Summary{TestColors.ENDC}")
         print(f"{TestColors.HEADER}{'='*60}{TestColors.ENDC}\n")
         
         # آمار کلی
         success_rate = (self.passed_tests / self.total_tests * 100) if self.total_tests > 0 else 0
         
-        print(f"📝 تعداد کل تست‌ها: {TestColors.BOLD}{self.total_tests}{TestColors.ENDC}")
-        print(f"✅ تست‌های موفق: {TestColors.OKGREEN}{self.passed_tests}{TestColors.ENDC}")
-        print(f"❌ تست‌های ناموفق: {TestColors.FAIL}{self.failed_tests}{TestColors.ENDC}")
-        print(f"📈 درصد موفقیت: {TestColors.BOLD}{success_rate:.1f}%{TestColors.ENDC}\n")
+        print(f"📝 Total Tests: {TestColors.BOLD}{self.total_tests}{TestColors.ENDC}")
+        print(f"✅ Passed: {TestColors.OKGREEN}{self.passed_tests}{TestColors.ENDC}")
+        print(f"❌ Failed: {TestColors.FAIL}{self.failed_tests}{TestColors.ENDC}")
+        print(f"📈 Success Rate: {TestColors.BOLD}{success_rate:.1f}%{TestColors.ENDC}\n")
         
         # نمایش نمودار میله‌ای
         bar_length = 40
@@ -251,26 +251,26 @@ class MasterControllerTester:
         
         # تست‌های ناموفق
         if self.failed_tests > 0:
-            print(f"{TestColors.FAIL}❌ تست‌های ناموفق:{TestColors.ENDC}\n")
+            print(f"{TestColors.FAIL}❌ Failed Tests:{TestColors.ENDC}\n")
             for result in self.results:
                 if not result['passed']:
                     print(f"   • {result['test_name']}")
-                    print(f"     درخواست: {result['request']}")
-                    print(f"     انتظار: {result['expected']} | دریافت: {result['actual']}\n")
+                    print(f"     Request: {result['request']}")
+                    print(f"     Expected: {result['expected']} | Got: {result['actual']}\n")
         
         # میانگین زمان اجرا
         if self.results:
             avg_time = sum(r['time'] for r in self.results) / len(self.results)
-            print(f"⏱️  میانگین زمان اجرا: {avg_time:.2f} ثانیه\n")
+            print(f"⏱️  Average Execution Time: {avg_time:.2f} seconds\n")
         
         # نتیجه نهایی
         print(f"{TestColors.HEADER}{'='*60}{TestColors.ENDC}")
         if success_rate >= 80:
-            print(f"{TestColors.OKGREEN}{TestColors.BOLD}🎉 تبریک! Master Controller عالی کار می‌کند!{TestColors.ENDC}")
+            print(f"{TestColors.OKGREEN}{TestColors.BOLD}🎉 Congratulations! Master Controller is working great!{TestColors.ENDC}")
         elif success_rate >= 60:
-            print(f"{TestColors.WARNING}{TestColors.BOLD}⚠️  نیاز به بهبود دارد{TestColors.ENDC}")
+            print(f"{TestColors.WARNING}{TestColors.BOLD}⚠️  Needs improvement{TestColors.ENDC}")
         else:
-            print(f"{TestColors.FAIL}{TestColors.BOLD}❌ مشکلات جدی وجود دارد{TestColors.ENDC}")
+            print(f"{TestColors.FAIL}{TestColors.BOLD}❌ Serious issues detected{TestColors.ENDC}")
         print(f"{TestColors.HEADER}{'='*60}{TestColors.ENDC}\n")
     
     async def run_all_tests(self):
@@ -288,9 +288,9 @@ class MasterControllerTester:
             await self.test_edge_cases()
             
         except KeyboardInterrupt:
-            print(f"\n{TestColors.WARNING}⚠️  تست توسط کاربر متوقف شد{TestColors.ENDC}\n")
+            print(f"\n{TestColors.WARNING}⚠️  Test interrupted by user{TestColors.ENDC}\n")
         except Exception as e:
-            print(f"\n{TestColors.FAIL}❌ خطای غیرمنتظره: {e}{TestColors.ENDC}\n")
+            print(f"\n{TestColors.FAIL}❌ Unexpected error: {e}{TestColors.ENDC}\n")
         finally:
             self.print_summary()
 
@@ -306,5 +306,5 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except Exception as e:
-        print(f"{TestColors.FAIL}❌ خطا در اجرای تست: {e}{TestColors.ENDC}")
+        print(f"{TestColors.FAIL}❌ Error running tests: {e}{TestColors.ENDC}")
         sys.exit(1)

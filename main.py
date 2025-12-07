@@ -623,7 +623,7 @@ async def process_user_input(
                             voice.speak("Autonomous agent failed", lang=current_lang)
                 else:
                     print("❓ Usage: goal <description>")
-                    print("   Example: goal برو E: فولدر MyDocs بساز")
+                    print("   Example: goal Go to E: and create MyDocs folder")
                     print("   Example: goal Open This PC and go to E:")
                 
                 continue

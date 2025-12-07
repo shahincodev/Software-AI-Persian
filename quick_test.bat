@@ -15,12 +15,12 @@ echo ╚════════════════════════
 echo.
 echo.
 
-echo 🚀 در حال اجرای تست سریع...
+echo 🚀 Running quick test...
 echo.
 
 python tests\quick_test_master.py
 
 echo.
-echo ✅ تست تمام شد!
+echo ✅ Test completed!
 echo.
 pause

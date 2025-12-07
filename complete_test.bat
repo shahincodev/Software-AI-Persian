@@ -15,29 +15,29 @@ echo ╚════════════════════════
 echo.
 echo.
 
-echo ⚠️  این تست کامل است و ممکن است چند دقیقه طول بکشد.
-echo ⚠️  برخی برنامه‌ها (Notepad, Calculator) باز خواهند شد.
+echo ⚠️  This is a complete test and may take several minutes.
+echo ⚠️  Some applications (Notepad, Calculator) will be launched.
 echo.
-echo آیا ادامه می‌دهید؟ (Y/N)
+echo Do you want to continue? (Y/N)
 set /p continue=
 
 if /i "%continue%" NEQ "Y" (
     echo.
-    echo ❌ تست لغو شد.
+    echo ❌ Test cancelled.
     echo.
     pause
     exit /b
 )
 
 echo.
-echo 🚀 در حال اجرای تست کامل...
+echo 🚀 Running complete test...
 echo.
 
 python tests\test_master_controller_complete.py
 
 echo.
-echo ✅ تست کامل تمام شد!
+echo ✅ Complete test finished!
 echo.
-echo 📊 نتایج در بالا نمایش داده شده است.
+echo 📊 Results are displayed above.
 echo.
 pause

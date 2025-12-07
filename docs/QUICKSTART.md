@@ -1,251 +1,707 @@
-# 🚀 Quick Start Guide
+# 🚀 راهنمای سریع شروع - Software-AI
 
-## Overview
-Software-AI (Persian Version) is an AI-powered Windows automation system that can control your computer using natural language commands.
-
-## 🎯 What You Can Do
-
-- **Open applications**: "Open Notepad and type Hello"
-- **Control browser**: "Open Chrome and go to google.com"
-- **System information**: "What's my RAM usage?"
-- **Window management**: "Minimize all windows"
-- **File operations**: "Create a file named test.txt"
-- **Complex tasks**: "Take a screenshot and save it"
-
-## 📋 Prerequisites
-
-- Python 3.13
-- Windows 10/11
-- API Keys for AI models (Google Gemini, OpenAI, or Groq)
-
-## ⚡ Quick Start
-
-### 1. Clone Repository
-```bash
-git clone https://github.com/shahincodev/Software-AI-Persian.git
-cd Software-AI-Persian
-```
-
-### 2. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Configure API Keys
-Create `.env` file in project root:
-```env
-# Choose one or more AI providers:
-
-# Google Gemini (recommended)
-GEMINI_API_KEY=your_gemini_api_key_here
-
-# OpenAI GPT-4
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Groq
-GROQ_API_KEY=your_groq_api_key_here
-```
-
-**Get API Keys:**
-- Gemini: https://makersuite.google.com/app/apikey
-- OpenAI: https://platform.openai.com/api-keys
-- Groq: https://console.groq.com/keys
-
-### 4. Test System
-```bash
-python test_system.py
-```
-
-You should see:
-```
-✅ ALL TESTS PASSED (5/5)
-🚀 System is ready to use!
-```
-
-### 5. Run Application
-```bash
-# Text mode (type commands)
-python main.py --input-mode text
-
-# Voice mode (speak commands)
-python main.py --input-mode voice
-
-# Auto mode (AI decides)
-python main.py --input-mode auto
-```
-
-## 🎮 Usage Examples
-
-### Text Mode
-```
-Software-AI> Open Notepad and type "Hello from AI!"
-✅ Opening Notepad...
-✅ Typing text...
-Done!
-
-Software-AI> What's my CPU usage?
-🖥️ CPU: 45%
-
-Software-AI> Close all Chrome tabs
-✅ Terminated 33 Chrome processes
-```
-
-### Voice Mode
-Just speak naturally:
-- "Open calculator"
-- "Search Google for Python tutorials"
-- "What time is it?"
-
-## 📊 Logging System
-
-All actions are automatically logged for debugging:
-
-```bash
-# View recent logs
-python tools/log_analyzer.py recent -n 20
-
-# Show only errors
-python tools/log_analyzer.py errors
-
-# Search logs
-python tools/log_analyzer.py search "notepad"
-
-# View statistics
-python tools/log_analyzer.py stats
-```
-
-**Log Files Location:** `data/logs/`
-- `app.log` - Main application log
-- `errors.log` - Errors only
-- `user_actions.jsonl` - All user actions
-- `ai_interactions.jsonl` - AI requests/responses
-- `full_trace.jsonl` - Everything in JSON format
-- `session_YYYYMMDD_HHMMSS.jsonl` - Current session
-- `error_report_*.txt` - Error summaries
-
-## 🛠️ Troubleshooting
-
-### Import Errors
-```bash
-# Reinstall dependencies
-pip install -r requirements.txt --upgrade
-```
-
-### API Key Issues
-```bash
-# Verify .env file exists
-ls .env
-
-# Check environment variables
-python -c "from dotenv import load_dotenv; load_dotenv(); import os; print('GEMINI_API_KEY:', 'SET' if os.getenv('GEMINI_API_KEY') else 'NOT SET')"
-```
-
-### Permission Errors
-Run PowerShell as Administrator:
-```powershell
-# Allow script execution
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
-
-### OCR Not Working
-Install Tesseract OCR:
-1. Download: https://github.com/UB-Mannheim/tesseract/wiki
-2. Install to: `C:\Program Files\Tesseract-OCR\`
-3. Add to PATH
-
-## 📚 Documentation
-
-- **Main Docs**: `docs/` folder
-- **Action Layer**: `docs/WEEK2_QUICK_REFERENCE.md`
-- **Desktop Vision**: `docs/DESKTOP_VISION.md`
-- **Logging**: `docs/ADVANCED_LOGGING.md`
-- **Integration**: `docs/INTEGRATION_GUIDE.md`
-
-## 🎓 Examples
-
-Run example scripts:
-```bash
-# Keyboard control demo
-python examples/keyboard_demo.py
-
-# Mouse control demo
-python examples/mouse_demo.py
-
-# Windows automation demo
-python examples/windows_automation_demo.py
-
-# Logging system demo
-python examples/logging_demo.py
-```
-
-## 🔒 Safety Features
-
-- **Action Safety**: Prevents dangerous operations
-- **Smart Wait**: Ensures UI readiness
-- **Action Recovery**: Automatic retry on failure
-- **Logging**: Complete audit trail
-
-## 📈 Performance Tips
-
-1. **Use specific commands**: "Open Chrome" instead of "Open browser"
-2. **Wait for completion**: Let actions finish before next command
-3. **Check logs**: Review `data/logs/` if issues occur
-4. **Use voice mode**: More natural for complex tasks
-
-## 🆘 Getting Help
-
-1. **Check Logs**: `python tools/log_analyzer.py errors`
-2. **Run Tests**: `python test_system.py`
-3. **Read Docs**: See `docs/` folder
-4. **GitHub Issues**: https://github.com/shahincodev/Software-AI-Persian/issues
-
-## 📝 Common Commands
-
-| Command | Description |
-|---------|-------------|
-| `Open [app]` | Launch application |
-| `Close [app]` | Terminate application |
-| `Type [text]` | Type text |
-| `Click [target]` | Click on screen element |
-| `Search [query]` | Web search |
-| `System info` | Show system stats |
-| `Screenshot` | Take screenshot |
-| `Exit` / `Quit` | Close program |
-
-## 🎯 Next Steps
-
-1. Try basic commands in text mode
-2. Experiment with voice mode
-3. Review logs to understand system behavior
-4. Read documentation for advanced features
-5. Create custom automation scripts
-
-## 📖 Advanced Features
-
-- **Context Awareness**: Understands current state
-- **Multi-Monitor**: Handles multiple displays
-- **Action Recovery**: Automatic retry logic
-- **Memory System**: Remembers past actions
-- **Smart Wait**: Waits for UI elements
-
-## 🔧 Development
-
-Run tests:
-```bash
-# Unit tests
-pytest tests/
-
-# Integration tests
-python tests/integration_tests.py
-
-# System validation
-python test_system.py
-```
-
-## 📜 License
-
-See LICENSE file for details.
+این راهنما نحوه اجرای صحیح و تست کامل پروژه Software-AI را قدم به قدم توضیح می‌دهد.
 
 ---
 
-**Ready to go?** Run: `python main.py --input-mode text` 🚀
+## 📋 فهرست مطالب
+
+1. [پیش‌نیازها](#پیش-نیازها)
+2. [آماده‌سازی محیط](#آماده-سازی-محیط)
+3. [تنظیم API Keys](#تنظیم-api-keys)
+4. [اجرای اولیه](#اجرای-اولیه)
+5. [دستورات تست آماده](#دستورات-تست-آماده)
+6. [عیب‌یابی](#عیب-یابی)
+
+---
+
+## 🎯 پیش‌نیازها
+
+### نرم‌افزارهای مورد نیاز:
+
+```powershell
+# بررسی نسخه Python (باید 3.10+ باشد)
+python --version
+
+# بررسی pip
+pip --version
+
+# بررسی git
+git --version
+```
+
+**حداقل نیازها:**
+- ✅ Python 3.10 یا بالاتر
+- ✅ pip (نصب شده با Python)
+- ✅ Git (برای clone کردن پروژه)
+- ✅ اتصال اینترنت (برای API calls)
+
+---
+
+## 🛠️ آماده‌سازی محیط
+
+### مرحله 1: دریافت کد
+
+اگر هنوز clone نکرده‌اید:
+
+```powershell
+# Clone repository
+git clone https://github.com/shahincodev/Software-AI-Persian.git
+
+# وارد پوشه پروژه شوید
+cd Software-AI-Persian
+```
+
+اگر قبلاً clone کرده‌اید:
+
+```powershell
+# بروزرسانی به آخرین نسخه
+git pull origin main
+```
+
+---
+
+### مرحله 2: نصب وابستگی‌ها
+
+```powershell
+# نصب تمام کتابخانه‌های مورد نیاز
+pip install -r requirements.txt
+
+# بررسی نصب موفق
+pip list | Select-String "openai|google|groq"
+```
+
+**انتظار می‌رود ببینید:**
+```
+google-generativeai    x.x.x
+groq                   x.x.x
+openai                 x.x.x
+```
+
+---
+
+### مرحله 3: پاکسازی داده‌های قدیمی (اختیاری)
+
+برای شروع تمیز:
+
+```powershell
+# حذف داده‌های قدیمی (اگر وجود دارد)
+if (Test-Path "data") { Remove-Item -Path "data" -Recurse -Force }
+
+# پوشه‌ها خودکار ساخته می‌شوند
+```
+
+---
+
+## 🔑 تنظیم API Keys
+
+### مرحله 1: کپی فایل نمونه
+
+```powershell
+# کپی .env.example به .env
+Copy-Item .env.example .env
+```
+
+---
+
+### مرحله 2: دریافت کلیدهای API
+
+#### 🔴 **ضروری - Google AI** (رایگان)
+
+1. برو به: https://aistudio.google.com/app/apikey
+2. کلیک کن روی **"Create API Key"**
+3. کلید را کپی کن
+4. در `.env` قرار بده:
+
+```dotenv
+GOOGLE_API_KEY=AIzaSy_YOUR_ACTUAL_GOOGLE_KEY_HERE
+```
+
+---
+
+#### 🔴 **ضروری - Groq** (رایگان، سریع)
+
+1. برو به: https://console.groq.com/keys
+2. Sign up / Login
+3. **Create API Key**
+4. کلید را کپی کن
+5. در `.env` قرار بده:
+
+```dotenv
+GROQ_API_KEY=gsk_YOUR_ACTUAL_GROQ_KEY_HERE
+```
+
+---
+
+#### 🟡 **اختیاری - OpenAI via OpenRouter** (پولی)
+
+برای مدل‌های قدرتمند‌تر:
+
+1. برو به: https://openrouter.ai/
+2. Sign up
+3. **Keys** → **Create Key**
+4. در `.env` قرار بده:
+
+```dotenv
+OPENAI_API_KEY=sk-or-v1-YOUR_OPENROUTER_KEY
+```
+
+---
+
+### مرحله 3: بررسی فایل `.env`
+
+```powershell
+# باز کردن فایل برای ویرایش
+notepad .env
+
+# یا با VS Code
+code .env
+```
+
+**حداقل محتوای لازم:**
+
+```dotenv
+# ========================================
+# Master AI Controller - Configuration
+# ========================================
+
+# 🔑 Google AI (Required - رایگان)
+GOOGLE_API_KEY=AIzaSy...کلید_واقعی_خودت
+
+# 🔑 Groq AI (Required - رایگان)
+GROQ_API_KEY=gsk_...کلید_واقعی_خودت
+
+# 🔑 OpenAI via OpenRouter (Optional)
+# OPENAI_API_KEY=sk-or-v1-...کلید_اگه_داری
+
+# ⚙️ Browser Settings
+BROWSER_HEADLESS=1
+```
+
+**⚠️ مهم:**
+- کلیدها را بدون فاصله و بدون `" "` وارد کنید
+- فایل `.env` را هرگز push نکنید (در `.gitignore` است)
+
+---
+
+## 🎬 اجرای اولیه
+
+### روش 1: حالت پایه (فقط AI Chat)
+
+```powershell
+# اجرای ساده
+python main.py
+
+# با نمایش لاگ‌های بیشتر
+python main.py --debug
+```
+
+**انتظار می‌رود:**
+```
+📝 Logging Information:
+   Session Log: data\logs\sessions\session_20251207_HHMMSS.log
+   Master Log:  data\logs\master.log
+   ✓ All outputs will be saved to these files
+
+🧠 Master AI Controller enabled
+```
+
+---
+
+### روش 2: با Automation (کنترل Desktop)
+
+```powershell
+# فعال‌سازی کنترل Mouse, Keyboard, Vision
+python main.py --enable-automation
+```
+
+**انتظار می‌رود:**
+```
+✅ Desktop automation features enabled
+   Features: Mouse Control, Keyboard Control, Smart Wait, Enhanced Vision, Action Controller
+```
+
+---
+
+### روش 3: حالت Autonomous (هدف‌محور)
+
+```powershell
+# فعال‌سازی Autonomous Agent
+python main.py --enable-automation --enable-autonomous
+```
+
+**انتظار می‌رود:**
+```
+✅ Desktop automation features enabled
+✅ Autonomous Agent enabled - Use 'goal <description>' command
+```
+
+---
+
+## ✅ دستورات تست آماده
+
+### 🧪 **تست 1: بررسی اولیه سیستم**
+
+```powershell
+# اجرا
+python main.py
+```
+
+**دستورات در CLI:**
+```
+سلام
+```
+انتظار: پاسخ دوستانه از AI
+
+```
+exit
+```
+
+**نتیجه موفق:** ✅ AI پاسخ داد، برنامه بدون خطا بسته شد
+
+---
+
+### 🧪 **تست 2: قابلیت‌های سیستمی**
+
+```powershell
+python main.py
+```
+
+**دستورات:**
+```
+اطلاعات CPU رو بده
+```
+انتظار: اطلاعات پردازنده (مدل، هسته‌ها، درصد استفاده)
+
+```
+RAM چقدره؟
+```
+انتظار: مقدار حافظه کل و استفاده شده
+
+```
+فضای دیسک چقدر داریم؟
+```
+انتظار: اطلاعات درایوها
+
+```
+exit
+```
+
+**نتیجه موفق:** ✅ اطلاعات سیستم به درستی نمایش داده شد
+
+---
+
+### 🧪 **تست 3: مدل‌های مختلف AI**
+
+```powershell
+python main.py --debug
+```
+
+**دستورات:**
+```
+Python چیست؟
+```
+انتظار: توضیح کامل درباره Python
+
+```
+تفاوت Java و C++ چیه؟
+```
+انتظار: مقایسه دو زبان
+
+```
+یک جوک بگو
+```
+انتظار: یک جوک طنز
+
+```
+exit
+```
+
+**در لاگ بررسی کنید:**
+- کدام مدل استفاده شد؟ (normal, fast, system)
+- آیا fallback رخ داد؟
+- زمان پاسخ‌دهی چقدر بود؟
+
+**نتیجه موفق:** ✅ مدل‌های مختلف کار می‌کنند، fallback عمل می‌کند
+
+---
+
+### 🧪 **تست 4: Desktop Automation**
+
+```powershell
+python main.py --enable-automation
+```
+
+**دستورات:**
+
+#### Mouse Testing:
+```
+mouse position
+```
+انتظار: موقعیت فعلی موس (x, y)
+
+#### Keyboard Testing (⚠️ ابتدا Notepad باز کنید):
+```
+باز کن notepad
+```
+صبر کنید Notepad باز شود، سپس:
+
+```
+type سلام دنیا
+```
+انتظار: بعد از 3 ثانیه، متن در Notepad تایپ می‌شود
+
+```
+exit
+```
+
+**نتیجه موفق:** ✅ Mouse و Keyboard کار می‌کنند
+
+---
+
+### 🧪 **تست 5: Application Control**
+
+```powershell
+python main.py --enable-automation
+```
+
+**دستورات:**
+```
+باز کن notepad
+```
+انتظار: Notepad باز می‌شود
+
+```
+باز کن calculator
+```
+انتظار: ماشین حساب باز می‌شود
+
+```
+بستن calc
+```
+انتظار: Calculator بسته می‌شود
+
+```
+exit
+```
+
+**نتیجه موفق:** ✅ برنامه‌ها باز و بسته می‌شوند
+
+---
+
+### 🧪 **تست 6: Autonomous Agent (پیشرفته)**
+
+```powershell
+python main.py --enable-automation --enable-autonomous
+```
+
+**دستورات:**
+
+#### تست ساده:
+```
+goal باز کن This PC
+```
+انتظار: File Explorer باز می‌شود و به This PC می‌رود
+
+#### تست ترکیبی:
+```
+goal برو به درایو E: و یک پوشه به نام TestFolder بساز
+```
+انتظار: 
+1. File Explorer باز شود
+2. به E: برود
+3. پوشه TestFolder ساخته شود
+
+```
+exit
+```
+
+**نتیجه موفق:** ✅ اهداف به صورت خودکار اجرا می‌شوند
+
+---
+
+### 🧪 **تست 7: Rate Limit & Error Handling**
+
+```powershell
+python main.py
+```
+
+**دستورات (ارسال سریع):**
+```
+سلام
+چه خبر؟
+Python چیه؟
+Java چیه؟
+C++ چیه؟
+JavaScript چیه؟
+```
+
+**انتظار:**
+- ممکن است بعد از 5 درخواست، Google API rate limit بخورد
+- سیستم باید به Groq fallback کند
+- پیام هشدار نمایش داده شود
+
+```
+exit
+```
+
+**نتیجه موفق:** ✅ سیستم خطاها را مدیریت می‌کند و fallback کار می‌کند
+
+---
+
+### 🧪 **تست 8: Logging System**
+
+```powershell
+python main.py
+```
+
+**دستورات:**
+```
+سلام
+چند تا سوال بپرس
+exit
+```
+
+**بررسی لاگ‌ها:**
+
+```powershell
+# لیست session logs
+Get-ChildItem data\logs\sessions\ | Sort-Object LastWriteTime -Descending
+
+# باز کردن آخرین لاگ
+code (Get-ChildItem data\logs\sessions\ | Sort-Object LastWriteTime -Descending | Select-Object -First 1).FullName
+
+# بررسی master log
+code data\logs\master.log
+```
+
+**چک کنید:**
+- ✅ فایل session log ساخته شده است
+- ✅ تمام تعاملات ثبت شده‌اند
+- ✅ Timestamps دقیق هستند
+- ✅ Master log شامل همه sessions است
+
+**نتیجه موفق:** ✅ سیستم لاگ‌گیری کامل کار می‌کند
+
+---
+
+## 📊 تست جامع (All-in-One)
+
+برای تست کامل تمام قابلیت‌ها:
+
+```powershell
+# اجرای کامل
+python main.py --enable-automation --enable-autonomous --debug
+```
+
+**سناریوی تست کامل:**
+
+```
+# 1. تست Chat
+سلام، حالت چطوره؟
+
+# 2. تست System Info
+CPU چقدره؟
+
+# 3. تست AI Knowledge
+Python چیه؟
+
+# 4. تست Mouse
+mouse position
+
+# 5. تست Application
+باز کن notepad
+
+# 6. تست Keyboard (در Notepad)
+type سلام از ایران
+
+# 7. تست Autonomous
+goal باز کن This PC
+
+# 8. خروج
+exit
+```
+
+**بررسی نهایی:**
+
+```powershell
+# باز کردن لاگ
+code (Get-ChildItem data\logs\sessions\ | Sort-Object LastWriteTime -Descending | Select-Object -First 1).FullName
+```
+
+**چک‌لیست موفقیت:**
+- ✅ تمام دستورات اجرا شدند
+- ✅ هیچ ERROR جدی وجود ندارد
+- ✅ لاگ کامل ثبت شده است
+- ✅ برنامه به درستی بسته شد
+
+---
+
+## 🐛 عیب‌یابی
+
+### مشکل 1: `ModuleNotFoundError`
+
+**علت:** وابستگی‌ها نصب نشده‌اند
+
+**راه حل:**
+```powershell
+pip install -r requirements.txt --upgrade
+```
+
+---
+
+### مشکل 2: `Missing API Key`
+
+**علت:** فایل `.env` وجود ندارد یا کلیدها اشتباه است
+
+**راه حل:**
+```powershell
+# بررسی فایل
+Test-Path .env
+
+# اگر False:
+Copy-Item .env.example .env
+notepad .env
+# کلیدها را اضافه کنید
+```
+
+---
+
+### مشکل 3: `429 Rate Limit`
+
+**علت:** خیلی سریع درخواست فرستاده‌اید (Google: 5 req/min)
+
+**راه حل:**
+- ⏱️ 1-2 دقیقه صبر کنید
+- یا Groq API Key اضافه کنید (بدون محدودیت سخت)
+
+---
+
+### مشکل 4: `Permission Denied`
+
+**علت:** Python نمی‌تواند فایل بسازد
+
+**راه حل:**
+```powershell
+# اجرای PowerShell به عنوان Administrator
+# یا اطمینان از دسترسی به پوشه
+```
+
+---
+
+### مشکل 5: برنامه Crash می‌کند
+
+**راه حل:**
+
+```powershell
+# اجرا با debug mode
+python main.py --debug
+
+# بررسی لاگ
+code (Get-ChildItem data\logs\sessions\ | Sort-Object LastWriteTime -Descending | Select-Object -First 1).FullName
+
+# ارسال لاگ به GitHub Copilot برای تحلیل
+```
+
+---
+
+## 📈 Workflow توصیه شده
+
+### روزانه (روتین تست):
+
+```powershell
+# 1. بروزرسانی کد
+git pull origin main
+
+# 2. بروزرسانی packages
+pip install -r requirements.txt --upgrade
+
+# 3. پاکسازی لاگ‌های قدیمی (هر هفته)
+Get-ChildItem data\logs\sessions\ | Where-Object {$_.LastWriteTime -lt (Get-Date).AddDays(-7)} | Remove-Item
+
+# 4. اجرا و تست
+python main.py --enable-automation
+```
+
+---
+
+### پیش از گزارش مشکل:
+
+```powershell
+# 1. تست با debug
+python main.py --debug
+
+# 2. تکرار مشکل
+# [انجام کاری که باعث خطا می‌شود]
+
+# 3. ذخیره لاگ
+$latestLog = Get-ChildItem data\logs\sessions\ | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+Copy-Item $latestLog.FullName "bug_report_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
+
+# 4. ارسال فایل لاگ به Copilot یا تیم
+```
+
+---
+
+## 🎓 نکات پیشرفته
+
+### اجرا با پارامترهای مختلف:
+
+```powershell
+# Voice input (نیاز به میکروفون)
+python main.py --input-mode voice
+
+# Text-to-Speech فعال
+python main.py --tts-provider gtts
+
+# حالت browser
+python main.py --mode browser
+
+# Concurrency بالا
+python main.py --concurrency 5
+
+# ترکیبی
+python main.py --enable-automation --enable-autonomous --debug --concurrency 3
+```
+
+---
+
+### مانیتورینگ Real-time:
+
+```powershell
+# Terminal 1: اجرای برنامه
+python main.py --debug
+
+# Terminal 2: نمایش لاگ لحظه‌ای
+Get-Content data\logs\master.log -Wait -Tail 50
+```
+
+---
+
+## ✅ چک‌لیست نهایی
+
+قبل از تست حرفه‌ای:
+
+- [ ] Python 3.10+ نصب است
+- [ ] وابستگی‌ها نصب شده‌اند (`pip list`)
+- [ ] فایل `.env` وجود دارد و کلیدها صحیح هستند
+- [ ] پوشه `data` پاک شده (برای شروع تمیز)
+- [ ] اتصال اینترنت فعال است
+- [ ] PowerShell/Terminal آماده است
+
+**اگر همه ✅ است، آماده‌اید! 🚀**
+
+---
+
+## 📚 مستندات مرتبط
+
+- 📄 **API_KEYS_SETUP.md** - راهنمای کامل API Keys
+- 📄 **LOGGING_GUIDE.md** - راهنمای سیستم لاگ
+- 📄 **README.md** - معرفی پروژه
+- 📄 **CONTRIBUTING.md** - راهنمای مشارکت
+
+---
+
+**موفق باشید! 🎉**
+
+اگر مشکلی پیش آمد، لاگ session را برای تحلیل ارسال کنید.

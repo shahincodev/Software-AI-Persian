@@ -1,4 +1,4 @@
-# ⚡ Week 2 - Quick Reference
+﻿# ⚡ Week 2 - Quick Reference
 ## Action Layer Development Guide
 
 > **مرجع سریع** برای توسعه‌دهندگان - دسترسی آسان به اطلاعات کلیدی
@@ -625,7 +625,7 @@ git commit -m "docs: add mouse control documentation"
 
 **توسعه‌دهندگان**: Shahin  
 **نسخه**: 1.0  
-**تاریخ**: November 2025  
+**تاریخ**: December 2025  
 **وضعیت**: Production Ready ✅
 
 ---

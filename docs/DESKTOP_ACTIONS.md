@@ -1,4 +1,4 @@
-# 🎯 Desktop Actions - اقدامات دسکتاپ
+﻿# 🎯 Desktop Actions - اقدامات دسکتاپ
 
 سیستم اقدامات Desktop برای تعریف و اجرای عملیات‌های خودکار روی رابط کاربری.
 
@@ -646,7 +646,7 @@ class MyNewAction(SystemAction):
 
 **توسعه‌دهندگان**: Shahin  
 **نسخه**: 1.0  
-**تاریخ**: November 2025  
+**تاریخ**: December 2025  
 **وضعیت**: Production Ready ✅
 
 ---

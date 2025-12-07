@@ -1,4 +1,4 @@
-# سیستم امنیت اقدامات (Action Safety)
+﻿# سیستم امنیت اقدامات (Action Safety)
 
 ## نمای کلی
 
@@ -338,7 +338,7 @@ async def smart_execute(action):
 
 **توسعه‌دهندگان**: Shahin  
 **نسخه**: 1.0  
-**تاریخ**: November 2025  
+**تاریخ**: December 2025  
 **وضعیت**: Production Ready ✅
 
 ---

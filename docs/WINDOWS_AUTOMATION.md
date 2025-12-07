@@ -1,4 +1,4 @@
-# 🖥️ سیستم اتوماسیون ویندوز - Windows Automation System
+﻿# 🖥️ سیستم اتوماسیون ویندوز - Windows Automation System
 
 یک سیستم قدرتمند و ایمن برای اتوماسیون کارهای ویندوز با استفاده از هوش مصنوعی.
 
@@ -302,7 +302,7 @@ data/logs/audit.jsonl
 
 **توسعه‌دهندگان**: Shahin  
 **نسخه**: 1.0  
-**تاریخ**: November 2025  
+**تاریخ**: December 2025  
 **وضعیت**: Production Ready ✅
 
 ---

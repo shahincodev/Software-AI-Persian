@@ -1,4 +1,4 @@
-# Autonomous Agent - Vision-Based Windows Control
+﻿# Autonomous Agent - Vision-Based Windows Control
 
 ## 🎯 مفهوم
 
@@ -333,7 +333,7 @@ Agent خودش:
 
 **توسعه‌دهندگان**: Shahin  
 **نسخه**: 1.0  
-**تاریخ**: November 2025  
+**تاریخ**: December 2025  
 **وضعیت**: Production Ready ✅
 
 ---

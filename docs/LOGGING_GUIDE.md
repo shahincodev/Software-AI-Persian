@@ -1,4 +1,4 @@
-# 📊 راهنمای جامع سیستم لاگ‌گیری
+﻿# 📊 راهنمای جامع سیستم لاگ‌گیری
 
 این راهنما نحوه استفاده از سیستم لاگ‌گیری پیشرفته Software-AI را توضیح می‌دهد.
 
@@ -373,7 +373,7 @@ Select-String "ERROR|WARNING" data\logs\sessions\session_*.log
 
 **توسعه‌دهندگان**: Shahin  
 **نسخه**: 1.0  
-**تاریخ**: November 2025  
+**تاریخ**: December 2025  
 **وضعیت**: Production Ready ✅
 
 ---

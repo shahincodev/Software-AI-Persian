@@ -1,4 +1,4 @@
-# راهنمای MouseController
+﻿# راهنمای MouseController
 
 کنترل هوشمند موس با یکپارچگی AI برای Software-AI (Persian Version).
 
@@ -782,7 +782,7 @@ Coverage: 97%
 
 **توسعه‌دهندگان**: Shahin  
 **نسخه**: 1.0  
-**تاریخ**: November 2025  
+**تاریخ**: December 2025  
 **وضعیت**: Production Ready ✅
 
 ---

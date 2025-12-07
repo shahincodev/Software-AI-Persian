@@ -1,4 +1,4 @@
-# سیستم بازیابی اقدامات (Action Recovery)
+﻿# سیستم بازیابی اقدامات (Action Recovery)
 
 ## نمای کلی
 
@@ -456,7 +456,7 @@ await recovery.execute_with_recovery(action, func, rollback_func=my_rollback)
 
 **توسعه‌دهندگان**: Shahin  
 **نسخه**: 1.0  
-**تاریخ**: November 2025  
+**تاریخ**: December 2025  
 **وضعیت**: Production Ready ✅
 
 ---

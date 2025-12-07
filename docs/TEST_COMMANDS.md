@@ -1,4 +1,4 @@
-# 🧪 دستورات تست آماده - Software-AI
+﻿# 🧪 دستورات تست آماده - Software-AI
 
 این فایل شامل تمام دستورات تست به صورت خالص است (بدون توضیحات).
 فقط کپی و paste کنید.
@@ -273,7 +273,7 @@ function ai-update { git pull origin main; pip install -r requirements.txt --upg
 
 **توسعه‌دهندگان**: Shahin  
 **نسخه**: 1.0  
-**تاریخ**: November 2025  
+**تاریخ**: December 2025  
 **وضعیت**: Production Ready ✅
 
 ---

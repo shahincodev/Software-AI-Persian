@@ -1,4 +1,4 @@
-# 🧪 دستورات تست Master AI Controller
+﻿# 🧪 دستورات تست Master AI Controller
 
 این فایل شامل دستورات آماده برای تست Master Controller است.
 
@@ -290,7 +290,7 @@ python main.py --enable-automation
 
 **توسعه‌دهندگان**: Shahin  
 **نسخه**: 1.0  
-**تاریخ**: November 2025  
+**تاریخ**: December 2025  
 **وضعیت**: Production Ready ✅
 
 ---

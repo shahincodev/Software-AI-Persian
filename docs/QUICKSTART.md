@@ -1,4 +1,4 @@
-# 🚀 راهنمای سریع شروع - Software-AI
+﻿# 🚀 راهنمای سریع شروع - Software-AI
 
 این راهنما نحوه اجرای صحیح و تست کامل پروژه Software-AI را قدم به قدم توضیح می‌دهد.
 
@@ -710,7 +710,7 @@ Get-Content data\logs\master.log -Wait -Tail 50
 
 **توسعه‌دهندگان**: Shahin  
 **نسخه**: 1.0  
-**تاریخ**: November 2025  
+**تاریخ**: December 2025  
 **وضعیت**: Production Ready ✅
 
 ---

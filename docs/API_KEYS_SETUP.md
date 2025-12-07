@@ -1,4 +1,4 @@
-# 🔑 راهنمای تنظیم API Keys
+﻿# 🔑 راهنمای تنظیم API Keys
 
 این راهنما نحوه تنظیم کلیدهای API برای استفاده از Master AI Controller را توضیح می‌دهد.
 
@@ -288,7 +288,7 @@ TESSERACT_PATH=C:\\Program Files\\Tesseract-OCR\\tesseract.exe
 
 **توسعه‌دهندگان**: Shahin  
 **نسخه**: 1.0  
-**تاریخ**: November 2025  
+**تاریخ**: December 2025  
 **وضعیت**: Production Ready ✅
 
 ---

@@ -1,4 +1,4 @@
-# 🤖 راهنمای استفاده از قابلیت‌های خودکارسازی AI-Powered
+﻿# 🤖 راهنمای استفاده از قابلیت‌های خودکارسازی AI-Powered
 
 ## 🧠 تفاوت اصلی: 100% AI-Powered
 
@@ -436,7 +436,7 @@ waiter.wait_for_element("Success", timeout=10)
 
 **توسعه‌دهندگان**: Shahin  
 **نسخه**: 1.0  
-**تاریخ**: November 2025  
+**تاریخ**: December 2025  
 **وضعیت**: Production Ready ✅
 
 ---

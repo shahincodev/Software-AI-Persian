@@ -1,4 +1,4 @@
-# 🤖 Autonomous Agent - مثل browser-use اما برای ویندوز!
+﻿# 🤖 Autonomous Agent - مثل browser-use اما برای ویندوز!
 
 ## چیه این؟
 
@@ -236,7 +236,7 @@ python examples/autonomous_demo.py
 
 **توسعه‌دهندگان**: Shahin  
 **نسخه**: 1.0  
-**تاریخ**: November 2025  
+**تاریخ**: December 2025  
 **وضعیت**: Production Ready ✅
 
 ---

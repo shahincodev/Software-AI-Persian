@@ -1,0 +1,1344 @@
+
+    ╔══════════════════════════════════════════════════════════╗
+    ║                                                          ║
+    ║       🧠 Master AI Controller - Quick Test 🧪           ║
+    ║                                                          ║
+    ║       This test checks basic functionality              ║
+    ║                                                          ║
+    ╚══════════════════════════════════════════════════════════╝
+    
+
+============================================================
+  🚀 Master AI Controller - Quick Test
+============================================================
+
+⚙️  Initializing...
+
+✅ Ready!
+
+
+============================================================
+  📋 Running Tests
+============================================================
+
+INFO     [core.ai_brain] Artificial intelligence model opened: normal
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model normal failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 2/3: fast
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model fast failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 3/3: system
+INFO     [core.ai_brain] Artificial intelligence model opened: system
+INFO     [core.ai_brain] ✅ Success with fallback model: system
+WARNING  [core.master_controller] AI routing failed, using fallback: Expecting ',' delimiter: line 5 column 21 (char 214)
+INFO     [core.master_controller] 📍 Routing: chat (confidence: 0.50)
+INFO     [core.ai_brain] 🤖 Trying model 1/3: normal
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model normal failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 2/3: fast
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model fast failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 3/3: system
+INFO     [core.ai_brain] ✅ Success with fallback model: system
+INFO     [core.ai_brain] 🤖 Trying model 1/3: normal
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model normal failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 2/3: fast
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model fast failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 3/3: system
+INFO     [core.ai_brain] ✅ Success with fallback model: system
+🧪 Test: گفتگو ساده
+   👤 Request: "سلام، حالت چطوره؟"
+   🔧 Tool: chat
+   ✅ Success: Yes
+   💬 Response: سلام! من یک هوش مصنوعی هستم و حالم همیشه خوبه، چون خستگی یا احساسات ندارم. ممنون که پرسیدید! شما چطورید؟ امیدوارم روز خوبی داشته باشید.
+
+   ------------------------------------------------------------
+
+INFO     [core.master_controller] 🎯 Processing user request: CPU چقدره؟...
+INFO     [core.ai_brain] 🤖 Trying model 1/3: normal
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model normal failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 2/3: fast
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model fast failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 3/3: system
+INFO     [core.ai_brain] ✅ Success with fallback model: system
+WARNING  [core.master_controller] AI routing failed, using fallback: Expecting ',' delimiter: line 5 column 41 (char 207)
+INFO     [core.master_controller] 📍 Routing: system (confidence: 0.80)
+INFO     [core.ai_brain] 🤖 Trying model 1/3: normal
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model normal failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 2/3: fast
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model fast failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 3/3: system
+ERROR    [5-flash] 💥 API call failed after 0.28s: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 50.764293136s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '50s'}]}}
+ERROR    [core.ai_brain] AI ask failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 50.764293136s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '50s'}]}}
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 423, in ainvoke
+    return await _make_api_call()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 249, in _make_api_call
+    response = await self.get_client().aio.models.generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 7033, in generate_content
+    response = await self._generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        model=model, contents=contents, config=parsed_config
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 5839, in _generate_content
+    response = await self._api_client.async_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        'post', path, request_dict, http_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1434, in async_request
+    result = await self._async_request(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        http_request=http_request, http_options=http_options, stream=False
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1367, in _async_request
+    return await self._async_retry(  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self._async_request_once, http_request, stream
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 111, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 153, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\_utils.py", line 99, in inner
+    return call(*args, **kwargs)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 420, in exc_check
+    raise retry_exc.reraise()
+          ~~~~~~~~~~~~~~~~~^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 187, in reraise
+    raise self.last_attempt.result()
+          ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 114, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1312, in _async_request_once
+    await errors.APIError.raise_for_async_response(response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 188, in raise_for_async_response
+    await cls.raise_error_async(status_code, response_json, response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 210, in raise_error_async
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 50.764293136s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '50s'}]}}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 469, in ainvoke
+    raise ModelProviderError(
+    ...<3 lines>...
+    ) from e
+browser_use.llm.exceptions.ModelProviderError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 50.764293136s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '50s'}]}}
+WARNING  [core.ai_brain] ❌ Model system failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 50.764293136s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '50s'}]}}
+ERROR    [core.ai_brain] 💥 All models failed!
+🧪 Test: اطلاعات CPU
+   👤 Request: "CPU چقدره؟"
+   🔧 Tool: system
+   ✅ Success: Yes
+   💬 Response: 
+
+   ------------------------------------------------------------
+
+INFO     [core.master_controller] 🎯 Processing user request: باز کن notepad...
+INFO     [core.ai_brain] 🤖 Trying model 1/3: normal
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model normal failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 2/3: fast
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model fast failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 3/3: system
+ERROR    [5-flash] 💥 API call failed after 0.58s: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 49.620951228s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash', 'location': 'global'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '49s'}]}}
+ERROR    [core.ai_brain] AI ask failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 49.620951228s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash', 'location': 'global'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '49s'}]}}
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 423, in ainvoke
+    return await _make_api_call()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 249, in _make_api_call
+    response = await self.get_client().aio.models.generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 7033, in generate_content
+    response = await self._generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        model=model, contents=contents, config=parsed_config
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 5839, in _generate_content
+    response = await self._api_client.async_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        'post', path, request_dict, http_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1434, in async_request
+    result = await self._async_request(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        http_request=http_request, http_options=http_options, stream=False
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1367, in _async_request
+    return await self._async_retry(  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self._async_request_once, http_request, stream
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 111, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 153, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\_utils.py", line 99, in inner
+    return call(*args, **kwargs)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 420, in exc_check
+    raise retry_exc.reraise()
+          ~~~~~~~~~~~~~~~~~^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 187, in reraise
+    raise self.last_attempt.result()
+          ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 114, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1312, in _async_request_once
+    await errors.APIError.raise_for_async_response(response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 188, in raise_for_async_response
+    await cls.raise_error_async(status_code, response_json, response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 210, in raise_error_async
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 49.620951228s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash', 'location': 'global'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '49s'}]}}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 469, in ainvoke
+    raise ModelProviderError(
+    ...<3 lines>...
+    ) from e
+browser_use.llm.exceptions.ModelProviderError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 49.620951228s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash', 'location': 'global'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '49s'}]}}
+WARNING  [core.ai_brain] ❌ Model system failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 49.620951228s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-2.5-flash', 'location': 'global'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '49s'}]}}
+ERROR    [core.ai_brain] 💥 All models failed!
+INFO     [core.master_controller] 📍 Routing: desktop (confidence: 0.70)
+INFO     [core.intelligent_agent] Processing request: باز کن notepad
+INFO     [core.intelligent_agent] 🤖 Processing request with AI: باز کن notepad
+INFO     [core.ai_brain] 🤖 Trying model 1/4: system
+INFO     [core.ai_brain] Artificial intelligence model opened: system
+ERROR    [5-flash] 💥 API call failed after 1.52s: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 48.106821585s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '48s'}]}}
+ERROR    [core.ai_brain] AI ask failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 48.106821585s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '48s'}]}}
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 423, in ainvoke
+    return await _make_api_call()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 249, in _make_api_call
+    response = await self.get_client().aio.models.generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 7033, in generate_content
+    response = await self._generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        model=model, contents=contents, config=parsed_config
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 5839, in _generate_content
+    response = await self._api_client.async_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        'post', path, request_dict, http_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1434, in async_request
+    result = await self._async_request(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        http_request=http_request, http_options=http_options, stream=False
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1367, in _async_request
+    return await self._async_retry(  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self._async_request_once, http_request, stream
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 111, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 153, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\_utils.py", line 99, in inner
+    return call(*args, **kwargs)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 420, in exc_check
+    raise retry_exc.reraise()
+          ~~~~~~~~~~~~~~~~~^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 187, in reraise
+    raise self.last_attempt.result()
+          ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 114, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1312, in _async_request_once
+    await errors.APIError.raise_for_async_response(response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 188, in raise_for_async_response
+    await cls.raise_error_async(status_code, response_json, response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 210, in raise_error_async
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 48.106821585s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '48s'}]}}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 469, in ainvoke
+    raise ModelProviderError(
+    ...<3 lines>...
+    ) from e
+browser_use.llm.exceptions.ModelProviderError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 48.106821585s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '48s'}]}}
+WARNING  [core.ai_brain] ❌ Model system failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 48.106821585s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '48s'}]}}
+INFO     [core.ai_brain] 🤖 Trying model 2/4: normal
+INFO     [core.ai_brain] Artificial intelligence model opened: normal
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model normal failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 3/4: fast
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model fast failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 4/4: reasoning
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model reasoning failed: Unknown message type: <class 'str'>
+ERROR    [core.ai_brain] 💥 All models failed!
+WARNING  [core.ai_brain] ⚠️ AI response is not valid JSON: 
+WARNING  [core.intelligent_agent] ⚠️ AI returned invalid response, trying fallback
+ERROR    [5-flash] 💥 API call failed after 0.32s: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 47.780018159s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '47s'}]}}
+ERROR    [core.ai_brain] AI ask failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 47.780018159s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '47s'}]}}
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 423, in ainvoke
+    return await _make_api_call()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 249, in _make_api_call
+    response = await self.get_client().aio.models.generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 7033, in generate_content
+    response = await self._generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        model=model, contents=contents, config=parsed_config
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 5839, in _generate_content
+    response = await self._api_client.async_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        'post', path, request_dict, http_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1434, in async_request
+    result = await self._async_request(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        http_request=http_request, http_options=http_options, stream=False
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1367, in _async_request
+    return await self._async_retry(  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self._async_request_once, http_request, stream
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 111, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 153, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\_utils.py", line 99, in inner
+    return call(*args, **kwargs)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 420, in exc_check
+    raise retry_exc.reraise()
+          ~~~~~~~~~~~~~~~~~^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 187, in reraise
+    raise self.last_attempt.result()
+          ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 114, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1312, in _async_request_once
+    await errors.APIError.raise_for_async_response(response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 188, in raise_for_async_response
+    await cls.raise_error_async(status_code, response_json, response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 210, in raise_error_async
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 47.780018159s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '47s'}]}}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 469, in ainvoke
+    raise ModelProviderError(
+    ...<3 lines>...
+    ) from e
+browser_use.llm.exceptions.ModelProviderError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 47.780018159s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '47s'}]}}
+ERROR    [core.intelligent_agent] AI app extraction failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 47.780018159s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '47s'}]}}
+INFO     [core.intelligent_agent] Extracted 0 actions from fallback
+INFO     [core.ai_brain] 🤖 Trying model 1/3: normal
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model normal failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 2/3: fast
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model fast failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 3/3: system
+ERROR    [5-flash] 💥 API call failed after 0.29s: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 47.502011286s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '47s'}]}}
+ERROR    [core.ai_brain] AI ask failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 47.502011286s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '47s'}]}}
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 423, in ainvoke
+    return await _make_api_call()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 249, in _make_api_call
+    response = await self.get_client().aio.models.generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 7033, in generate_content
+    response = await self._generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        model=model, contents=contents, config=parsed_config
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 5839, in _generate_content
+    response = await self._api_client.async_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        'post', path, request_dict, http_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1434, in async_request
+    result = await self._async_request(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        http_request=http_request, http_options=http_options, stream=False
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1367, in _async_request
+    return await self._async_retry(  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self._async_request_once, http_request, stream
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 111, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 153, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\_utils.py", line 99, in inner
+    return call(*args, **kwargs)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 420, in exc_check
+    raise retry_exc.reraise()
+          ~~~~~~~~~~~~~~~~~^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 187, in reraise
+    raise self.last_attempt.result()
+          ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 114, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1312, in _async_request_once
+    await errors.APIError.raise_for_async_response(response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 188, in raise_for_async_response
+    await cls.raise_error_async(status_code, response_json, response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 210, in raise_error_async
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 47.502011286s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '47s'}]}}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 469, in ainvoke
+    raise ModelProviderError(
+    ...<3 lines>...
+    ) from e
+browser_use.llm.exceptions.ModelProviderError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 47.502011286s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '47s'}]}}
+WARNING  [core.ai_brain] ❌ Model system failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 47.502011286s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '47s'}]}}
+ERROR    [core.ai_brain] 💥 All models failed!
+🧪 Test: باز کردن برنامه
+   👤 Request: "باز کن notepad"
+   🔧 Tool: desktop
+   ✅ Success: Yes
+   💬 Response: 
+
+   ------------------------------------------------------------
+
+INFO     [core.master_controller] 🎯 Processing user request: هوش مصنوعی چیست؟...
+INFO     [core.ai_brain] 🤖 Trying model 1/3: normal
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model normal failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 2/3: fast
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model fast failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 3/3: system
+ERROR    [5-flash] 💥 API call failed after 0.61s: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 46.361199065s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '46s'}]}}
+ERROR    [core.ai_brain] AI ask failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 46.361199065s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '46s'}]}}
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 423, in ainvoke
+    return await _make_api_call()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 249, in _make_api_call
+    response = await self.get_client().aio.models.generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 7033, in generate_content
+    response = await self._generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        model=model, contents=contents, config=parsed_config
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 5839, in _generate_content
+    response = await self._api_client.async_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        'post', path, request_dict, http_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1434, in async_request
+    result = await self._async_request(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        http_request=http_request, http_options=http_options, stream=False
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1367, in _async_request
+    return await self._async_retry(  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self._async_request_once, http_request, stream
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 111, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 153, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\_utils.py", line 99, in inner
+    return call(*args, **kwargs)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 420, in exc_check
+    raise retry_exc.reraise()
+          ~~~~~~~~~~~~~~~~~^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 187, in reraise
+    raise self.last_attempt.result()
+          ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 114, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1312, in _async_request_once
+    await errors.APIError.raise_for_async_response(response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 188, in raise_for_async_response
+    await cls.raise_error_async(status_code, response_json, response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 210, in raise_error_async
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 46.361199065s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '46s'}]}}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 469, in ainvoke
+    raise ModelProviderError(
+    ...<3 lines>...
+    ) from e
+browser_use.llm.exceptions.ModelProviderError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 46.361199065s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '46s'}]}}
+WARNING  [core.ai_brain] ❌ Model system failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 46.361199065s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '46s'}]}}
+ERROR    [core.ai_brain] 💥 All models failed!
+INFO     [core.master_controller] 📍 Routing: chat (confidence: 0.50)
+INFO     [core.ai_brain] 🤖 Trying model 1/3: normal
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model normal failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 2/3: fast
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model fast failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 3/3: system
+ERROR    [5-flash] 💥 API call failed after 0.38s: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 45.977499764s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '45s'}]}}
+ERROR    [core.ai_brain] AI ask failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 45.977499764s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '45s'}]}}
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 423, in ainvoke
+    return await _make_api_call()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 249, in _make_api_call
+    response = await self.get_client().aio.models.generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 7033, in generate_content
+    response = await self._generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        model=model, contents=contents, config=parsed_config
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 5839, in _generate_content
+    response = await self._api_client.async_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        'post', path, request_dict, http_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1434, in async_request
+    result = await self._async_request(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        http_request=http_request, http_options=http_options, stream=False
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1367, in _async_request
+    return await self._async_retry(  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self._async_request_once, http_request, stream
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 111, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 153, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\_utils.py", line 99, in inner
+    return call(*args, **kwargs)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 420, in exc_check
+    raise retry_exc.reraise()
+          ~~~~~~~~~~~~~~~~~^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 187, in reraise
+    raise self.last_attempt.result()
+          ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 114, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1312, in _async_request_once
+    await errors.APIError.raise_for_async_response(response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 188, in raise_for_async_response
+    await cls.raise_error_async(status_code, response_json, response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 210, in raise_error_async
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 45.977499764s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '45s'}]}}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 469, in ainvoke
+    raise ModelProviderError(
+    ...<3 lines>...
+    ) from e
+browser_use.llm.exceptions.ModelProviderError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 45.977499764s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '45s'}]}}
+WARNING  [core.ai_brain] ❌ Model system failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 45.977499764s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '45s'}]}}
+ERROR    [core.ai_brain] 💥 All models failed!
+INFO     [core.ai_brain] 🤖 Trying model 1/3: normal
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model normal failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 2/3: fast
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model fast failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 3/3: system
+ERROR    [5-flash] 💥 API call failed after 0.42s: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 45.550514882s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '45s'}]}}
+ERROR    [core.ai_brain] AI ask failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 45.550514882s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '45s'}]}}
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 423, in ainvoke
+    return await _make_api_call()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 249, in _make_api_call
+    response = await self.get_client().aio.models.generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 7033, in generate_content
+    response = await self._generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        model=model, contents=contents, config=parsed_config
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 5839, in _generate_content
+    response = await self._api_client.async_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        'post', path, request_dict, http_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1434, in async_request
+    result = await self._async_request(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        http_request=http_request, http_options=http_options, stream=False
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1367, in _async_request
+    return await self._async_retry(  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self._async_request_once, http_request, stream
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 111, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 153, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\_utils.py", line 99, in inner
+    return call(*args, **kwargs)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 420, in exc_check
+    raise retry_exc.reraise()
+          ~~~~~~~~~~~~~~~~~^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 187, in reraise
+    raise self.last_attempt.result()
+          ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 114, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1312, in _async_request_once
+    await errors.APIError.raise_for_async_response(response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 188, in raise_for_async_response
+    await cls.raise_error_async(status_code, response_json, response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 210, in raise_error_async
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 45.550514882s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '45s'}]}}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 469, in ainvoke
+    raise ModelProviderError(
+    ...<3 lines>...
+    ) from e
+browser_use.llm.exceptions.ModelProviderError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 45.550514882s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '45s'}]}}
+WARNING  [core.ai_brain] ❌ Model system failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 45.550514882s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '45s'}]}}
+ERROR    [core.ai_brain] 💥 All models failed!
+🧪 Test: سوال AI
+   👤 Request: "هوش مصنوعی چیست؟"
+   🔧 Tool: chat
+   ✅ Success: Yes
+   💬 Response: 
+
+   ------------------------------------------------------------
+
+INFO     [core.master_controller] 🎯 Processing user request: چقدر RAM دارم؟...
+INFO     [core.ai_brain] 🤖 Trying model 1/3: normal
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model normal failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 2/3: fast
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model fast failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 3/3: system
+ERROR    [5-flash] 💥 API call failed after 0.72s: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 44.322237027s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '44s'}]}}
+ERROR    [core.ai_brain] AI ask failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 44.322237027s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '44s'}]}}
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 423, in ainvoke
+    return await _make_api_call()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 249, in _make_api_call
+    response = await self.get_client().aio.models.generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 7033, in generate_content
+    response = await self._generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        model=model, contents=contents, config=parsed_config
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 5839, in _generate_content
+    response = await self._api_client.async_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        'post', path, request_dict, http_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1434, in async_request
+    result = await self._async_request(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        http_request=http_request, http_options=http_options, stream=False
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1367, in _async_request
+    return await self._async_retry(  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self._async_request_once, http_request, stream
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 111, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 153, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\_utils.py", line 99, in inner
+    return call(*args, **kwargs)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 420, in exc_check
+    raise retry_exc.reraise()
+          ~~~~~~~~~~~~~~~~~^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 187, in reraise
+    raise self.last_attempt.result()
+          ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 114, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1312, in _async_request_once
+    await errors.APIError.raise_for_async_response(response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 188, in raise_for_async_response
+    await cls.raise_error_async(status_code, response_json, response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 210, in raise_error_async
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 44.322237027s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '44s'}]}}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 469, in ainvoke
+    raise ModelProviderError(
+    ...<3 lines>...
+    ) from e
+browser_use.llm.exceptions.ModelProviderError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 44.322237027s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '44s'}]}}
+WARNING  [core.ai_brain] ❌ Model system failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 44.322237027s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '44s'}]}}
+ERROR    [core.ai_brain] 💥 All models failed!
+INFO     [core.master_controller] 📍 Routing: system (confidence: 0.80)
+INFO     [core.ai_brain] 🤖 Trying model 1/3: normal
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model normal failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 2/3: fast
+ERROR    [core.ai_brain] AI ask failed: Unknown message type: <class 'str'>
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\chat.py", line 168, in ainvoke
+    openai_messages = OpenAIMessageSerializer.serialize_messages(messages)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 165, in serialize_messages
+    return [OpenAIMessageSerializer.serialize(m) for m in messages]
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\openai\serializer.py", line 161, in serialize
+    raise ValueError(f'Unknown message type: {type(message)}')
+ValueError: Unknown message type: <class 'str'>
+WARNING  [core.ai_brain] ❌ Model fast failed: Unknown message type: <class 'str'>
+INFO     [core.ai_brain] 🤖 Trying model 3/3: system
+ERROR    [5-flash] 💥 API call failed after 0.72s: ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 42.588720357s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '42s'}]}}
+ERROR    [core.ai_brain] AI ask failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 42.588720357s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '42s'}]}}
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 423, in ainvoke
+    return await _make_api_call()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 249, in _make_api_call
+    response = await self.get_client().aio.models.generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 7033, in generate_content
+    response = await self._generate_content(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        model=model, contents=contents, config=parsed_config
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\models.py", line 5839, in _generate_content
+    response = await self._api_client.async_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        'post', path, request_dict, http_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1434, in async_request
+    result = await self._async_request(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        http_request=http_request, http_options=http_options, stream=False
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1367, in _async_request
+    return await self._async_retry(  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self._async_request_once, http_request, stream
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 111, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 153, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\_utils.py", line 99, in inner
+    return call(*args, **kwargs)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 420, in exc_check
+    raise retry_exc.reraise()
+          ~~~~~~~~~~~~~~~~~^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\__init__.py", line 187, in reraise
+    raise self.last_attempt.result()
+          ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\nilit\AppData\Local\Programs\Python\Python313\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\tenacity\asyncio\__init__.py", line 114, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\_api_client.py", line 1312, in _async_request_once
+    await errors.APIError.raise_for_async_response(response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 188, in raise_for_async_response
+    await cls.raise_error_async(status_code, response_json, response)
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\google\genai\errors.py", line 210, in raise_error_async
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 42.588720357s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '42s'}]}}
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\Software-AI-Persian\core\ai_brain.py", line 245, in ask
+    response = await model.ainvoke(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Software-AI-Persian\.venv\Lib\site-packages\browser_use\llm\google\chat.py", line 469, in ainvoke
+    raise ModelProviderError(
+    ...<3 lines>...
+    ) from e
+browser_use.llm.exceptions.ModelProviderError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 42.588720357s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '42s'}]}}
+WARNING  [core.ai_brain] ❌ Model system failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash\nPlease retry in 42.588720357s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-2.5-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '42s'}]}}
+ERROR    [core.ai_brain] 💥 All models failed!
+🧪 Test: حافظه سیستم
+   👤 Request: "چقدر RAM دارم؟"
+   🔧 Tool: system
+   ✅ Success: Yes
+   💬 Response: 
+
+   ------------------------------------------------------------
+
+
+============================================================
+  📊 Results
+============================================================
+
+✅ Passed: 5/5
+❌ Failed: 0/5
+📈 Success Rate: 100.0%
+
+🎉 Excellent! Master Controller is working great!
+

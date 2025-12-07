@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Optional
 from pyfiglet import Figlet
 from colorama import init as colorama_init, Fore, Style
+from datetime import datetime
 
 
 from core.agent_core import create_agent
@@ -728,6 +729,9 @@ async def process_user_input(
 
 async def main() -> None:
     """Main application entry point."""
+    session_log = None
+    master_log = None
+    
     try:
         # Parse command-line arguments
         args = parse_arguments()
@@ -736,8 +740,19 @@ async def main() -> None:
         setup_environment()
 
         # Initialize logging after environment setup, respecting --debug flag
-        setup_logging(level=logging.DEBUG if args.debug else None)
+        session_log, master_log = setup_logging(level=logging.DEBUG if args.debug else None)
         install_exception_hook()
+        
+        # نمایش اطلاعات لاگ برای کاربر
+        print(f"\n{Fore.CYAN}📝 Logging Information:{Style.RESET_ALL}")
+        print(f"   Session Log: {session_log}")
+        print(f"   Master Log:  {master_log}")
+        print(f"   {Fore.GREEN}✓ All outputs will be saved to these files{Style.RESET_ALL}\n")
+        
+        logger.info(f"Application started with mode={args.mode}, input_mode={args.input_mode}")
+        logger.info(f"Debug mode: {args.debug}")
+        logger.info(f"Automation enabled: {args.enable_automation}")
+        logger.info(f"Autonomous mode enabled: {args.enable_autonomous}")
         
         # Initialize core components
         task_engine = TaskEngine(concurrency=args.concurrency)
@@ -825,6 +840,19 @@ async def main() -> None:
     except Exception as e:
         logger.exception("A fatal error occurred.")
         sys.exit(1)
+    finally:
+        # ثبت پایان session در لاگ
+        if session_log:
+            logger.info("="*80)
+            logger.info(f"🏁 SESSION ENDED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            logger.info(f"📝 Complete log saved to: {session_log}")
+            logger.info(f"📊 Master log updated: {master_log}")
+            logger.info("="*80)
+            
+            print(f"\n{Fore.CYAN}📊 Session Summary:{Style.RESET_ALL}")
+            print(f"   Complete log: {session_log}")
+            print(f"   Master log:   {master_log}")
+            print(f"   {Fore.GREEN}✓ All logs saved successfully{Style.RESET_ALL}\n")
 
 if __name__ == "__main__":
     asyncio.run(main())

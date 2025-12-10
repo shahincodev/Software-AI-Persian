@@ -233,6 +233,61 @@ python main.py --enable-autonomous
 | ❌ `Click at (500, 300)` | ✅ AI خودش می‌فهمد |
 | ❌ ۱۰ خط کد | ✅ ۱ خط پرامپت |
 
+📖 [راهنمای عامل خودمختار](docs/AUTONOMOUS_AGENT.md)
+
+### 🧠 سیستم تحلیل نیت (Intent Planning System)
+
+**🆕 NEW - در حال توسعه فعلی**
+
+سیستم هوشمند برای درک درخواست‌های پیچیده و تبدیل آن‌ها به پلان‌های قابل اجرا:
+
+```bash
+python main.py --with-intent-planning
+
+# مثال 1: درخواست ساده
+> بازی کن تا برگردم
+
+🧠 تحلیل Intent...
+💬 سوال: کدام بازی رو باز کنم؟
+📝 جواب: Counter-Strike
+📋 پلن ایجاد شد:
+   1. باز کردن Steam
+   2. پیدا کردن Counter-Strike
+   3. شروع بازی
+   4. بازی تا زمان بازگشت
+
+# مثال 2: درخواست پیچیده
+> دیتای هوای تهران رو دریافت کن و در Excel ذخیره کن
+
+🧠 تحلیل Intent...
+📋 پلن ایجاد شد:
+   1. باز کردن مرورگر
+   2. جستجوی دیتای هوای تهران
+   3. استخراج داده‌ها
+   4. باز کردن Excel
+   5. درج داده‌ها
+   6. ذخیره فایل
+
+✅ پلان تایید شد و آماده اجراست!
+```
+
+**اجزای سیستم Intent Planning:**
+
+1. **Intent Analyzer** - تشخیص هدف و درک نیت کاربر
+2. **Dialog Manager** - مکالمه برای جمع‌آوری اطلاعات ناگزیر
+3. **Plan Generator** - تولید پلان مرحله‌به‌مرحله
+4. **Plan Validator** - بررسی صحت و امنیت پلان
+5. **Memory Integrator** - یادگیری و بهبود مستمر
+
+**مزایا:**
+- 🎯 درک درخواست‌های پیچیده و چند‌مرحله‌ای
+- 💬 مکالمه خودکار برای جزئیات ناگزیر
+- 📋 پلان‌های قابل اجرا و تحقق‌پذیر
+- 🔄 بازیابی و بهبود مستمر
+- 📚 یادگیری از تجربیات قبلی
+
+📖 [نقشه راه Intent Planning System](docs/INTENT_SYSTEM_PLAN.md) - **خواندن اجباری برای مساهمین!**
+
 ---
 
 ## 🎨 قابلیت‌های پیشرفته
@@ -709,39 +764,45 @@ results = memory.search_long(query="بکاپ")
 1. **[شروع سریع](docs/QUICKSTART.md)** - نصب و اجرای اولیه (۱۰ دقیقه)
 2. **[راهنمای خودکارسازی](docs/AUTOMATION_GUIDE.md)** - نحوه استفاده از قابلیت‌های اتوماسیون
 3. **[راهنمای کنترل ویندوز](docs/WINDOWS_AUTOMATION.md)** - معماری و API
+4. **[نقشه راه توسعه Intent System](docs/INTENT_SYSTEM_PLAN.md)** - 🆕 **خواندن اجباری برای توسعه‌دهندگان!**
 
 ### 👁️ بینایی و تشخیص
 
-4. **[Desktop Vision](docs/DESKTOP_VISION.md)** - سیستم بینایی رایانه
-5. **[OCR و تشخیص متن](docs/DESKTOP_VISION.md#ocr)** - خواندن متن از صفحه
+5. **[Desktop Vision](docs/DESKTOP_VISION.md)** - سیستم بینایی رایانه
+6. **[OCR و تشخیص متن](docs/DESKTOP_VISION.md#ocr)** - خواندن متن از صفحه
 
 ### 🖱️⌨️ کنترل ورودی
 
-6. **[Mouse Control](docs/MOUSE_CONTROL.md)** - کنترل کامل موس
-7. **[Keyboard Control](docs/KEYBOARD_CONTROL.md)** - کنترل کیبورد و تایپ
-8. **[Smart Wait](docs/SMART_WAIT.md)** - انتظار هوشمند
+7. **[Mouse Control](docs/MOUSE_CONTROL.md)** - کنترل کامل موس
+8. **[Keyboard Control](docs/KEYBOARD_CONTROL.md)** - کنترل کیبورد و تایپ
+9. **[Smart Wait](docs/SMART_WAIT.md)** - انتظار هوشمند
 
 ### 🎮 اقدامات پیشرفته
 
-9. **[Action Controller](docs/ACTION_CONTROLLER.md)** - کنترلر اکشن‌های سطح بالا
-10. **[Autonomous Agent](docs/AUTONOMOUS_AGENT.md)** - عامل خودمختار
+10. **[Action Controller](docs/ACTION_CONTROLLER.md)** - کنترلر اکشن‌های سطح بالا
+11. **[Autonomous Agent](docs/AUTONOMOUS_AGENT.md)** - عامل خودمختار
 
 ### 🛡️ امنیت و بازیابی
 
-11. **[Action Safety](docs/ACTION_SAFETY.md)** - سیستم ایمنی
-12. **[Action Recovery](docs/ACTION_RECOVERY.md)** - سیستم بازیابی
-13. **[Context-Aware Actions](docs/CONTEXT_AWARE.md)** - اقدامات هوشمند
+12. **[Action Safety](docs/ACTION_SAFETY.md)** - سیستم ایمنی
+13. **[Action Recovery](docs/ACTION_RECOVERY.md)** - سیستم بازیابی
+14. **[Context-Aware Actions](docs/CONTEXT_AWARE.md)** - اقدامات هوشمند
+
+### 🧠 هوش مصنوعی و کنترل
+
+15. **[Master AI Controller](docs/MASTER_CONTROLLER.md)** - مغز اصلی سیستم
+16. **[Intent Planning System](docs/INTENT_SYSTEM_PLAN.md)** - 🆕 درک پیچیده درخواست‌ها
+
 ### 🔧 پیشرفته
 
-14. **[Master AI Controller](docs/MASTER_CONTROLLER.md)** - مغز اصلی سیستم (جدید!)
-15. **[Multi-Monitor](docs/MULTI_MONITOR.md)** - پشتیبانی چند مانیتور
-16. **[Logging Best Practices](docs/LOGGING_BEST_PRACTICES.md)** - بهترین روش‌های لاگ‌گیری
+17. **[Multi-Monitor](docs/MULTI_MONITOR.md)** - پشتیبانی چند مانیتور
+18. **[Logging Best Practices](docs/LOGGING_BEST_PRACTICES.md)** - بهترین روش‌های لاگ‌گیری
 
 ### 📋 گزارش‌ها و برنامه‌ریزی
 
-17. **[Week 2 Plan](docs/WEEK2_ACTION_LAYER_PLAN.md)** - برنامه هفته دوم
-18. **[Week 2 Summary](docs/WEEK2_EXECUTIVE_SUMMARY.md)** - خلاصه مدیریتی
-19. **[Integration Guide](docs/INTEGRATION_GUIDE.md)** - راهنمای ادغام
+19. **[Week 2 Plan](docs/WEEK2_ACTION_LAYER_PLAN.md)** - برنامه هفته دوم
+20. **[Week 2 Summary](docs/WEEK2_EXECUTIVE_SUMMARY.md)** - خلاصه مدیریتی
+21. **[Integration Guide](docs/INTEGRATION_GUIDE.md)** - راهنمای ادغام
 
 ---
 

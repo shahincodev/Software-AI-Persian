@@ -766,43 +766,51 @@ results = memory.search_long(query="بکاپ")
 3. **[راهنمای کنترل ویندوز](docs/WINDOWS_AUTOMATION.md)** - معماری و API
 4. **[نقشه راه توسعه Intent System](docs/INTENT_SYSTEM_PLAN.md)** - 🆕 **خواندن اجباری برای توسعه‌دهندگان!**
 
+### 🧠 Intent Planning System - ماژول‌ها (NEW!)
+
+5. **[Intent Analyzer](docs/INTENT_ANALYZER.md)** - 🆕 تشخیص نیت و هدف کاربر (فعال کردند!)
+   - ✅ ۴۱ تست واحد
+   - ✅ 611 خط کد
+   - ✅ پشتیبانی دوزبانه
+   - ✅ مستندات کامل
+
 ### 👁️ بینایی و تشخیص
 
-5. **[Desktop Vision](docs/DESKTOP_VISION.md)** - سیستم بینایی رایانه
-6. **[OCR و تشخیص متن](docs/DESKTOP_VISION.md#ocr)** - خواندن متن از صفحه
+6. **[Desktop Vision](docs/DESKTOP_VISION.md)** - سیستم بینایی رایانه
+7. **[OCR و تشخیص متن](docs/DESKTOP_VISION.md#ocr)** - خواندن متن از صفحه
 
 ### 🖱️⌨️ کنترل ورودی
 
-7. **[Mouse Control](docs/MOUSE_CONTROL.md)** - کنترل کامل موس
-8. **[Keyboard Control](docs/KEYBOARD_CONTROL.md)** - کنترل کیبورد و تایپ
-9. **[Smart Wait](docs/SMART_WAIT.md)** - انتظار هوشمند
+8. **[Mouse Control](docs/MOUSE_CONTROL.md)** - کنترل کامل موس
+9. **[Keyboard Control](docs/KEYBOARD_CONTROL.md)** - کنترل کیبورد و تایپ
+10. **[Smart Wait](docs/SMART_WAIT.md)** - انتظار هوشمند
 
 ### 🎮 اقدامات پیشرفته
 
-10. **[Action Controller](docs/ACTION_CONTROLLER.md)** - کنترلر اکشن‌های سطح بالا
-11. **[Autonomous Agent](docs/AUTONOMOUS_AGENT.md)** - عامل خودمختار
+11. **[Action Controller](docs/ACTION_CONTROLLER.md)** - کنترلر اکشن‌های سطح بالا
+12. **[Autonomous Agent](docs/AUTONOMOUS_AGENT.md)** - عامل خودمختار
 
 ### 🛡️ امنیت و بازیابی
 
-12. **[Action Safety](docs/ACTION_SAFETY.md)** - سیستم ایمنی
-13. **[Action Recovery](docs/ACTION_RECOVERY.md)** - سیستم بازیابی
-14. **[Context-Aware Actions](docs/CONTEXT_AWARE.md)** - اقدامات هوشمند
+13. **[Action Safety](docs/ACTION_SAFETY.md)** - سیستم ایمنی
+14. **[Action Recovery](docs/ACTION_RECOVERY.md)** - سیستم بازیابی
+15. **[Context-Aware Actions](docs/CONTEXT_AWARE.md)** - اقدامات هوشمند
 
 ### 🧠 هوش مصنوعی و کنترل
 
-15. **[Master AI Controller](docs/MASTER_CONTROLLER.md)** - مغز اصلی سیستم
-16. **[Intent Planning System](docs/INTENT_SYSTEM_PLAN.md)** - 🆕 درک پیچیده درخواست‌ها
+16. **[Master AI Controller](docs/MASTER_CONTROLLER.md)** - مغز اصلی سیستم
+17. **[Intent Planning System](docs/INTENT_SYSTEM_PLAN.md)** - 🆕 درک پیچیده درخواست‌ها
 
 ### 🔧 پیشرفته
 
-17. **[Multi-Monitor](docs/MULTI_MONITOR.md)** - پشتیبانی چند مانیتور
-18. **[Logging Best Practices](docs/LOGGING_BEST_PRACTICES.md)** - بهترین روش‌های لاگ‌گیری
+18. **[Multi-Monitor](docs/MULTI_MONITOR.md)** - پشتیبانی چند مانیتور
+19. **[Logging Best Practices](docs/LOGGING_BEST_PRACTICES.md)** - بهترین روش‌های لاگ‌گیری
 
 ### 📋 گزارش‌ها و برنامه‌ریزی
 
-19. **[Week 2 Plan](docs/WEEK2_ACTION_LAYER_PLAN.md)** - برنامه هفته دوم
-20. **[Week 2 Summary](docs/WEEK2_EXECUTIVE_SUMMARY.md)** - خلاصه مدیریتی
-21. **[Integration Guide](docs/INTEGRATION_GUIDE.md)** - راهنمای ادغام
+20. **[Week 2 Plan](docs/WEEK2_ACTION_LAYER_PLAN.md)** - برنامه هفته دوم
+21. **[Week 2 Summary](docs/WEEK2_EXECUTIVE_SUMMARY.md)** - خلاصه مدیریتی
+22. **[Integration Guide](docs/INTEGRATION_GUIDE.md)** - راهنمای ادغام
 
 ---
 

@@ -286,7 +286,9 @@ python main.py --with-intent-planning
 3. **[Plan Generator](docs/PLAN_GENERATOR.md)** ✅ **NEW** - تولید پلان مرحله‌به‌مرحله
    - ✅ ۳۲ تست واحد، 887 خط کد، 100% دوزبانه، مستندات جامع
    
-4. **Plan Validator** (به زودی) - بررسی صحت و امنیت پلان
+4. **[Plan Validator](docs/PLAN_VALIDATOR.md)** ✅ **NEW** - بررسی صحت و امنیت پلان
+   - ✅ ۲۵ تست واحد، 742 خط کد، 100% دوزبانه، مستندات جامع
+   
 5. **Memory Integrator** (به زودی) - یادگیری و بهبود مستمر
 
 **مزایا:**

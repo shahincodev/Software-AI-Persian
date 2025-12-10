@@ -280,10 +280,12 @@ python main.py --with-intent-planning
 1. **[Intent Analyzer](docs/INTENT_ANALYZER.md)** ✅ - تشخیص هدف و درک نیت کاربر
    - ✅ ۴۱ تست واحد، 611 خط کد
    
-2. **[Dialog Manager](docs/DIALOG_MANAGER.md)** ✅ **NEW** - مکالمه برای جمع‌آوری اطلاعات ناگزیر
+2. **[Dialog Manager](docs/DIALOG_MANAGER.md)** ✅ - مکالمه برای جمع‌آوری اطلاعات ناگزیر
    - ✅ ۴۲ تست واحد، 487 خط کد، 100% دوزبانه
    
-3. **Plan Generator** (به زودی) - تولید پلان مرحله‌به‌مرحله
+3. **[Plan Generator](docs/PLAN_GENERATOR.md)** ✅ **NEW** - تولید پلان مرحله‌به‌مرحله
+   - ✅ ۳۲ تست واحد، 887 خط کد، 100% دوزبانه، مستندات جامع
+   
 4. **Plan Validator** (به زودی) - بررسی صحت و امنیت پلان
 5. **Memory Integrator** (به زودی) - یادگیری و بهبود مستمر
 
@@ -776,17 +778,23 @@ results = memory.search_long(query="بکاپ")
 
 ### 🧠 Intent Planning System - ماژول‌ها (NEW!)
 
-5. **[Intent Analyzer](docs/INTENT_ANALYZER.md)** - 🆕 تشخیص نیت و هدف کاربر (فعال کردند!)
+5. **[Intent Analyzer](docs/INTENT_ANALYZER.md)** - تشخیص نیت و هدف کاربر
    - ✅ ۴۱ تست واحد
    - ✅ 611 خط کد
    - ✅ پشتیبانی دوزبانه
    - ✅ مستندات کامل
 
-6. **[Dialog Manager](docs/DIALOG_MANAGER.md)** - 🆕 مکالمه برای جمع‌آوری اطلاعات ناگزیر (تازه تکمیل!)
+6. **[Dialog Manager](docs/DIALOG_MANAGER.md)** - مکالمه برای جمع‌آوری اطلاعات ناگزیر
    - ✅ ۴۲ تست واحد
    - ✅ 487 خط کد
    - ✅ پشتیبانی 100% دوزبانه
    - ✅ مستندات جامع
+
+7. **[Plan Generator](docs/PLAN_GENERATOR.md)** - تولید پلان مرحله‌به‌مرحله (تازه تکمیل!)
+   - ✅ ۳۲ تست واحد
+   - ✅ 887 خط کد
+   - ✅ پشتیبانی 100% دوزبانه
+   - ✅ مستندات کامل
 
 ### 👁️ بینایی و تشخیص
 

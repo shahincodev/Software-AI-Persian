@@ -6,7 +6,7 @@
 
 ![Python Version](https://img.shields.io/badge/Python-3.13%2B-blue)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-green)
-![Tests](https://img.shields.io/badge/Tests-221%20Passing-success)
+![Tests](https://img.shields.io/badge/Tests-249%20Passing-success)
 ![License](https://img.shields.io/badge/License-Proprietary-red)
 
 **سیستم کنترل خودکار ویندوز با هوش مصنوعی - بدون کدنویسی، فقط با گفتن!**
@@ -792,49 +792,61 @@ results = memory.search_long(query="بکاپ")
    - ✅ پشتیبانی 100% دوزبانه
    - ✅ مستندات جامع
 
-7. **[Plan Generator](docs/PLAN_GENERATOR.md)** - تولید پلان مرحله‌به‌مرحله (تازه تکمیل!)
+7. **[Plan Generator](docs/PLAN_GENERATOR.md)** - تولید پلان مرحله‌به‌مرحله
    - ✅ ۳۲ تست واحد
    - ✅ 887 خط کد
    - ✅ پشتیبانی 100% دوزبانه
    - ✅ مستندات کامل
 
+8. **[Plan Validator](docs/PLAN_VALIDATOR.md)** - اعتبارسنجی و امتیازدهی پلان
+   - ✅ ۲۵ تست واحد
+   - ✅ 742 خط کد
+   - ✅ سیستم امنیتی 8 مرحله‌ای
+   - ✅ مستندات جامع
+
+9. **[Memory Integrator](docs/MEMORY_INTEGRATOR.md)** - یادگیری از تاریخچه (تازه تکمیل!)
+   - ✅ ۲۸ تست واحد
+   - ✅ 505 خط کد
+   - ✅ دیتابیس SQLite
+   - ✅ مستندات کامل
+
 ### 👁️ بینایی و تشخیص
 
-6. **[Desktop Vision](docs/DESKTOP_VISION.md)** - سیستم بینایی رایانه
-7. **[OCR و تشخیص متن](docs/DESKTOP_VISION.md#ocr)** - خواندن متن از صفحه
+10. **[Desktop Vision](docs/DESKTOP_VISION.md)** - سیستم بینایی رایانه
+11. **[OCR و تشخیص متن](docs/DESKTOP_VISION.md#ocr)** - خواندن متن از صفحه
 
 ### 🖱️⌨️ کنترل ورودی
 
-8. **[Mouse Control](docs/MOUSE_CONTROL.md)** - کنترل کامل موس
-9. **[Keyboard Control](docs/KEYBOARD_CONTROL.md)** - کنترل کیبورد و تایپ
-10. **[Smart Wait](docs/SMART_WAIT.md)** - انتظار هوشمند
+12. **[Mouse Control](docs/MOUSE_CONTROL.md)** - کنترل کامل موس
+13. **[Keyboard Control](docs/KEYBOARD_CONTROL.md)** - کنترل کیبورد و تایپ
+14. **[Smart Wait](docs/SMART_WAIT.md)** - انتظار هوشمند
 
 ### 🎮 اقدامات پیشرفته
 
-11. **[Action Controller](docs/ACTION_CONTROLLER.md)** - کنترلر اکشن‌های سطح بالا
-12. **[Autonomous Agent](docs/AUTONOMOUS_AGENT.md)** - عامل خودمختار
+15. **[Action Controller](docs/ACTION_CONTROLLER.md)** - کنترلر اکشن‌های سطح بالا
+16. **[Autonomous Agent](docs/AUTONOMOUS_AGENT.md)** - عامل خودمختار
 
 ### 🛡️ امنیت و بازیابی
 
-13. **[Action Safety](docs/ACTION_SAFETY.md)** - سیستم ایمنی
-14. **[Action Recovery](docs/ACTION_RECOVERY.md)** - سیستم بازیابی
-15. **[Context-Aware Actions](docs/CONTEXT_AWARE.md)** - اقدامات هوشمند
+17. **[Action Safety](docs/ACTION_SAFETY.md)** - سیستم ایمنی
+18. **[Action Recovery](docs/ACTION_RECOVERY.md)** - سیستم بازیابی
+19. **[Context-Aware Actions](docs/CONTEXT_AWARE.md)** - اقدامات هوشمند
 
 ### 🧠 هوش مصنوعی و کنترل
 
-16. **[Master AI Controller](docs/MASTER_CONTROLLER.md)** - مغز اصلی سیستم
-17. **[Intent Planning System](docs/INTENT_SYSTEM_PLAN.md)** - 🆕 درک پیچیده درخواست‌ها
+20. **[Master AI Controller](docs/MASTER_CONTROLLER.md)** - مغز اصلی سیستم
+21. **[Intent Planning System](docs/INTENT_SYSTEM_PLAN.md)** - درک پیچیده درخواست‌ها
 
 ### 🔧 پیشرفته
 
-18. **[Multi-Monitor](docs/MULTI_MONITOR.md)** - پشتیبانی چند مانیتور
-19. **[Logging Best Practices](docs/LOGGING_BEST_PRACTICES.md)** - بهترین روش‌های لاگ‌گیری
+22. **[Multi-Monitor](docs/MULTI_MONITOR.md)** - پشتیبانی چند مانیتور
+23. **[Logging Best Practices](docs/LOGGING_BEST_PRACTICES.md)** - بهترین روش‌های لاگ‌گیری
 
 ### 📋 گزارش‌ها و برنامه‌ریزی
 
-20. **[Week 2 Plan](docs/WEEK2_ACTION_LAYER_PLAN.md)** - برنامه هفته دوم
-21. **[Week 2 Summary](docs/WEEK2_EXECUTIVE_SUMMARY.md)** - خلاصه مدیریتی
-22. **[Integration Guide](docs/INTEGRATION_GUIDE.md)** - راهنمای ادغام
+24. **[Week 2 Plan](docs/WEEK2_ACTION_LAYER_PLAN.md)** - برنامه هفته دوم
+25. **[Week 2 Summary](docs/WEEK2_EXECUTIVE_SUMMARY.md)** - خلاصه مدیریتی
+26. **[Integration Guide](docs/INTEGRATION_GUIDE.md)** - راهنمای ادغام
 
 ---
 

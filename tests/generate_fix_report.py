@@ -1,4 +1,7 @@
-#!/usr/bin/env python3
+# SPDX-License-Identifier: Proprietary
+# Copyright © 2025 Shahin - All Rights Reserved
+# Software-AI: AI-Powered Windows Control System
+
 """Final validation report for all fixes."""
 
 import json

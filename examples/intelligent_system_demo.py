@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: NOASSERTION
-# Copyright (c) 2025 Shahin
+# SPDX-License-Identifier: Proprietary
+# Copyright © 2025 Shahin - All Rights Reserved
+# Software-AI: AI-Powered Windows Control System
 
 """نمایش قابلیت‌های عامل هوشمند سیستم با AI.
 

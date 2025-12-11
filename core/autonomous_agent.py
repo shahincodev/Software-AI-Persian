@@ -1,5 +1,6 @@
-# SPDX-License-Identifier: NOASSERTION
-# Copyright (c) 2025 Shahin
+# SPDX-License-Identifier: Proprietary
+# Copyright © 2025 Shahin - All Rights Reserved
+# Software-AI: AI-Powered Windows Control System
 
 """Vision-Based Autonomous Agent - مثل browser-use اما برای Windows
 

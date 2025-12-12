@@ -1214,3 +1214,7 @@ async def main() -> None:
                 realtime_task.cancel()
         except Exception:
             pass
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

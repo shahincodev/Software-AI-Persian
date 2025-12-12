@@ -418,6 +418,13 @@ Examples:
         default="browser",
         help="Operation mode for tasks"
     )
+
+    parser.add_argument(
+        "--concurrency",
+        type=int,
+        default=2,
+        help="تعداد پردازش‌های همزمان برای TaskEngine (پیشنهادی: 2)"
+    )
     
     parser.add_argument(
         "--debug",

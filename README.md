@@ -541,6 +541,60 @@ else:
 
 📖 [راهنمای سیستم بازیابی](docs/ACTION_RECOVERY.md)
 
+### ⚡ حلقه زمان‌واقعی هوشمند (Realtime Loop with Intelligent Interpretation)
+
+سیستم سبک برای مشاهده و تفسیر پیوسته صفحه با OCR و تشخیص تغییرات:
+
+```python
+from core.realtime_interpreter import RealtimeInterpreter
+
+interpreter = RealtimeInterpreter(
+    vision=vision,
+    ocr_enabled=True,        # فعال‌سازی OCR
+    text_threshold=3,        # حداقل طول متن
+    max_texts=10            # حداکثر متن‌های ثبت شده
+)
+
+# تفسیر وضعیت صفحه
+result = await interpreter.interpret(
+    safety_mode="power",
+    risk_threshold=70.0
+)
+
+print(f"اقدام: {result.action}")           # "noop" | "hint" | "act"
+print(f"ریسک: {result.risk_score:.0f}")    # 0-100
+print(f"اعتماد: {result.confidence:.1f}") # 0-1
+print(f"تغییر: {result.changed}")          # True/False
+```
+
+**ویژگی‌های تفسیرکننده:**
+- 👁️ **OCR هوشمند**: خواندن متن‌های مهم صفحه (فقط متن‌های درشت)
+- 🪟 **تشخیص پنجره**: شناسایی پنجره‌های فعال و تغییرات آن
+- 🔍 **تشخیص تغییرات**: مقایسه پیوسته دو snapshot متوالی
+- 📊 **نمره ریسک**: ارزیابی ریسک بر اساس نوع تغییر و حالت ایمنی
+- 🔒 **حالت Safety/Power**: رفتار مختلف در حالت‌های ایمنی مختلف
+
+**پارامترها:**
+- `ocr_enabled`: فعال‌سازی استخراج متن (پیش‌فرض: True)
+- `text_threshold`: حداقل طول متن برای ثبت (پیش‌فرض: 3)
+- `max_texts`: حداکثر متن‌های ثبت شده (پیش‌فرض: 10)
+- `safety_mode`: "safe" یا "power"
+- `risk_threshold`: آستانه ریسک برای اقدام (پیش‌فرض: 70.0)
+
+**مثال: استفاده در حلقه زمان‌واقعی**
+
+```bash
+# راه‌اندازی حلقه با تفسیر هوشمند
+python main.py --full --realtime --realtime-fps 1.0
+
+# استفاده در حالت Power با ریسک بالاتر
+python main.py --safety-mode power --realtime --risk-threshold 80
+```
+
+✅ **آمار تست**: ۱۱/۱۱ موفق (۱۰۰٪)
+
+📖 [راهنمای تفسیرکننده زمان‌واقعی](docs/REALTIME_INTERPRETER.md)
+
 ---
 
 ## 🖥️ قابلیت‌های سطح سیستم
@@ -1056,6 +1110,10 @@ python main.py [OPTIONS]
   --concurrency INT             تعداد تسک‌های همزمان (پیش‌فرض: 3)
   --enable-automation           فعال‌سازی خودکارسازی دسکتاپ
   --enable-autonomous           فعال‌سازی عامل خودمختار
+  --safety-mode {safe,power}    حالت ایمنی (پیش‌فرض: safe)
+  --risk-threshold FLOAT        آستانه ریسک (پیش‌فرض: 70.0)
+  --realtime                    فعال‌سازی حلقه زمان‌واقعی با OCR هوشمند
+  --realtime-fps FLOAT          نرخ فریم حلقه زمان‌واقعی (پیش‌فرض: 1.0)
   --tts-provider {gtts,google-cloud,elevenlabs}
   --debug                       حالت دیباگ
   --help                        نمایش راهنما
@@ -1072,6 +1130,12 @@ python main.py --enable-autonomous --debug
 
 # افزایش تعداد تسک‌های همزمان
 python main.py --concurrency 10
+
+# استفاده از حلقه زمان‌واقعی با تفسیر هوشمند
+python main.py --full --realtime --realtime-fps 1.0
+
+# حالت Power برای اکشن‌های ریسک‌بیشتر با تفسیر OCR
+python main.py --safety-mode power --realtime --risk-threshold 80
 
 # استفاده از TTS پیشرفته
 python main.py --input-mode voice --tts-provider elevenlabs

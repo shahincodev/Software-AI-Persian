@@ -46,6 +46,7 @@ from core.dialog_manager import DialogManager
 from core.plan_generator import PlanGenerator
 from core.plan_validator import PlanValidator, ValidationLevel
 from core.memory_integrator import MemoryIntegrator, PlanStatus
+from core.realtime_loop import RealtimeLoop
 
 from dotenv import load_dotenv
 from core.logging_config import setup_logging, install_exception_hook
@@ -458,11 +459,52 @@ Examples:
         action="store_true",
         help="Enable Intent Planning System (Intelligent Request Processing)"
     )
+
+    parser.add_argument(
+        "--safety-mode",
+        choices=["safe", "power"],
+        default="safe",
+        help="Safety profile: safe (stricter) or power (freer with warnings)"
+    )
+
+    parser.add_argument(
+        "--risk-threshold",
+        type=int,
+        default=70,
+        help="Risk threshold (0-100) for allowing execution in safe mode"
+    )
+
+    parser.add_argument(
+        "--allow-app",
+        action="append",
+        default=[],
+        help="Whitelist an application name (repeatable). Example: --allow-app chrome"
+    )
+
+    parser.add_argument(
+        "--allow-path",
+        action="append",
+        default=[],
+        help="Whitelist a file or directory path (repeatable). Example: --allow-path C:/Projects"
+    )
     
     parser.add_argument(
         "--full",
         action="store_true",
         help="Enable ALL features (Automation + Autonomous + Intent Planning)"
+    )
+
+    parser.add_argument(
+        "--realtime",
+        action="store_true",
+        help="Enable lightweight realtime loop (capture/interpret/act). Recommended with --safety-mode power"
+    )
+
+    parser.add_argument(
+        "--realtime-fps",
+        type=float,
+        default=1.0,
+        help="FPS for realtime loop (0.2 - 10.0). Default: 1.0"
     )
 
     return parser.parse_args()
@@ -526,6 +568,48 @@ def print_features_status(
     
     print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
 
+
+class SessionControl:
+    """مدیریت حالت ایمنی، توقف اضطراری و فهرست‌های مجاز."""
+
+    def __init__(
+        self,
+        safety_mode: str = "safe",
+        risk_threshold: int = 70,
+        allowed_apps: Optional[list[str]] = None,
+        allowed_paths: Optional[list[str]] = None
+    ) -> None:
+        self.safety_mode = safety_mode
+        self.risk_threshold = max(0, min(risk_threshold, 100))
+        self.allowed_apps = set(allowed_apps or [])
+        self.allowed_paths = set(allowed_paths or [])
+        self.paused = False
+        self.stopped = False
+
+    def pause(self) -> None:
+        self.paused = True
+
+    def resume(self) -> None:
+        self.paused = False
+
+    def stop(self) -> None:
+        self.stopped = True
+
+
+def log_risk_decision(action: str, safety_mode: str, risk_score: float, threshold: int) -> None:
+    """ثبت تصمیم ریسک در لاگ برای شفافیت."""
+    try:
+        logger.info(
+            "RISK_DECISION action=%s mode=%s score=%.2f threshold=%d",
+            action,
+            safety_mode,
+            risk_score,
+            threshold,
+        )
+    except Exception:
+        # لاگ نباید اجرای اصلی را متوقف کند
+        pass
+
 async def process_user_input(
     task_engine: TaskEngine, 
     memory: MemoryManager, 
@@ -533,6 +617,7 @@ async def process_user_input(
     input_mode: str, 
     voice: VoiceManager, 
     system_agent: IntelligentSystemAgent,
+    session_control: SessionControl,
     mouse: Optional[MouseController] = None,
     keyboard: Optional[KeyboardController] = None,
     smart_wait: Optional[SmartWaiter] = None,
@@ -557,6 +642,12 @@ async def process_user_input(
     
     print(f"\n{Fore.GREEN}{welcome_message}{Style.RESET_ALL}")
     print(f"{Fore.YELLOW}Version 1.0.0 | Powered by AI | Persian & English Support{Style.RESET_ALL}\n")
+    print(f"{Fore.MAGENTA}Safety mode: {session_control.safety_mode.upper()} | Risk threshold: {session_control.risk_threshold}{Style.RESET_ALL}")
+    if session_control.allowed_apps:
+        print(f"{Fore.MAGENTA}Allowed apps : {', '.join(session_control.allowed_apps)}{Style.RESET_ALL}")
+    if session_control.allowed_paths:
+        print(f"{Fore.MAGENTA}Allowed paths: {', '.join(session_control.allowed_paths)}{Style.RESET_ALL}")
+    print()
     # نمایش دستورات موجود
     print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
     print(f"{Fore.CYAN}{'AVAILABLE COMMANDS':^80}{Style.RESET_ALL}")
@@ -566,6 +657,8 @@ async def process_user_input(
     print(f"  {Fore.GREEN}help{Style.RESET_ALL}               - Show all available commands")
     print(f"  {Fore.GREEN}start / run{Style.RESET_ALL}        - Execute queued tasks")
     print(f"  {Fore.GREEN}clear{Style.RESET_ALL}              - Clear task queue")
+    print(f"  {Fore.GREEN}pause / resume{Style.RESET_ALL}     - Pause or resume actions (kill-switch ready)")
+    print(f"  {Fore.GREEN}stop / panic{Style.RESET_ALL}       - Emergency stop and exit session")
     print(f"  {Fore.GREEN}exit / quit{Style.RESET_ALL}        - Exit the application\n")
     
     if intent_analyzer:
@@ -625,6 +718,34 @@ async def process_user_input(
 
             # دستورات اصلی
             cmd_lower = user_text.lower()
+
+            # توقف کامل
+            if session_control.stopped:
+                print(f"{Fore.RED}🛑 Session stopped. Restart the app to continue.{Style.RESET_ALL}")
+                break
+
+            # اگر در حالت pause است و فرمان کنترل نیست
+            if session_control.paused and cmd_lower not in ["resume", "stop", "exit", "quit"]:
+                print(f"{Fore.YELLOW}⏸️  Session is paused. Type 'resume' to continue or 'stop' to end.{Style.RESET_ALL}")
+                continue
+
+            # Pause
+            if cmd_lower == "pause":
+                session_control.pause()
+                print(f"{Fore.YELLOW}⏸️  Paused. Actions are halted until you 'resume'.{Style.RESET_ALL}")
+                continue
+
+            # Resume
+            if cmd_lower == "resume":
+                session_control.resume()
+                print(f"{Fore.GREEN}▶️  Resumed. Actions are enabled again.{Style.RESET_ALL}")
+                continue
+
+            # Stop / kill-switch
+            if cmd_lower in ["stop", "panic", "kill", "abort"]:
+                session_control.stop()
+                print(f"{Fore.RED}🛑 Emergency stop activated. Exiting session.{Style.RESET_ALL}")
+                break
             
             # Help command
             if cmd_lower == "help":
@@ -726,6 +847,7 @@ async def process_user_input(
                     print(f"      Valid: {validation.is_valid}")
                     print(f"      Safety Score: {validation.safety_score}/100")
                     print(f"      Reliability: {validation.reliability_score}/100\n")
+                    print(f"      Threshold ({session_control.safety_mode}): {session_control.risk_threshold}\n")
                     
                     # Step 5: Record
                     if memory_integrator:
@@ -763,8 +885,24 @@ async def process_user_input(
                     intent = await intent_analyzer.analyze(request)
                     plan = await plan_generator.generate_plan(intent)
                     validation = await plan_validator.validate(plan, intent)
-                    
-                    if validation.is_valid and validation.safety_score >= 70:
+                    risk_score = validation.safety_score
+                    allowed = validation.is_valid and (
+                        risk_score >= session_control.risk_threshold or session_control.safety_mode == "power"
+                    )
+
+                    log_risk_decision("smart", session_control.safety_mode, risk_score, session_control.risk_threshold)
+
+                    if not validation.is_valid:
+                        print(f"{Fore.RED}❌ Plan validation failed (invalid plan){Style.RESET_ALL}\n")
+                    elif not allowed:
+                        print(
+                            f"{Fore.RED}❌ Blocked by risk threshold ({risk_score} < {session_control.risk_threshold} in SAFE mode){Style.RESET_ALL}\n"
+                        )
+                    else:
+                        if session_control.safety_mode == "power" and risk_score < session_control.risk_threshold:
+                            print(
+                                f"{Fore.YELLOW}⚠ Continuing in POWER mode despite risk {risk_score} (threshold {session_control.risk_threshold}){Style.RESET_ALL}"
+                            )
                         print(f"{Fore.GREEN}✓ Plan validated and executed{Style.RESET_ALL}\n")
                         if memory_integrator:
                             memory_integrator.record_execution(
@@ -777,8 +915,6 @@ async def process_user_input(
                                 actual_time_seconds=5.0,
                                 estimated_time_seconds=plan.estimated_time_seconds
                             )
-                    else:
-                        print(f"{Fore.RED}❌ Plan validation failed (Safety: {validation.safety_score}){Style.RESET_ALL}\n")
                 
                 except Exception as e:
                     print(f"{Fore.RED}❌ Error: {str(e)}{Style.RESET_ALL}\n")
@@ -884,6 +1020,7 @@ async def main() -> None:
     """Main application entry point."""
     session_log = None
     master_log = None
+    realtime_task = None
     
     try:
         # Parse command-line arguments
@@ -906,6 +1043,13 @@ async def main() -> None:
         logger.info(f"Debug mode: {args.debug}")
         logger.info(f"Automation enabled: {args.enable_automation}")
         logger.info(f"Autonomous mode enabled: {args.enable_autonomous}")
+        logger.info(
+            "Safety mode=%s risk_threshold=%d allow_app=%s allow_path=%s",
+            args.safety_mode,
+            args.risk_threshold,
+            args.allow_app,
+            args.allow_path,
+        )
         
         # Initialize core components
         task_engine = TaskEngine(concurrency=args.concurrency)
@@ -921,6 +1065,14 @@ async def main() -> None:
             args.enable_automation = True
             args.enable_autonomous = True
             args.enable_intent_planning = True
+            args.realtime = True
+
+        session_control = SessionControl(
+            safety_mode=args.safety_mode,
+            risk_threshold=args.risk_threshold,
+            allowed_apps=args.allow_app,
+            allowed_paths=args.allow_path,
+        )
         
         # مقداردهی اولیه قابلیت‌ها
         mouse = None
@@ -989,6 +1141,24 @@ async def main() -> None:
             action_controller=action_controller
         )
 
+        # راه‌اندازی حلقه زمان‌واقعی در صورت درخواست
+        if args.realtime and vision:
+            try:
+                realtime_loop = RealtimeLoop(
+                    vision=vision,
+                    session_control=session_control,
+                    action_controller=action_controller,
+                    fps=args.realtime_fps,
+                    max_actions=3,
+                )
+                realtime_task = asyncio.create_task(realtime_loop.run_loop())
+                logger.info("Realtime loop started")
+                print(f"{Fore.CYAN}⚡ Realtime loop enabled (fps={args.realtime_fps}){Style.RESET_ALL}\n")
+            except Exception as e:
+                logger.warning(f"Failed to start realtime loop: {e}")
+        elif args.realtime and not vision:
+            print(f"{Fore.YELLOW}⚠ Realtime loop requested but vision not initialized.{Style.RESET_ALL}\n")
+
         # پردازش ورودی کاربر
         await process_user_input(
             task_engine, 
@@ -997,6 +1167,7 @@ async def main() -> None:
             args.input_mode, 
             voice, 
             system_agent,
+            session_control,
             mouse=mouse,
             keyboard=keyboard,
             smart_wait=smart_wait,
@@ -1037,5 +1208,9 @@ async def main() -> None:
             print(f"\n  {Fore.GREEN}✓ All logs saved successfully{Style.RESET_ALL}\n")
             print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
 
-if __name__ == "__main__":
-    asyncio.run(main())
+        # توقف حلقه زمان‌واقعی در پایان
+        try:
+            if realtime_task:
+                realtime_task.cancel()
+        except Exception:
+            pass

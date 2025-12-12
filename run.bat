@@ -1,4 +1,8 @@
 @echo off
+REM Ensure UTF-8 console and Python I/O to avoid mojibake
+chcp 65001 >NUL
+set PYTHONUTF8=1
+set PYTHONIOENCODING=utf-8
 ::
 :: Software-AI - اسکریپت اجرا برای ویندوز (CMD)
 :: این اسکریپت یک virtualenv به نام .venv می‌سازد، وابستگی‌ها را نصب می‌کند،
@@ -40,6 +44,12 @@ if not exist "%~dp0data\logs\cache" mkdir "%~dp0data\logs\cache"
 REM --- برنامه را اجرا کنید، آرگومان‌ها را ارسال کنید ---
 echo Launching application...
 python "%~dp0main.py" %*
+
+REM If nothing prints, run a debug fallback to surface errors
+if errorlevel 1 (
+    echo --- Re-running with debug flags to surface issues ---
+    python "%~dp0main.py" --debug --safety-mode safe --realtime --realtime-fps 1
+)
 
 REM غیرفعال کردن (برای وضوح در جلسات تعاملی)
 if defined VIRTUAL_ENV (

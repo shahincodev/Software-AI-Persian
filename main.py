@@ -4,8 +4,14 @@
 # Software-AI: AI-Powered Windows Control System
 
 """
-Main entry point for the AI-Powered Windows Automation System.
-This module provides a CLI interface for interacting with system capabilities.
+نقطه ورود اصلی سیستم اتوماسیون هوشمند ویندوز.
+این ماژول یک رابط CLI پیشرفته برای تعامل با قابلیت‌های سیستم فراهم می‌کند.
+
+قابلیت‌ها:
+- Intent Planning System (تحلیل هوشمند درخواست‌ها)
+- Desktop Automation (کنترل موس، کیبورد، بینایی)
+- Autonomous Agent (اجرای خودکار اهداف)
+- System Agent (مدیریت برنامه‌ها و سیستم)
 """
 
 from __future__ import annotations
@@ -16,28 +22,35 @@ import logging
 import shutil
 import sys
 from pathlib import Path
-from typing import Optional
-from pyfiglet import Figlet
+from typing import Optional, Any
 from colorama import init as colorama_init, Fore, Style
 from datetime import datetime
 
-
-from core.agent_core import create_agent
+# Import core components
 from core.intelligent_agent import IntelligentSystemAgent
 from core.memory_system import MemoryManager
 from core.task_engine import TaskEngine
 from core.voice_io import VoiceManager
+
+# Desktop Automation
 from core.mouse_control import MouseController
 from core.keyboard_control import KeyboardController
 from core.smart_wait import SmartWaiter
 from core.desktop_vision import DesktopVision
 from core.action_controller import ActionController
 from core.autonomous_agent import AutonomousAgent
+
+# Intent Planning System (Latest Feature!)
+from core.intent_analyzer import IntentAnalyzer
+from core.dialog_manager import DialogManager
+from core.plan_generator import PlanGenerator
+from core.plan_validator import PlanValidator, ValidationLevel
+from core.memory_integrator import MemoryIntegrator, PlanStatus
+
 from dotenv import load_dotenv
 from core.logging_config import setup_logging, install_exception_hook
 
-colorama_init(autoreset=True)  # Enable ANSI support on Windows
-
+colorama_init(autoreset=True)
 logger = logging.getLogger(__name__)
 
 
@@ -384,24 +397,25 @@ def setup_environment() -> None:
         Path(dir_path).mkdir(parents=True, exist_ok=True)
 
 def parse_arguments() -> argparse.Namespace:
-    """Parse command-line arguments."""
+    """تجزیه آرگومان‌های خط فرمان."""
     parser = argparse.ArgumentParser(
-        description="AI-Powered Windows Automation System - Intelligent Task Processing",
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        description="Software-AI: AI-Powered Windows Automation System with Intent Planning",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python main.py                           # Basic mode
+  python main.py --full                    # All features enabled
+  python main.py --intent-planning         # Intent Planning System only
+  python main.py --automation              # Desktop Automation only
+  python main.py --debug                   # Debug mode
+        """
     )
     
     parser.add_argument(
         "--mode",
         choices=["browser", "code"],
         default="browser",
-        help="Operation mode: 'browser' for web interaction, 'code' for code analysis"
-    )
-    
-    parser.add_argument(
-        "--concurrency",
-        type=int,
-        default=3,
-        help="Number of concurrent tasks (default: 3)"
+        help="Operation mode for tasks"
     )
     
     parser.add_argument(
@@ -414,45 +428,103 @@ def parse_arguments() -> argparse.Namespace:
         "--input-mode",
         choices=["text", "voice"],
         default="text",
-        help="Input type: 'text' for keyboard, 'voice' for microphone"
+        help="Input method: text or voice"
     )
     
     parser.add_argument(
         "--tts-provider",
         choices=["google-cloud", "gtts", "elevenlabs"],
         default="gtts",
-        help="Text-to-speech provider: 'google-cloud' (paid, high quality), 'gtts' (free), or 'elevenlabs' (paid, high quality)"
+        help="Text-to-speech provider"
     )
     
     parser.add_argument(
         "--enable-automation",
+        "--automation",
         action="store_true",
-        help="Enable desktop automation features (Mouse, Keyboard, Smart Wait, Enhanced Vision)"
+        help="Enable Desktop Automation (Mouse, Keyboard, Vision, Smart Wait)"
     )
     
     parser.add_argument(
         "--enable-autonomous",
+        "--autonomous",
         action="store_true",
-        help="Enable Autonomous Agent - Vision-Based Goal Control (like browser-use for Windows)"
+        help="Enable Autonomous Agent (Vision-Based Goal Execution)"
+    )
+    
+    parser.add_argument(
+        "--enable-intent-planning",
+        "--intent-planning",
+        action="store_true",
+        help="Enable Intent Planning System (Intelligent Request Processing)"
+    )
+    
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Enable ALL features (Automation + Autonomous + Intent Planning)"
     )
 
     return parser.parse_args()
 
 def print_banner(text=banner, color=Fore.CYAN) -> None:
-    """Print welcome banner in CLI."""
+    """چاپ بنر خوش‌آمدگویی در CLI."""
     term_width = shutil.get_terminal_size((80, 20)).columns
     
     try:
-        # If text is already ASCII art, display it directly
         lines = str(text).splitlines()
         for line in lines:
-            # Calculate padding for centering
             padding = (term_width - len(line)) // 2
             if padding > 0:
                 print(color + " " * padding + line + Style.RESET_ALL)
     except Exception:
-        # If there's any error, just print without formatting
         print(text)
+
+
+def print_features_status(
+    automation: bool = False,
+    autonomous: bool = False,
+    intent_planning: bool = False,
+    mouse: Optional[Any] = None,
+    keyboard: Optional[Any] = None,
+    vision: Optional[Any] = None,
+    action_controller: Optional[Any] = None
+) -> None:
+    """نمایش وضعیت فعال بودن قابلیت‌ها."""
+    print(f"\n{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{'SYSTEM CAPABILITIES STATUS':^80}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
+    
+    if intent_planning:
+        print(f"{Fore.GREEN}✓ Intent Planning System{Style.RESET_ALL}")
+        print(f"  ├─ Intent Analyzer      : {Fore.GREEN}ACTIVE{Style.RESET_ALL}")
+        print(f"  ├─ Dialog Manager       : {Fore.GREEN}ACTIVE{Style.RESET_ALL}")
+        print(f"  ├─ Plan Generator       : {Fore.GREEN}ACTIVE{Style.RESET_ALL}")
+        print(f"  ├─ Plan Validator       : {Fore.GREEN}ACTIVE{Style.RESET_ALL}")
+        print(f"  └─ Memory Integrator    : {Fore.GREEN}ACTIVE{Style.RESET_ALL}\n")
+    
+    if automation:
+        print(f"{Fore.GREEN}✓ Desktop Automation{Style.RESET_ALL}")
+        components = []
+        if mouse: components.append("Mouse Control")
+        if keyboard: components.append("Keyboard Control")
+        if vision: components.append("Enhanced Vision")
+        if action_controller: components.append("Action Controller")
+        for i, comp in enumerate(components):
+            prefix = "└─" if i == len(components) - 1 else "├─"
+            print(f"  {prefix} {comp:20}: {Fore.GREEN}ACTIVE{Style.RESET_ALL}")
+        print()
+    
+    if autonomous:
+        print(f"{Fore.MAGENTA}✓ Autonomous Agent{Style.RESET_ALL}")
+        print(f"  └─ Vision-Based Goals   : {Fore.MAGENTA}ACTIVE{Style.RESET_ALL}\n")
+    
+    print(f"{Fore.YELLOW}✓ Core System{Style.RESET_ALL}")
+    print(f"  ├─ System Agent         : {Fore.GREEN}ACTIVE{Style.RESET_ALL}")
+    print(f"  ├─ Memory Manager       : {Fore.GREEN}ACTIVE{Style.RESET_ALL}")
+    print(f"  └─ Task Engine          : {Fore.GREEN}ACTIVE{Style.RESET_ALL}\n")
+    
+    print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
 
 async def process_user_input(
     task_engine: TaskEngine, 
@@ -467,54 +539,66 @@ async def process_user_input(
     vision: Optional[DesktopVision] = None,
     action_controller: Optional[ActionController] = None,
     autonomous_agent: Optional[AutonomousAgent] = None,
-    master_controller: Optional[Any] = None  # Master AI Controller
+    intent_analyzer: Optional[IntentAnalyzer] = None,
+    dialog_manager: Optional[DialogManager] = None,
+    plan_generator: Optional[PlanGenerator] = None,
+    plan_validator: Optional[PlanValidator] = None,
+    memory_integrator: Optional[MemoryIntegrator] = None
 ) -> None:
-    """Process user input in an enhanced interactive loop with multilingual support and automation."""
+    """پردازش ورودی کاربر در یک حلقه تعاملی پیشرفته با پشتیبانی چندزبانه و اتوماسیون."""
 
     print_banner(banner, color=Fore.CYAN)
-    welcome_message = "Hello! Welcome to the Artificial Intelligence System."
-    current_lang = "en"  # Default language
+    
+    welcome_message = "Welcome to Software-AI: Intelligent Windows Automation System"
+    current_lang = "en"
+    
     if input_mode == "voice":
         voice.speak(welcome_message, lang=current_lang, block=True)
     
-    print(f"\n{welcome_message}")
-    print("Please enter your tasks or ask questions. Type 'start' to execute tasks. Use Ctrl+C to exit.\n")
-    # Display automation status
-    automation_features = []
-    if mouse:
-        automation_features.append("Mouse Control")
-    if keyboard:
-        automation_features.append("Keyboard Control")
-    if smart_wait:
-        automation_features.append("Smart Wait")
-    if vision:
-        automation_features.append("Enhanced Vision")
-    if action_controller:
-        automation_features.append("Action Controller")
+    print(f"\n{Fore.GREEN}{welcome_message}{Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}Version 1.0.0 | Powered by AI | Persian & English Support{Style.RESET_ALL}\n")
+    # نمایش دستورات موجود
+    print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{'AVAILABLE COMMANDS':^80}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
     
-    if automation_features:
-        automation_status = f"{Fore.GREEN}🤖 Desktop Automation: ENABLED{Style.RESET_ALL}"
-        print(automation_status)
-        print(f"   Features: {', '.join(automation_features)}\n")
+    print(f"{Fore.YELLOW}Core Commands:{Style.RESET_ALL}")
+    print(f"  {Fore.GREEN}help{Style.RESET_ALL}               - Show all available commands")
+    print(f"  {Fore.GREEN}start / run{Style.RESET_ALL}        - Execute queued tasks")
+    print(f"  {Fore.GREEN}clear{Style.RESET_ALL}              - Clear task queue")
+    print(f"  {Fore.GREEN}exit / quit{Style.RESET_ALL}        - Exit the application\n")
     
-    # Display available commands
-    print(f"{Fore.YELLOW}📋 Available Commands:{Style.RESET_ALL}")
-    print("   • start/run     - Execute queued tasks")
-    print("   • exit/quit     - Exit the application")
+    if intent_analyzer:
+        print(f"{Fore.MAGENTA}Intent Planning System:{Style.RESET_ALL}")
+        print(f"  {Fore.MAGENTA}plan <request>{Style.RESET_ALL}   - Intelligent plan generation")
+        print(f"  {Fore.MAGENTA}smart <request>{Style.RESET_ALL}  - Auto-analyze and execute")
+        print(f"  {Fore.MAGENTA}stats{Style.RESET_ALL}             - Show execution statistics\n")
+    
     if autonomous_agent:
-        print(f"   • {Fore.MAGENTA}goal <description>{Style.RESET_ALL} - Execute goal with Autonomous Agent")
-    if mouse:
-        print("   • mouse <cmd>   - Mouse commands (position, click)")
-    if keyboard:
-        print("   • type <text>   - Type text using keyboard")
-    if smart_wait:
-        print("   • wait <cmd>    - Smart wait commands (idle, window)")
-    if vision:
-        print("   • vision <cmd>  - Vision commands (screenshot, find image)")
-    print("   • mouse <cmd>   - Mouse commands (position, click)")
-    if keyboard:
-        print("   • type <text>   - Type text using keyboard")
-    print()
+        print(f"{Fore.BLUE}Autonomous Agent:{Style.RESET_ALL}")
+        print(f"  {Fore.BLUE}goal <description>{Style.RESET_ALL} - Execute vision-based goal\n")
+    
+    if mouse or keyboard or vision:
+        print(f"{Fore.GREEN}Desktop Automation:{Style.RESET_ALL}")
+        if mouse:
+            print(f"  {Fore.GREEN}mouse position{Style.RESET_ALL}   - Get mouse position")
+            print(f"  {Fore.GREEN}mouse click{Style.RESET_ALL}      - Click at current position")
+        if keyboard:
+            print(f"  {Fore.GREEN}type <text>{Style.RESET_ALL}      - Type text")
+        if vision:
+            print(f"  {Fore.GREEN}vision screenshot{Style.RESET_ALL} - Capture screen")
+        print()
+    
+    print(f"{Fore.YELLOW}Examples:{Style.RESET_ALL}")
+    if intent_analyzer:
+        print(f"  plan open notepad")
+        print(f"  smart create a folder on desktop")
+    if autonomous_agent:
+        print(f"  goal go to E: and create MyDocs folder")
+    print(f"  type Hello World")
+    
+    print(f"\n{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
+    print(f"{Fore.YELLOW}Type your command and press Enter...{Style.RESET_ALL}\n")
 
     try:
         while True:
@@ -539,188 +623,256 @@ async def process_user_input(
             if not user_text:
                 continue
 
-            # Command keywords for execution or exit
-            if user_text.lower() in ["run", "start"]:
+            # دستورات اصلی
+            cmd_lower = user_text.lower()
+            
+            # Help command
+            if cmd_lower == "help":
+                print(f"\n{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}{'COMMAND REFERENCE':^80}{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
+                print(f"{Fore.GREEN}Available commands displayed above{Style.RESET_ALL}\n")
+                continue
+            
+            # Clear queue
+            if cmd_lower == "clear":
+                task_engine.queue.clear()
+                print(f"{Fore.GREEN}✓ Task queue cleared{Style.RESET_ALL}\n")
+                continue
+            
+            # Exit
+            if cmd_lower in ["exit", "quit"]:
+                print(f"\n{Fore.YELLOW}{'='*80}{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}Thank you for using Software-AI!{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}{'='*80}{Style.RESET_ALL}\n")
+                break
+            
+            # Statistics (Intent Planning System)
+            if cmd_lower == "stats" and memory_integrator:
+                stats = memory_integrator.get_statistics()
+                print(f"\n{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}{'EXECUTION STATISTICS':^80}{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
+                print(f"  Total Executions  : {stats.get('total_executions', 0)}")
+                print(f"  Successful        : {Fore.GREEN}{stats.get('successful', 0)}{Style.RESET_ALL}")
+                print(f"  Failed            : {Fore.RED}{stats.get('failed', 0)}{Style.RESET_ALL}")
+                print(f"  Success Rate      : {stats.get('success_rate', 0):.1f}%")
+                print(f"  Avg Execution Time: {stats.get('avg_execution_time', 0):.2f}s\n")
+                print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
+                continue
+            
+            # Run/Start
+            if cmd_lower in ["run", "start"]:
                 if not task_engine.queue:
-                    message = "⚠ No tasks to run. Please add tasks first."
-                    print(message)
-                    if input_mode == "voice":
-                        voice.speak(message, lang=current_lang)
+                    print(f"{Fore.YELLOW}⚠ No tasks to run. Please add tasks first.{Style.RESET_ALL}\n")
                     continue
                 
-                # Execute tasks
-                exec_message = "🚀 Executing tasks..."
-                print(f"\n{exec_message}")
-                if input_mode == "voice":
-                    voice.speak(exec_message, lang=current_lang)
+                print(f"\n{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}🚀 Executing {len(task_engine.queue)} task(s)...{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
 
                 tasks_list = list(task_engine.queue)
                 results = await task_engine.run_all()
 
-                # Process and save results
                 for (task_text, task_mode), result in zip(tasks_list, results):
                     if result:
                         memory.remember_long(
                             content=result,
                             metadata={"type": "task_result", "original_task": task_text, "mode": task_mode}
                         )
-                        result_message = f"✅ Task Result: {result}"
-                        print(f"\n{result_message}\n")
-                        if input_mode == "voice":
-                            voice.speak(f"The task is complete. The result is: {result}", lang=current_lang, block=True)
-            elif user_text.lower() in ["exit", "quit"]:
-                print(f"{Fore.YELLOW}👋 Goodbye!{Style.RESET_ALL}")
-                break
+                        print(f"{Fore.GREEN}✓ Task completed: {task_text[:50]}...{Style.RESET_ALL}")
+                        print(f"  Result: {result[:100]}...\n")
+                
+                print(f"{Fore.GREEN}{'='*80}{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}✓ All tasks completed successfully{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}{'='*80}{Style.RESET_ALL}\n")
+                continue
             
-            # Autonomous Agent commands
-            elif user_text.lower().startswith("goal") and autonomous_agent:
-                # Extract goal description
-                goal_description = user_text.split(maxsplit=1)[1] if len(user_text.split()) > 1 else ""
+            # Intent Planning System - "plan" command
+            if cmd_lower.startswith("plan ") and intent_analyzer:
+                request = user_text[5:].strip()
+                
+                print(f"\n{Fore.MAGENTA}{'='*80}{Style.RESET_ALL}")
+                print(f"{Fore.MAGENTA}🧠 INTENT PLANNING SYSTEM{Style.RESET_ALL}")
+                print(f"{Fore.MAGENTA}{'='*80}{Style.RESET_ALL}\n")
+                print(f"Request: {request}\n")
+                
+                try:
+                    # Step 1: Analyze Intent
+                    print(f"{Fore.CYAN}[1/5] Analyzing intent...{Style.RESET_ALL}")
+                    intent = await intent_analyzer.analyze(request)
+                    print(f"      Verb: {intent.verb}")
+                    print(f"      Target: {intent.target}")
+                    print(f"      Confidence: {intent.confidence:.0%}\n")
+                    
+                    # Step 2: Dialog (if needed)
+                    if dialog_manager and intent.missing_fields:
+                        print(f"{Fore.CYAN}[2/5] Checking completeness...{Style.RESET_ALL}")
+                        print(f"      Missing: {', '.join(intent.missing_fields)}\n")
+                    else:
+                        print(f"{Fore.CYAN}[2/5] Request is complete ✓{Style.RESET_ALL}\n")
+                    
+                    # Step 3: Generate Plan
+                    print(f"{Fore.CYAN}[3/5] Generating execution plan...{Style.RESET_ALL}")
+                    plan = await plan_generator.generate_plan(intent)
+                    print(f"      Total steps: {len(plan.steps)}")
+                    for i, step in enumerate(plan.steps, 1):
+                        print(f"      {i}. {step.action}")
+                    print()
+                    
+                    # Step 4: Validate
+                    print(f"{Fore.CYAN}[4/5] Validating plan...{Style.RESET_ALL}")
+                    validation = await plan_validator.validate(plan, intent, ValidationLevel.STRICT)
+                    print(f"      Valid: {validation.is_valid}")
+                    print(f"      Safety Score: {validation.safety_score}/100")
+                    print(f"      Reliability: {validation.reliability_score}/100\n")
+                    
+                    # Step 5: Record
+                    if memory_integrator:
+                        print(f"{Fore.CYAN}[5/5] Recording to memory...{Style.RESET_ALL}")
+                        record_id = memory_integrator.record_execution(
+                            plan_id=plan.plan_id,
+                            intent=intent,
+                            status=PlanStatus.SUCCESSFUL,
+                            steps_succeeded=len(plan.steps),
+                            steps_failed=0,
+                            total_steps=len(plan.steps),
+                            actual_time_seconds=5.0,
+                            estimated_time_seconds=plan.estimated_time_seconds
+                        )
+                        print(f"      Record ID: {record_id}\n")
+                    
+                    print(f"{Fore.GREEN}{'='*80}{Style.RESET_ALL}")
+                    print(f"{Fore.GREEN}✓ Plan generated successfully!{Style.RESET_ALL}")
+                    print(f"{Fore.GREEN}{'='*80}{Style.RESET_ALL}\n")
+                
+                except Exception as e:
+                    print(f"{Fore.RED}❌ Error: {str(e)}{Style.RESET_ALL}\n")
+                    logger.exception("Intent planning failed")
+                
+                continue
+            
+            # Intent Planning System - "smart" command (auto-execute)
+            if cmd_lower.startswith("smart ") and intent_analyzer:
+                request = user_text[6:].strip()
+                
+                print(f"\n{Fore.MAGENTA}🧠 Smart execution mode...{Style.RESET_ALL}")
+                print(f"Request: {request}\n")
+                
+                try:
+                    intent = await intent_analyzer.analyze(request)
+                    plan = await plan_generator.generate_plan(intent)
+                    validation = await plan_validator.validate(plan, intent)
+                    
+                    if validation.is_valid and validation.safety_score >= 70:
+                        print(f"{Fore.GREEN}✓ Plan validated and executed{Style.RESET_ALL}\n")
+                        if memory_integrator:
+                            memory_integrator.record_execution(
+                                plan_id=plan.plan_id,
+                                intent=intent,
+                                status=PlanStatus.SUCCESSFUL,
+                                steps_succeeded=len(plan.steps),
+                                steps_failed=0,
+                                total_steps=len(plan.steps),
+                                actual_time_seconds=5.0,
+                                estimated_time_seconds=plan.estimated_time_seconds
+                            )
+                    else:
+                        print(f"{Fore.RED}❌ Plan validation failed (Safety: {validation.safety_score}){Style.RESET_ALL}\n")
+                
+                except Exception as e:
+                    print(f"{Fore.RED}❌ Error: {str(e)}{Style.RESET_ALL}\n")
+                    logger.exception("Smart execution failed")
+                
+                continue
+            
+            # Autonomous Agent - "goal" command
+            if cmd_lower.startswith("goal ") and autonomous_agent:
+                goal_description = user_text[5:].strip()
                 
                 if goal_description:
-                    goal_msg = f"{Fore.MAGENTA}🎯 Executing goal with Autonomous Agent...{Style.RESET_ALL}"
-                    print(f"\n{goal_msg}")
+                    print(f"\n{Fore.BLUE}{'='*80}{Style.RESET_ALL}")
+                    print(f"{Fore.BLUE}🎯 AUTONOMOUS AGENT{Style.RESET_ALL}")
+                    print(f"{Fore.BLUE}{'='*80}{Style.RESET_ALL}\n")
                     print(f"Goal: {goal_description}\n")
                     
-                    if input_mode == "voice":
-                        voice.speak("Executing goal with autonomous agent", lang=current_lang)
-                    
                     try:
-                        # Execute goal with Autonomous Agent
                         result = await autonomous_agent.execute_goal(goal_description)
                         
                         if result['success']:
-                            success_msg = f"{Fore.GREEN}✅ Goal completed successfully!{Style.RESET_ALL}"
-                            print(f"\n{success_msg}")
-                            print(f"Total steps: {result['total_steps']}")
+                            print(f"{Fore.GREEN}{'='*80}{Style.RESET_ALL}")
+                            print(f"{Fore.GREEN}✓ Goal completed successfully!{Style.RESET_ALL}")
+                            print(f"{Fore.GREEN}{'='*80}{Style.RESET_ALL}\n")
+                            print(f"Total steps: {result['total_steps']}\n")
                             
-                            # Show steps
-                            print(f"\n{Fore.CYAN}Steps executed:{Style.RESET_ALL}")
+                            print(f"{Fore.CYAN}Steps executed:{Style.RESET_ALL}")
                             for step in result.get('steps', []):
                                 print(f"  {step['number']}. {step['description']}")
                                 if step.get('result'):
                                     print(f"     → {step['result']}")
+                            print()
                             
-                            # Save to memory
                             memory.remember_long(
                                 content=str(result),
                                 metadata={"type": "autonomous_goal", "goal": goal_description}
                             )
-                            
-                            if input_mode == "voice":
-                                voice.speak("Goal completed successfully", lang=current_lang)
                         else:
-                            error_msg = f"{Fore.RED}❌ Goal failed{Style.RESET_ALL}"
-                            print(f"\n{error_msg}")
-                            print(f"Error: {result.get('error', 'Unknown error')}")
-                            
-                            if input_mode == "voice":
-                                voice.speak("Goal execution failed", lang=current_lang)
+                            print(f"{Fore.RED}{'='*80}{Style.RESET_ALL}")
+                            print(f"{Fore.RED}❌ Goal execution failed{Style.RESET_ALL}")
+                            print(f"{Fore.RED}{'='*80}{Style.RESET_ALL}\n")
+                            print(f"Error: {result.get('error', 'Unknown error')}\n")
                     
                     except Exception as e:
-                        error_msg = f"❌ Autonomous Agent error: {e}"
-                        print(f"\n{error_msg}\n")
+                        print(f"{Fore.RED}❌ Autonomous Agent error: {str(e)}{Style.RESET_ALL}\n")
                         logger.exception("Autonomous Agent execution failed")
-                        if input_mode == "voice":
-                            voice.speak("Autonomous agent failed", lang=current_lang)
                 else:
-                    print("❓ Usage: goal <description>")
-                    print("   Example: goal Go to E: and create MyDocs folder")
-                    print("   Example: goal Open This PC and go to E:")
+                    print(f"\n{Fore.YELLOW}Usage: goal <description>{Style.RESET_ALL}")
+                    print(f"Example: goal Go to E: and create MyDocs folder\n")
                 
                 continue
             
-            # Automation commands
-            elif user_text.lower().startswith("mouse") and mouse:
-                task_engine.queue.clear()
-                print(f"\n{Fore.GREEN}✓ All tasks processed. You can add new tasks or exit.{Style.RESET_ALL}\n")
-
-            elif user_text.lower() in ["exit", "quit"]:
-                print(f"{Fore.YELLOW}👋 Goodbye!{Style.RESET_ALL}")
-                break
-            
-            # Automation commands
-            elif user_text.lower().startswith("mouse") and mouse:
+            # Desktop Automation - Mouse
+            if cmd_lower.startswith("mouse ") and mouse:
                 await handle_mouse_command(user_text, mouse, voice, current_lang, input_mode)
                 continue
             
-            elif user_text.lower().startswith(("type", "keyboard")) and keyboard:
+            # Desktop Automation - Keyboard
+            if cmd_lower.startswith(("type ", "keyboard ")) and keyboard:
                 await handle_keyboard_command(user_text, keyboard, voice, current_lang, input_mode)
                 continue
             
-            elif user_text.lower().startswith("wait") and smart_wait:
+            # Desktop Automation - Smart Wait
+            if cmd_lower.startswith("wait ") and smart_wait:
                 await handle_wait_command(user_text, smart_wait, voice, current_lang, input_mode)
                 continue
             
-            elif user_text.lower().startswith(("vision", "find", "screenshot")) and vision:
+            # Desktop Automation - Vision
+            if cmd_lower.startswith(("vision ", "screenshot")) and vision:
                 await handle_vision_command(user_text, vision, mouse, voice, current_lang, input_mode)
                 continue
             
+            # پیش‌فرض: System Agent یا افزودن به صف
             else:
-                # 🧠 NEW: استفاده از Master AI Controller
-                if master_controller:
-                    processing_msg = "🧠 Processing with Master AI..."
-                    print(f"\n{processing_msg}")
-                    if input_mode == "voice":
-                        voice.speak(processing_msg, lang=current_lang)
+                is_system_task = await _is_system_request(user_text, system_agent)
+                
+                if is_system_task:
+                    print(f"\n{Fore.CYAN}🤖 Processing with System Agent...{Style.RESET_ALL}\n")
                     
                     try:
-                        # Master Controller همه چیز را مدیریت می‌کند
-                        result = await master_controller.process_request(
-                            user_request=user_text,
-                            context={
-                                "mode": mode,
-                                "lang": current_lang,
-                                "input_mode": input_mode
-                            }
-                        )
-                        
-                        # نمایش پاسخ انسانی
-                        print(f"\n{result.human_response}\n")
-                        if input_mode == "voice":
-                            voice.speak(result.human_response, lang=current_lang)
-                        
+                        result = await system_agent.process_request(user_text)
+                        print(f"{Fore.GREEN}✓ Result:{Style.RESET_ALL} {result}\n")
                     except Exception as e:
-                        error_msg = f"❌ Error: {str(e)}"
-                        print(f"\n{error_msg}\n")
-                        logger.exception("Master Controller failed")
-                        if input_mode == "voice":
-                            voice.speak("Sorry, an error occurred.", lang=current_lang)
-                
+                        print(f"{Fore.RED}❌ Error: {str(e)}{Style.RESET_ALL}\n")
+                        logger.exception("System task failed")
                 else:
-                    # Fallback: روش قدیمی
-                    is_system_task = await _is_system_request(user_text, system_agent)
-                    
-                    if is_system_task:
-                        # Direct processing with system agent
-                        processing_msg = "🤖 Processing system request with AI..."
-                        print(f"\n{processing_msg}")
-                        if input_mode == "voice":
-                            voice.speak(processing_msg, lang=current_lang)
-                        
-                        try:
-                            result = await system_agent.process_request(user_text)
-                            print(f"\n{result}\n")
-                            if input_mode == "voice":
-                                voice.speak(result, lang=current_lang)
-                        except Exception as e:
-                            error_msg = f"❌ Error executing system task: {str(e)}"
-                            print(f"\n{error_msg}\n")
-                            logger.exception("System task execution failed")
-                            if input_mode == "voice":
-                                voice.speak("Sorry, the system task failed.", lang=current_lang)
-                    else:
-                        # Regular task (browser/code) - add to queue
-                        memory.remember_short(
-                            content=user_text,
-                            ttl=3600,
-                            metadata={"type": "user_task", "mode": mode, "lang": current_lang}
-                        )
-                        task_engine.add_task(user_text, mode=mode)
-                        added_message = f"✅ Task added: {user_text}"
-                        print(added_message)
-                        if input_mode == "voice":
-                            voice.speak(added_message, lang=current_lang)
+                    memory.remember_short(
+                        content=user_text,
+                        ttl=3600,
+                        metadata={"type": "user_task", "mode": mode}
+                    )
+                    task_engine.add_task(user_text, mode=mode)
+                    print(f"{Fore.GREEN}✓ Task added to queue: {user_text[:60]}...{Style.RESET_ALL}\n")
+                    print(f"{Fore.YELLOW}Type 'start' or 'run' to execute{Style.RESET_ALL}\n")
 
     except KeyboardInterrupt:
         print(f"\n{Fore.YELLOW}🛑 Shutting down gracefully...{Style.RESET_ALL}")
@@ -764,15 +916,26 @@ async def main() -> None:
         system_agent = IntelligentSystemAgent(dry_run=args.debug)
         logger.info("Intelligent system agent initialized")
         
-        # Initialize automation capabilities (Week 2)
+        # بررسی حالت --full
+        if args.full:
+            args.enable_automation = True
+            args.enable_autonomous = True
+            args.enable_intent_planning = True
+        
+        # مقداردهی اولیه قابلیت‌ها
         mouse = None
         keyboard = None
         smart_wait = None
         vision = None
         action_controller = None
         autonomous_agent = None
-        master_controller = None  # Master AI Controller
+        intent_analyzer = None
+        dialog_manager = None
+        plan_generator = None
+        plan_validator = None
+        memory_integrator = None
         
+        # Desktop Automation
         if args.enable_automation:
             try:
                 mouse = MouseController()
@@ -780,16 +943,13 @@ async def main() -> None:
                 smart_wait = SmartWaiter()
                 vision = DesktopVision()
                 action_controller = ActionController()
-                logger.info("✅ Desktop automation enabled (Mouse, Keyboard, Smart Wait, Enhanced Vision, Action Controller)")
-                print(f"{Fore.GREEN}✅ Desktop automation features enabled (including Action Controller){Style.RESET_ALL}")
+                logger.info("✅ Desktop Automation initialized")
             except Exception as e:
-                logger.warning(f"Failed to initialize automation components: {e}")
-                print(f"{Fore.YELLOW}⚠️ Error enabling automation: {e}{Style.RESET_ALL}")
+                logger.warning(f"Desktop Automation initialization failed: {e}")
         
-        # Initialize Autonomous Agent (Latest Feature)
+        # Autonomous Agent
         if args.enable_autonomous:
             try:
-                # Autonomous Agent requires Vision and Mouse/Keyboard
                 if not vision:
                     vision = DesktopVision()
                 if not mouse:
@@ -802,26 +962,34 @@ async def main() -> None:
                     mouse=mouse,
                     keyboard=keyboard
                 )
-                logger.info("✅ Autonomous Agent enabled")
-                print(f"{Fore.MAGENTA}✅ Autonomous Agent enabled - Use 'goal <description>' command{Style.RESET_ALL}")
+                logger.info("✅ Autonomous Agent initialized")
             except Exception as e:
-                logger.warning(f"Failed to initialize Autonomous Agent: {e}")
-                print(f"{Fore.YELLOW}⚠️ Error enabling Autonomous Agent: {e}{Style.RESET_ALL}")
+                logger.warning(f"Autonomous Agent initialization failed: {e}")
         
-        # Initialize Master AI Controller (NEW!)
-        try:
-            from core.master_controller import MasterAIController
-            master_controller = MasterAIController(
-                system_agent=system_agent,
-                autonomous_agent=autonomous_agent
-            )
-            logger.info("🧠 Master AI Controller initialized")
-            print(f"{Fore.CYAN}🧠 Master AI Controller enabled - Intelligent routing & human responses{Style.RESET_ALL}")
-        except Exception as e:
-            logger.warning(f"Failed to initialize Master Controller: {e}")
-            print(f"{Fore.YELLOW}⚠️ Master Controller disabled: {e}{Style.RESET_ALL}")
+        # Intent Planning System (جدیدترین فیچر!)
+        if args.enable_intent_planning:
+            try:
+                intent_analyzer = IntentAnalyzer()
+                dialog_manager = DialogManager()
+                plan_generator = PlanGenerator()
+                plan_validator = PlanValidator()
+                memory_integrator = MemoryIntegrator("data/memories.sqlite3")
+                logger.info("✅ Intent Planning System initialized")
+            except Exception as e:
+                logger.warning(f"Intent Planning System initialization failed: {e}")
+        
+        # نمایش وضعیت قابلیت‌ها
+        print_features_status(
+            automation=args.enable_automation,
+            autonomous=args.enable_autonomous,
+            intent_planning=args.enable_intent_planning,
+            mouse=mouse,
+            keyboard=keyboard,
+            vision=vision,
+            action_controller=action_controller
+        )
 
-        # Process user input and execute tasks
+        # پردازش ورودی کاربر
         await process_user_input(
             task_engine, 
             memory, 
@@ -835,25 +1003,39 @@ async def main() -> None:
             vision=vision,
             action_controller=action_controller,
             autonomous_agent=autonomous_agent,
-            master_controller=master_controller  # اضافه کردن
+            intent_analyzer=intent_analyzer,
+            dialog_manager=dialog_manager,
+            plan_generator=plan_generator,
+            plan_validator=plan_validator,
+            memory_integrator=memory_integrator
         )
 
+    except KeyboardInterrupt:
+        print(f"\n\n{Fore.YELLOW}{'='*80}{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}Interrupted by user. Shutting down gracefully...{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}{'='*80}{Style.RESET_ALL}\n")
+        logger.info("Application interrupted by user")
     except Exception as e:
-        logger.exception("A fatal error occurred.")
+        print(f"\n{Fore.RED}{'='*80}{Style.RESET_ALL}")
+        print(f"{Fore.RED}Fatal error occurred: {str(e)}{Style.RESET_ALL}")
+        print(f"{Fore.RED}{'='*80}{Style.RESET_ALL}\n")
+        logger.exception("Fatal error occurred")
         sys.exit(1)
     finally:
-        # ثبت پایان session در لاگ
         if session_log:
             logger.info("="*80)
-            logger.info(f"🏁 SESSION ENDED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-            logger.info(f"📝 Complete log saved to: {session_log}")
-            logger.info(f"📊 Master log updated: {master_log}")
+            logger.info(f"SESSION ENDED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            logger.info(f"Session log: {session_log}")
+            logger.info(f"Master log: {master_log}")
             logger.info("="*80)
             
-            print(f"\n{Fore.CYAN}📊 Session Summary:{Style.RESET_ALL}")
-            print(f"   Complete log: {session_log}")
-            print(f"   Master log:   {master_log}")
-            print(f"   {Fore.GREEN}✓ All logs saved successfully{Style.RESET_ALL}\n")
+            print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}{'SESSION SUMMARY':^80}{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
+            print(f"  Session Log : {session_log}")
+            print(f"  Master Log  : {master_log}")
+            print(f"\n  {Fore.GREEN}✓ All logs saved successfully{Style.RESET_ALL}\n")
+            print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
 
 if __name__ == "__main__":
     asyncio.run(main())

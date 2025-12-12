@@ -416,7 +416,7 @@ Examples:
         "--mode",
         choices=["browser", "code"],
         default="browser",
-        help="Operation mode for tasks"
+        help="حالت اجرا برای تسک‌ها"
     )
 
     parser.add_argument(
@@ -429,89 +429,89 @@ Examples:
     parser.add_argument(
         "--debug",
         action="store_true",
-        help="Enable debug logging"
+        help="فعال‌سازی لاگ‌گیری دیباگ"
     )
     
     parser.add_argument(
         "--input-mode",
         choices=["text", "voice"],
         default="text",
-        help="Input method: text or voice"
+        help="روش ورودی: متن یا صوت"
     )
     
     parser.add_argument(
         "--tts-provider",
         choices=["google-cloud", "gtts", "elevenlabs"],
         default="gtts",
-        help="Text-to-speech provider"
+        help="ارائه‌دهنده تبدیل متن به گفتار"
     )
     
     parser.add_argument(
         "--enable-automation",
         "--automation",
         action="store_true",
-        help="Enable Desktop Automation (Mouse, Keyboard, Vision, Smart Wait)"
+        help="فعال‌سازی اتوماسیون دسکتاپ (ماوس، کیبورد، بینایی، Smart Wait)"
     )
     
     parser.add_argument(
         "--enable-autonomous",
         "--autonomous",
         action="store_true",
-        help="Enable Autonomous Agent (Vision-Based Goal Execution)"
+        help="فعال‌سازی عامل خودران (اجرای اهداف مبتنی بر بینایی)"
     )
     
     parser.add_argument(
         "--enable-intent-planning",
         "--intent-planning",
         action="store_true",
-        help="Enable Intent Planning System (Intelligent Request Processing)"
+        help="فعال‌سازی سیستم برنامه‌ریزی نیت (پردازش هوشمند درخواست‌ها)"
     )
 
     parser.add_argument(
         "--safety-mode",
         choices=["safe", "power"],
         default="safe",
-        help="Safety profile: safe (stricter) or power (freer with warnings)"
+        help="پروفایل ایمنی: safe (سخت‌گیر) یا power (آزادتر با هشدار)"
     )
 
     parser.add_argument(
         "--risk-threshold",
         type=int,
         default=70,
-        help="Risk threshold (0-100) for allowing execution in safe mode"
+        help="آستانه ریسک (۰ تا ۱۰۰) برای اجرای دستورات در حالت safe"
     )
 
     parser.add_argument(
         "--allow-app",
         action="append",
         default=[],
-        help="Whitelist an application name (repeatable). Example: --allow-app chrome"
+        help="افزودن اپلیکیشن مجاز (قابل تکرار). مثال: --allow-app chrome"
     )
 
     parser.add_argument(
         "--allow-path",
         action="append",
         default=[],
-        help="Whitelist a file or directory path (repeatable). Example: --allow-path C:/Projects"
+        help="افزودن مسیر یا پوشه مجاز (قابل تکرار). مثال: --allow-path C:/Projects"
     )
     
     parser.add_argument(
         "--full",
         action="store_true",
-        help="Enable ALL features (Automation + Autonomous + Intent Planning)"
+        help="فعال‌سازی همه قابلیت‌ها (Automation + Autonomous + Intent Planning)"
     )
 
     parser.add_argument(
         "--realtime",
         action="store_true",
-        help="Enable lightweight realtime loop (capture/interpret/act). Recommended with --safety-mode power"
+        help="فعال‌سازی حلقه سبک زمان‌واقعی (capture/interpret/act). پیشنهادی با --safety-mode power"
     )
 
     parser.add_argument(
         "--realtime-fps",
         type=float,
         default=1.0,
-        help="FPS for realtime loop (0.2 - 10.0). Default: 1.0"
+        help="تعداد فریم در ثانیه برای حلقه زمان‌واقعی (۰.۲ تا ۱۰). پیش‌فرض: ۱.۰"
     )
 
     return parser.parse_args()

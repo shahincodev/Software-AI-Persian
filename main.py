@@ -52,6 +52,9 @@ from core.realtime_loop import RealtimeLoop
 from core.intent_router import IntentRouter, RouteType
 from core.capability_manager import CapabilityManager, CapabilityType
 
+# Safety & Consent Manager
+from core.safety_consent_manager import SafetyConsentManager, RiskLevel
+
 from dotenv import load_dotenv
 from core.logging_config import setup_logging, install_exception_hook
 
@@ -60,16 +63,16 @@ logger = logging.getLogger(__name__)
 
 
 async def _is_system_request(user_text: str, system_agent: IntelligentSystemAgent) -> bool:
-    """Intelligently detect if user request is system-related.
+    """تشخیص هوشمند درخواست‌های مرتبط با سیستم.
     
     Args:
-        user_text: User request text
-        system_agent: System agent for AI access
+        user_text: متن درخواست کاربر
+        system_agent: نماینده سیستم برای دسترسی به AI
     
     Returns:
-        True if it's a system request
+        True اگر درخواست مرتبط با سیستم است
     """
-    # System keywords (English and Persian)
+    # کلیدواژه‌های سیستم (انگلیسی و فارسی)
     system_keywords = [
         # Actions - English
         "open", "launch", "start", "run",
@@ -99,7 +102,7 @@ async def _is_system_request(user_text: str, system_agent: IntelligentSystemAgen
     
     user_lower = user_text.lower()
     
-    # Quick check with keywords
+    # بررسی سریع با کلیدواژه‌ها
     for keyword in system_keywords:
         if keyword in user_lower:
             return True
@@ -108,19 +111,19 @@ async def _is_system_request(user_text: str, system_agent: IntelligentSystemAgen
 
 
 def _summarize_for_voice(result_text: str) -> str:
-    """Summarize long response for voice output.
+    """خلاصه‌سازی پاسخ طولانی برای خروجی صوتی.
     
     Args:
-        result_text: Full result text
+        result_text: متن کامل نتیجه
     
     Returns:
-        Summarized text suitable for speech
+        متن خلاصه شده مناسب برای گفتار
     """
-    # If already short, return as is
+    # اگر کوتاه است، همان‌طور برگرداندن
     if len(result_text) < 150:
         return result_text
     
-    # Extract first meaningful line (usually the summary)
+    # استخراج اولین خط معنادار (معمولاً خلاصه)
     lines = result_text.split('\n')
     first_meaningful_line = ""
     
@@ -133,7 +136,7 @@ def _summarize_for_voice(result_text: str) -> str:
     if first_meaningful_line:
         return first_meaningful_line
     
-    # Fallback: return first 150 characters
+    # بازگشت اضطراری: بازگرداندن ۱۵۰ کاراکتر اول
     return result_text[:150] + "..."
 
 
@@ -144,7 +147,7 @@ async def handle_mouse_command(
     lang: str,
     input_mode: str
 ) -> None:
-    """Process mouse commands."""
+    """پردازش دستورات ماوس."""
     try:
         cmd_lower = command.lower()
         
@@ -182,11 +185,11 @@ async def handle_keyboard_command(
     lang: str,
     input_mode: str
 ) -> None:
-    """Process keyboard commands."""
+    """پردازش دستورات کیبورد."""
     try:
-        # Extract text to type
+        # استخراج متن برای تایپ
         if "type" in command.lower():
-            # Extract text after "type"
+            # استخراج متن پس از "type"
             text_to_type = command.split(maxsplit=1)[1] if len(command.split()) > 1 else ""
             
             if text_to_type:
@@ -229,7 +232,7 @@ async def handle_wait_command(
     lang: str,
     input_mode: str
 ) -> None:
-    """Process smart wait commands."""
+    """پردازش دستورات انتظار هوشمند."""
     try:
         cmd_lower = command.lower()
         
@@ -251,7 +254,7 @@ async def handle_wait_command(
                 print(timeout_msg)
         
         elif "window" in cmd_lower:
-            # Extract window name
+            # استخراج نام پنجره
             window_name = command.split(maxsplit=1)[1] if len(command.split()) > 1 else "Notepad"
             
             msg = f"⏳ Waiting for window: {window_name}"
@@ -288,7 +291,7 @@ async def handle_vision_command(
     lang: str,
     input_mode: str
 ) -> None:
-    """Process enhanced vision commands."""
+    """پردازش دستورات بینایی پیشرفته."""
     try:
         cmd_lower = command.lower()
         
@@ -315,7 +318,7 @@ async def handle_vision_command(
                 if input_mode == "voice":
                     voice.speak("Image found", lang=lang)
                 
-                # Optional: click if mouse is enabled
+                # اختیاری: کلیک اگر ماوس فعال است
                 if mouse:
                     mouse.click(*match.center)
                     print(f"🖱️  Clicked at {match.center}")
@@ -386,18 +389,18 @@ async def handle_vision_command(
         logger.exception("Vision command failed")
 
 
-# Load banner from file
+# بارگذاری بنر از فایل
 with open('banner.txt', 'r', encoding='utf-8') as file:
     banner = file.read()
 
 logger = logging.getLogger(__name__)
 
 def setup_environment() -> None:
-    """Initialize environment variables and create required directories."""
-    # Load environment variables from .env file
+    """مقداردهی متغیرهای محیطی و ایجاد پوشه‌های مورد نیاز."""
+    # بارگذاری متغیرهای محیطی از فایل .env
     load_dotenv()
     
-    # Ensure required directories exist
+    # اطمینان از وجود پوشه‌های مورد نیاز
     for dir_path in ["data/logs", "data/logs/cache"]:
         Path(dir_path).mkdir(parents=True, exist_ok=True)
 
@@ -602,6 +605,9 @@ class SessionControl:
         self.allowed_paths = set(allowed_paths or [])
         self.paused = False
         self.stopped = False
+        
+        # Safety & Consent Manager
+        self.safety_consent_manager: Optional[SafetyConsentManager] = None
 
     def pause(self) -> None:
         self.paused = True
@@ -611,6 +617,10 @@ class SessionControl:
 
     def stop(self) -> None:
         self.stopped = True
+    
+    def set_safety_consent_manager(self, manager: SafetyConsentManager) -> None:
+        """تعیین مدیر ایمنی و تایید"""
+        self.safety_consent_manager = manager
 
 
 def log_risk_decision(action: str, safety_mode: str, risk_score: float, threshold: int) -> None:
@@ -637,6 +647,7 @@ async def process_user_input(
     session_control: SessionControl,
     intent_router: Optional[IntentRouter] = None,
     capability_manager: Optional[CapabilityManager] = None,
+    safety_consent_manager: Optional[SafetyConsentManager] = None,
     chat_first: bool = False,
     mouse: Optional[MouseController] = None,
     keyboard: Optional[KeyboardController] = None,
@@ -1100,12 +1111,16 @@ async def main() -> None:
         intent_router = IntentRouter()
         capability_manager = CapabilityManager()
         
+        # Initialize Safety & Consent Manager
+        safety_consent_manager = SafetyConsentManager()
+        session_control.set_safety_consent_manager(safety_consent_manager)
+        
         # Register capabilities
         capability_manager.register("browser_use", risk_level="medium")
         capability_manager.register("desktop_automation", risk_level="high")
         capability_manager.register("autonomous_agent", risk_level="high")
         capability_manager.register("task_mode", risk_level="safe")
-        logger.info("Copilot Mode components initialized")
+        logger.info("Copilot Mode components initialized with Safety & Consent")
         
         # بررسی حالت --full
         if args.full:
@@ -1227,6 +1242,7 @@ async def main() -> None:
             session_control,
             intent_router=intent_router,
             capability_manager=capability_manager,
+            safety_consent_manager=safety_consent_manager,
             chat_first=chat_first,
             mouse=mouse,
             keyboard=keyboard,

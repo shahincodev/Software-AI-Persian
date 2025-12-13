@@ -23,7 +23,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional, List, Dict, Any
 
-from core.intent_analyzer import IntentAnalyzer, Intent
+from core.intent_analyzer import IntentAnalyzer, Intent, IntentAnalysisResult
+from core.safety_consent_manager import RiskLevel
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +62,7 @@ class Route:
         intent: Intent تحلیل‌شده
         requires_activation: لیست قابلیت‌هایی که باید فعال شوند
         requires_consent: آیا نیاز به تایید کاربر دارد
+        risk_level: سطح ریسک برای این درخواست
         consent_message: پیام تایید (اگر لازم)
         confidence: اطمینان روند مسیریابی
         metadata: اطلاعات اضافی برای اجرا
@@ -69,6 +71,7 @@ class Route:
     intent: Optional[Intent] = None
     requires_activation: List[str] = field(default_factory=list)
     requires_consent: bool = False
+    risk_level: RiskLevel = RiskLevel.SAFE
     consent_message: str = ""
     confidence: float = 0.0
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -79,7 +82,7 @@ class Route:
         if self.requires_activation:
             msg += f", activate={self.requires_activation}"
         if self.requires_consent:
-            msg += ", needs_consent=True"
+            msg += f", needs_consent=True, risk={self.risk_level.value}"
         msg += ")"
         return msg
 
@@ -113,26 +116,32 @@ class IntentRouter:
             current_capabilities: وضعیت قابلیت‌های فعلی {'browser_use': True, ...}
         
         Returns:
-            Route: نتیجه مسیریابی
+            Route: نتیجه مسیریابی با سطح ریسک
         """
         try:
             # تجزیه درخواست
-            intent = await self.intent_analyzer.analyze(user_text)
-            logger.debug(f"Analyzed intent: {intent}")
+            result = await self.intent_analyzer.analyze(user_text)
+            logger.debug(f"Analyzed intent: {result}")
             
-            if not intent:
+            if not result or not result.intent:
                 return Route(
                     type=RouteType.CLARIFICATION_NEEDED,
                     confidence=0.0,
+                    risk_level=RiskLevel.SAFE,
                     consent_message="نتوانستم درخواست شما را درک کنم. لطفاً توضیح دهید."
                 )
+            
+            intent = result.intent
             
             # تعیین مسیریابی بر اساس intent
             route = self._classify_intent(intent, safety_mode)
             route.intent = intent
             
+            # تعیین سطح ریسک
+            route.risk_level = self._assess_risk_level(intent, route)
+            
             # بررسی نیاز به تایید
-            if safety_mode == "safe" and self._is_risky(intent):
+            if safety_mode == "safe" and route.risk_level in [RiskLevel.POWER, RiskLevel.CRITICAL]:
                 route.requires_consent = True
                 route.consent_message = self._build_consent_message(intent, route)
             
@@ -144,6 +153,7 @@ class IntentRouter:
             return Route(
                 type=RouteType.CLARIFICATION_NEEDED,
                 confidence=0.0,
+                risk_level=RiskLevel.SAFE,
                 consent_message=f"خطایی رخ داد: {str(e)}"
             )
     
@@ -169,6 +179,7 @@ class IntentRouter:
                 type=RouteType.BROWSER_USE,
                 requires_activation=["browser_use"],
                 confidence=intent.confidence,
+                risk_level=RiskLevel.POWER,
                 metadata={"search_query": target, "action": verb}
             )
         
@@ -181,6 +192,7 @@ class IntentRouter:
                 type=RouteType.DESKTOP_AUTOMATION,
                 requires_activation=["desktop_automation"],
                 confidence=intent.confidence,
+                risk_level=RiskLevel.CRITICAL,
                 metadata={"target_app": target, "action": verb}
             )
         
@@ -191,6 +203,7 @@ class IntentRouter:
                 type=RouteType.AUTONOMOUS_AGENT,
                 requires_activation=["autonomous_agent"],
                 confidence=intent.confidence,
+                risk_level=RiskLevel.CRITICAL,
                 metadata={"goal": intent.raw_request}
             )
         
@@ -199,8 +212,43 @@ class IntentRouter:
             type=RouteType.CHAT_RESPONSE,
             requires_activation=[],
             confidence=intent.confidence,
+            risk_level=RiskLevel.SAFE,
             metadata={"response_type": "conversational"}
         )
+    
+    def _assess_risk_level(self, intent: Intent, route: Route) -> RiskLevel:
+        """ارزیابی سطح ریسک برای یک درخواست
+        
+        Args:
+            intent: Intent برای ارزیابی
+            route: Route تعیین‌شده
+        
+        Returns:
+            RiskLevel: سطح ریسک برای درخواست
+        """
+        if route.type == RouteType.CHAT_RESPONSE:
+            return RiskLevel.SAFE
+        
+        risky_verbs = ["delete", "format", "uninstall", "shutdown", "restart", "kill", "remove"]
+        risky_targets = ["system", "windows", "registry", "hard drive", "boot"]
+        
+        verb = intent.verb.lower()
+        target = intent.target.lower()
+        
+        # CRITICAL: اقدامات بسیار حساس
+        if any(v in verb for v in risky_verbs) or any(t in target for t in risky_targets):
+            return RiskLevel.CRITICAL
+        
+        # POWER: اتوماسیون دسکتاپ و عامل خودکار
+        if route.type in [RouteType.DESKTOP_AUTOMATION, RouteType.AUTONOMOUS_AGENT]:
+            return RiskLevel.POWER
+        
+        # POWER: مرورگر (درخواست وب)
+        if route.type == RouteType.BROWSER_USE:
+            return RiskLevel.POWER
+        
+        # SAFE: پیش‌فرض
+        return RiskLevel.SAFE
     
     def _is_risky(self, intent: Intent) -> bool:
         """بررسی درخواست برای ریسک بالا

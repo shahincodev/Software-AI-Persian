@@ -26,9 +26,9 @@
 - [x] لاگ و اعلان کاربر هنگام فعال/غیرفعال شدن قابلیت‌ها.
 
 ### فاز ۳: Safety & Consent
-- [ ] تعریف سطح ریسک برای هر قابلیت (safe/power) و نیاز به تایید.
-- [ ] پیام‌های تایید تعاملی پیش از اقدامات حساس (مثلاً کنترل دسکتاپ یا مرورگر).
-- [ ] بهبود SessionControl برای حالت‌های پویا.
+- [x] تعریف سطح ریسک برای هر قابلیت (safe/power) و نیاز به تایید.
+- [x] پیام‌های تایید تعاملی پیش از اقدامات حساس (مثلاً کنترل دسکتاپ یا مرورگر).
+- [x] بهبود SessionControl برای حالت‌های پویا.
 
 ### فاز ۴: Task Mode (Opt-in)
 - [ ] پروفایل «Project/Task Mode» با فلگ یا دستور درون چت برای فعال‌سازی.
@@ -68,7 +68,7 @@
 ## ✅ وضعیت تیک‌ها
 - فاز ۱: [x] ✅
 - فاز ۲: [x] ✅
-- فاز ۳: [ ]
+- فاز ۳: [x] ✅
 - فاز ۴: [ ]
 - فاز ۵: [ ]
 
@@ -98,3 +98,37 @@
 - test_intent_router.py: 7+ تست برای routing و safety
 - test_capability_manager.py: 10+ تست برای enable/disable و state
 - Coverage: ~85%
+
+## 🏗️ پیاده‌سازی فاز ۳ - جزئیات
+
+### ماژول‌های جدید
+1. **core/safety_consent_manager.py**
+   - `RiskLevel` enum: SAFE، POWER، CRITICAL
+   - `ConsentRequest` dataclass: درخواست تایید کاربر
+   - `ConsentDecision` dataclass: تصمیم کاربر
+   - `SafetyConsentManager` کلاس: مدیریت تایید و سطح‌های ریسک
+   - متدها: request_consent()، can_execute_action()، get_decision_history()، get_statistics()
+
+### بهبود‌های موجود
+1. **core/intent_router.py**
+   - افزودن RiskLevel import از safety_consent_manager
+   - اضافه کردن risk_level field به Route dataclass
+   - پیاده‌سازی _assess_risk_level() برای ارزیابی ریسک
+   - بهبود route() برای تعیین سطح ریسک و نیاز تایید
+
+2. **core/capability_manager.py**
+   - Integration با SafetyConsentManager (آماده برای فاز ۴)
+
+3. **main.py SessionControl**
+   - اضافه کردن safety_consent_manager field
+   - متد set_safety_consent_manager()
+
+### ادغام در main.py
+- ایمپورت SafetyConsentManager و RiskLevel
+- مقداردهی SafetyConsentManager در main()
+- اتصال به SessionControl
+- پاس دادن به process_user_input
+
+### تست‌ها
+- test_safety_consent.py: 15+ تست برای RiskLevels، ConsentRequests، ConsentWithHandler، ConsentHistory، CanExecuteAction
+- Coverage: ~90%

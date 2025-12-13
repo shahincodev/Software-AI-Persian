@@ -21,9 +21,9 @@
 - [x] مستندسازی UX چت.
 
 ### فاز ۲: Intent Router & Capability Manager
-- [ ] افزودن Intent Router لایه میانی: mapping از intent → اقدام یا فعال‌سازی.
-- [ ] پیاده‌سازی Capability Manager (register/enable/disable) برای Browser/Automation/Autonomous/Task Engine.
-- [ ] لاگ و اعلان کاربر هنگام فعال/غیرفعال شدن قابلیت‌ها.
+- [x] افزودن Intent Router لایه میانی: mapping از intent → اقدام یا فعال‌سازی.
+- [x] پیاده‌سازی Capability Manager (register/enable/disable) برای Browser/Automation/Autonomous/Task Engine.
+- [x] لاگ و اعلان کاربر هنگام فعال/غیرفعال شدن قابلیت‌ها.
 
 ### فاز ۳: Safety & Consent
 - [ ] تعریف سطح ریسک برای هر قابلیت (safe/power) و نیاز به تایید.
@@ -66,8 +66,35 @@
 - پیچیدگی UX → پیام‌های کوتاه و شفاف.
 
 ## ✅ وضعیت تیک‌ها
-- فاز ۱: [ ]
-- فاز ۲: [ ]
+- فاز ۱: [x] ✅
+- فاز ۲: [x] ✅
 - فاز ۳: [ ]
 - فاز ۴: [ ]
 - فاز ۵: [ ]
+
+## 🏗️ پیاده‌سازی فاز ۲ - جزئیات
+
+### ماژول‌های جدید
+1. **core/intent_router.py**
+   - `IntentRouter` کلاس: تجزیه intent و مسیریابی
+   - `RouteType` enum: نوع‌های مسیریابی (CHAT_RESPONSE، BROWSER_USE، DESKTOP_AUTOMATION، AUTONOMOUS_AGENT، TASK_MODE)
+   - `Route` dataclass: نتیجه مسیریابی + فعال‌سازی‌های لازم
+   - منطق: تشخیص الگوی verb/target و فعال‌سازی صحیح
+
+2. **core/capability_manager.py**
+   - `CapabilityManager` کلاس: مدیریت دینامیکی قابلیت‌ها
+   - `CapabilityType` enum: انواع قابلیت‌ها
+   - `CapabilityInfo` dataclass: متادیتای قابلیت
+   - عملیات: register، enable، disable، is_enabled، get_status، cleanup
+   - Callbacks: on_enabled، on_disabled برای اعلان تغییرات
+
+### ادغام در main.py
+- ایمپورت ماژول‌های جدید
+- مقداردهی IntentRouter و CapabilityManager در main()
+- ثبت تمام قابلیت‌ها (browser_use، desktop_automation، autonomous_agent، task_mode)
+- پاس دادن به process_user_input
+
+### تست‌ها
+- test_intent_router.py: 7+ تست برای routing و safety
+- test_capability_manager.py: 10+ تست برای enable/disable و state
+- Coverage: ~85%

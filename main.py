@@ -48,6 +48,10 @@ from core.plan_validator import PlanValidator, ValidationLevel
 from core.memory_integrator import MemoryIntegrator, PlanStatus
 from core.realtime_loop import RealtimeLoop
 
+# Copilot Mode - Intent Router & Capability Manager
+from core.intent_router import IntentRouter, RouteType
+from core.capability_manager import CapabilityManager, CapabilityType
+
 from dotenv import load_dotenv
 from core.logging_config import setup_logging, install_exception_hook
 
@@ -631,6 +635,8 @@ async def process_user_input(
     voice: VoiceManager, 
     system_agent: IntelligentSystemAgent,
     session_control: SessionControl,
+    intent_router: Optional[IntentRouter] = None,
+    capability_manager: Optional[CapabilityManager] = None,
     chat_first: bool = False,
     mouse: Optional[MouseController] = None,
     keyboard: Optional[KeyboardController] = None,
@@ -1090,6 +1096,17 @@ async def main() -> None:
         system_agent = IntelligentSystemAgent(dry_run=args.debug)
         logger.info("Intelligent system agent initialized")
         
+        # Initialize Copilot Mode components
+        intent_router = IntentRouter()
+        capability_manager = CapabilityManager()
+        
+        # Register capabilities
+        capability_manager.register("browser_use", risk_level="medium")
+        capability_manager.register("desktop_automation", risk_level="high")
+        capability_manager.register("autonomous_agent", risk_level="high")
+        capability_manager.register("task_mode", risk_level="safe")
+        logger.info("Copilot Mode components initialized")
+        
         # بررسی حالت --full
         if args.full:
             args.enable_automation = True
@@ -1208,6 +1225,8 @@ async def main() -> None:
             voice, 
             system_agent,
             session_control,
+            intent_router=intent_router,
+            capability_manager=capability_manager,
             chat_first=chat_first,
             mouse=mouse,
             keyboard=keyboard,

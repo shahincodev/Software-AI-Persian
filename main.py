@@ -420,6 +420,12 @@ Examples:
     )
 
     parser.add_argument(
+        "--task-mode",
+        action="store_true",
+        help="حالت پروژه/تسک: صف‌بندی و اجرای دستورات ساخت‌یافته"
+    )
+
+    parser.add_argument(
         "--concurrency",
         type=int,
         default=2,
@@ -625,6 +631,7 @@ async def process_user_input(
     voice: VoiceManager, 
     system_agent: IntelligentSystemAgent,
     session_control: SessionControl,
+    chat_first: bool = False,
     mouse: Optional[MouseController] = None,
     keyboard: Optional[KeyboardController] = None,
     smart_wait: Optional[SmartWaiter] = None,
@@ -655,18 +662,29 @@ async def process_user_input(
     if session_control.allowed_paths:
         print(f"{Fore.MAGENTA}Allowed paths: {', '.join(session_control.allowed_paths)}{Style.RESET_ALL}")
     print()
-    # نمایش دستورات موجود
-    print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}{'AVAILABLE COMMANDS':^80}{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
-    
-    print(f"{Fore.YELLOW}Core Commands:{Style.RESET_ALL}")
-    print(f"  {Fore.GREEN}help{Style.RESET_ALL}               - Show all available commands")
-    print(f"  {Fore.GREEN}start / run{Style.RESET_ALL}        - Execute queued tasks")
-    print(f"  {Fore.GREEN}clear{Style.RESET_ALL}              - Clear task queue")
-    print(f"  {Fore.GREEN}pause / resume{Style.RESET_ALL}     - Pause or resume actions (kill-switch ready)")
-    print(f"  {Fore.GREEN}stop / panic{Style.RESET_ALL}       - Emergency stop and exit session")
-    print(f"  {Fore.GREEN}exit / quit{Style.RESET_ALL}        - Exit the application\n")
+
+    if chat_first:
+        print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}{'CHAT MODE (DEFAULT)':^80}{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
+        print(f"{Fore.YELLOW}چت آزاد و چندزبانه. هر سوال یا درخواست طبیعی را بپرسید.{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}سیستم در صورت نیاز قابلیت‌های وب/اتوماسیون/تسک را فعال می‌کند.{Style.RESET_ALL}\n")
+        print(f"{Fore.MAGENTA}نمونه‌ها:{Style.RESET_ALL}")
+        print(f"  {Fore.GREEN}یک ایمیل کاری بنویس{Style.RESET_ALL}")
+        print(f"  {Fore.GREEN}روی دسکتاپ یک پوشه جدید بساز{Style.RESET_ALL}")
+        print(f"  {Fore.GREEN}در وب قیمت دلار را چک کن{Style.RESET_ALL}\n")
+    else:
+        print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}{'AVAILABLE COMMANDS':^80}{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
+        
+        print(f"{Fore.YELLOW}Core Commands:{Style.RESET_ALL}")
+        print(f"  {Fore.GREEN}help{Style.RESET_ALL}               - Show all available commands")
+        print(f"  {Fore.GREEN}start / run{Style.RESET_ALL}        - Execute queued tasks")
+        print(f"  {Fore.GREEN}clear{Style.RESET_ALL}              - Clear task queue")
+        print(f"  {Fore.GREEN}pause / resume{Style.RESET_ALL}     - Pause or resume actions (kill-switch ready)")
+        print(f"  {Fore.GREEN}stop / panic{Style.RESET_ALL}       - Emergency stop and exit session")
+        print(f"  {Fore.GREEN}exit / quit{Style.RESET_ALL}        - Exit the application\n")
     
     if intent_analyzer:
         print(f"{Fore.MAGENTA}Intent Planning System:{Style.RESET_ALL}")
@@ -690,12 +708,17 @@ async def process_user_input(
         print()
     
     print(f"{Fore.YELLOW}Examples:{Style.RESET_ALL}")
-    if intent_analyzer:
-        print(f"  plan open notepad")
-        print(f"  smart create a folder on desktop")
-    if autonomous_agent:
-        print(f"  goal go to E: and create MyDocs folder")
-    print(f"  type Hello World")
+    if chat_first:
+        print(f"  بگو: یک فهرست خرید آماده کن")
+        print(f"  بگو: برایم یک کار لیست کن و اولویت‌بندی کن")
+        print(f"  بگو: در وب وضعیت آب‌وهوا را چک کن")
+    else:
+        if intent_analyzer:
+            print(f"  plan open notepad")
+            print(f"  smart create a folder on desktop")
+        if autonomous_agent:
+            print(f"  goal go to E: and create MyDocs folder")
+        print(f"  type Hello World")
     
     print(f"\n{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
     print(f"{Fore.YELLOW}Type your command and press Enter...{Style.RESET_ALL}\n")
@@ -1074,6 +1097,15 @@ async def main() -> None:
             args.enable_intent_planning = True
             args.realtime = True
 
+        chat_first = not (
+            args.enable_automation
+            or args.enable_autonomous
+            or args.enable_intent_planning
+            or args.realtime
+            or args.full
+            or args.task_mode
+        )
+
         session_control = SessionControl(
             safety_mode=args.safety_mode,
             risk_threshold=args.risk_threshold,
@@ -1138,15 +1170,16 @@ async def main() -> None:
                 logger.warning(f"Intent Planning System initialization failed: {e}")
         
         # نمایش وضعیت قابلیت‌ها
-        print_features_status(
-            automation=args.enable_automation,
-            autonomous=args.enable_autonomous,
-            intent_planning=args.enable_intent_planning,
-            mouse=mouse,
-            keyboard=keyboard,
-            vision=vision,
-            action_controller=action_controller
-        )
+        if not chat_first:
+            print_features_status(
+                automation=args.enable_automation,
+                autonomous=args.enable_autonomous,
+                intent_planning=args.enable_intent_planning,
+                mouse=mouse,
+                keyboard=keyboard,
+                vision=vision,
+                action_controller=action_controller
+            )
 
         # راه‌اندازی حلقه زمان‌واقعی در صورت درخواست
         if args.realtime and vision:
@@ -1175,6 +1208,7 @@ async def main() -> None:
             voice, 
             system_agent,
             session_control,
+            chat_first=chat_first,
             mouse=mouse,
             keyboard=keyboard,
             smart_wait=smart_wait,

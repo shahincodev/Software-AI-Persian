@@ -685,12 +685,12 @@ async def process_user_input(
         print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
         print(f"{Fore.CYAN}{'CHAT MODE (DEFAULT)':^80}{Style.RESET_ALL}")
         print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
-        print(f"{Fore.YELLOW}چت آزاد و چندزبانه. هر سوال یا درخواست طبیعی را بپرسید.{Style.RESET_ALL}")
-        print(f"{Fore.YELLOW}سیستم در صورت نیاز قابلیت‌های وب/اتوماسیون/تسک را فعال می‌کند.{Style.RESET_ALL}\n")
-        print(f"{Fore.MAGENTA}نمونه‌ها:{Style.RESET_ALL}")
-        print(f"  {Fore.GREEN}یک ایمیل کاری بنویس{Style.RESET_ALL}")
-        print(f"  {Fore.GREEN}روی دسکتاپ یک پوشه جدید بساز{Style.RESET_ALL}")
-        print(f"  {Fore.GREEN}در وب قیمت دلار را چک کن{Style.RESET_ALL}\n")
+        print(f"{Fore.YELLOW}Free-form chat. Ask any question or request.{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}System will enable web/automation/task capabilities as needed.{Style.RESET_ALL}\n")
+        print(f"{Fore.MAGENTA}Examples:{Style.RESET_ALL}")
+        print(f"  {Fore.GREEN}Write a professional email{Style.RESET_ALL}")
+        print(f"  {Fore.GREEN}Create a new folder on desktop{Style.RESET_ALL}")
+        print(f"  {Fore.GREEN}Check USD price on the web{Style.RESET_ALL}\n")
     else:
         print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
         print(f"{Fore.CYAN}{'AVAILABLE COMMANDS':^80}{Style.RESET_ALL}")
@@ -727,9 +727,9 @@ async def process_user_input(
     
     print(f"{Fore.YELLOW}Examples:{Style.RESET_ALL}")
     if chat_first:
-        print(f"  بگو: یک فهرست خرید آماده کن")
-        print(f"  بگو: برایم یک کار لیست کن و اولویت‌بندی کن")
-        print(f"  بگو: در وب وضعیت آب‌وهوا را چک کن")
+        print(f"  Say: prepare a shopping list")
+        print(f"  Say: list tasks and prioritize them for me")
+        print(f"  Say: check the weather on the web")
     else:
         if intent_analyzer:
             print(f"  plan open notepad")
@@ -841,7 +841,7 @@ async def process_user_input(
                 print(f"\n{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
                 print(f"{Fore.CYAN}{'COMMAND REFERENCE':^80}{Style.RESET_ALL}")
                 print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
-                print(f"{Fore.GREEN}Available commands displayed above{Style.RESET_ALL}\n")
+                print(f"{Fore.GREEN}Available commands are listed above{Style.RESET_ALL}\n")
                 continue
             
             # Clear queue
@@ -923,9 +923,9 @@ async def process_user_input(
                 log_telemetry("routing_result", route=route.type.value, risk=route.risk_level.value)
 
                 if route.requires_consent and safety_consent_manager:
-                    prompt = route.consent_message or "درخواست پرریسک است. آیا ادامه دهم؟ (y/n): "
+                    prompt = route.consent_message or "This action is risky. Continue? (y/n): "
                     user_decision = input(f"{Fore.YELLOW}{prompt}{Style.RESET_ALL} ").strip().lower()
-                    allowed = user_decision in ["y", "yes", "بله"]
+                    allowed = user_decision in ["y", "yes"]
                     safety_consent_manager.record_decision(
                         route.intent.raw_request if route.intent else user_text,
                         route.risk_level,

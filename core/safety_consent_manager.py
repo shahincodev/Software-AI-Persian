@@ -236,3 +236,27 @@ class SafetyConsentManager:
             "rejected": rejected,
             "approval_rate": (approved / total * 100) if total > 0 else 0
         }
+
+    def record_decision(
+        self,
+        action: str,
+        risk_level: RiskLevel,
+        approved: bool,
+        capability: Optional[str] = None,
+        reason: Optional[str] = None
+    ) -> None:
+        """ثبت یک تصمیم تایید/رد برای سازگاری با ورودی‌های CLI.
+
+        این متد اجازه می‌دهد تصمیم‌های کاربر که خارج از request_consent گرفته می‌شوند
+        نیز در تاریخچه و متریک‌ها ثبت شوند.
+        """
+        request = ConsentRequest(action=action, risk_level=risk_level, capability=capability)
+        decision = ConsentDecision(approved=approved, reason=reason or ("user_yes" if approved else "user_no"))
+        self._decision_history.append((request, decision))
+        logger.info(
+            "Consent decision recorded action=%s risk=%s approved=%s reason=%s",
+            action,
+            risk_level.value,
+            approved,
+            decision.reason,
+        )

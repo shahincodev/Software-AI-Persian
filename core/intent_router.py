@@ -206,6 +206,19 @@ class IntentRouter:
                 risk_level=RiskLevel.CRITICAL,
                 metadata={"goal": intent.raw_request}
             )
+
+        # الگوهای حالت تسک‌محور (Opt-in)
+        task_verbs = ["task", "tasks", "todo", "prioritize", "queue", "assign", "schedule", "project"]
+        task_targets = ["task", "todo", "project", "backlog", "list"]
+        if any(v in verb for v in task_verbs) or any(t in target for t in task_targets):
+            tasks = self._extract_tasks(intent.raw_request)
+            return Route(
+                type=RouteType.TASK_MODE,
+                requires_activation=["task_mode"],
+                confidence=intent.confidence,
+                risk_level=RiskLevel.SAFE,
+                metadata={"tasks": tasks, "tasks_count": len(tasks)}
+            )
         
         # پیش‌فرض: پاسخ چت ساده
         return Route(
@@ -285,3 +298,25 @@ class IntentRouter:
             f"عمل: {intent.verb} → هدف: {intent.target}\n"
             f"آیا اجازه می‌دهید؟ (بله/خیر)"
         )
+
+    def _extract_tasks(self, raw_request: str) -> List[str]:
+        """استخراج لیست تسک‌ها از متن خام کاربر.
+
+        این تابع تلاش می‌کند تسک‌ها را با جداکننده‌های رایج (؛، ";", "\n") تشخیص دهد.
+        در صورت عدم وجود جداکننده، کل متن را به‌عنوان یک تسک برمی‌گرداند.
+        """
+        # جداکننده‌های رایج تسک‌ها
+        separators = [";", "\n", "،"]
+        collected: List[str] = []
+        working = raw_request
+
+        for sep in separators:
+            if sep in working:
+                parts = [item.strip() for item in working.split(sep) if item.strip()]
+                collected.extend(parts)
+                break
+
+        if not collected and working.strip():
+            collected.append(working.strip())
+
+        return collected

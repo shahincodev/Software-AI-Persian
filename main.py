@@ -22,7 +22,7 @@ import logging
 import shutil
 import sys
 from pathlib import Path
-from typing import Optional, Any
+from typing import Optional, Any, List
 from colorama import init as colorama_init, Fore, Style
 from datetime import datetime
 
@@ -659,7 +659,8 @@ async def process_user_input(
     dialog_manager: Optional[DialogManager] = None,
     plan_generator: Optional[PlanGenerator] = None,
     plan_validator: Optional[PlanValidator] = None,
-    memory_integrator: Optional[MemoryIntegrator] = None
+    memory_integrator: Optional[MemoryIntegrator] = None,
+    initial_task_mode: bool = False
 ) -> None:
     """پردازش ورودی کاربر در یک حلقه تعاملی پیشرفته با پشتیبانی چندزبانه و اتوماسیون."""
 
@@ -740,6 +741,47 @@ async def process_user_input(
     print(f"\n{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
     print(f"{Fore.YELLOW}Type your command and press Enter...{Style.RESET_ALL}\n")
 
+    task_mode_enabled = initial_task_mode
+
+    def log_telemetry(event: str, **data: Any) -> None:
+        """ثبت رویدادهای سبک برای مشاهده‌پذیری."""
+        try:
+            payload = " ".join([f"{k}={v}" for k, v in data.items()]) if data else ""
+            logger.info("TELEMETRY event=%s %s", event, payload)
+        except Exception:
+            pass
+
+    async def ensure_task_mode_enabled() -> None:
+        """فعال‌سازی حالت تسک‌محور در صورت نیاز."""
+        nonlocal task_mode_enabled
+        if task_mode_enabled:
+            return
+        if capability_manager:
+            await capability_manager.enable("task_mode")
+        task_mode_enabled = True
+        log_telemetry("task_mode_enabled")
+        print(f"{Fore.GREEN}✓ Task Mode enabled. Tasks will be queued and run via TaskEngine.{Style.RESET_ALL}")
+
+    async def disable_task_mode(clear_queue: bool = True) -> None:
+        """غیرفعال‌سازی حالت تسک و تمیزکاری اختیاری صف."""
+        nonlocal task_mode_enabled
+        if capability_manager:
+            await capability_manager.disable("task_mode")
+        if clear_queue:
+            task_engine.queue.clear()
+        task_mode_enabled = False
+        log_telemetry("task_mode_disabled")
+        print(f"{Fore.YELLOW}Task Mode disabled.{Style.RESET_ALL}")
+
+    def extract_tasks_from_text(text: str) -> List[str]:
+        """استخراج تسک‌ها با جداکننده‌های رایج."""
+        separators = [";", "\n", "،"]
+        for sep in separators:
+            if sep in text:
+                parts = [item.strip() for item in text.split(sep) if item.strip()]
+                return parts
+        return [text.strip()] if text.strip() else []
+
     try:
         while True:
             user_text = ""
@@ -814,6 +856,15 @@ async def process_user_input(
                 print(f"{Fore.YELLOW}Thank you for using Software-AI!{Style.RESET_ALL}")
                 print(f"{Fore.YELLOW}{'='*80}{Style.RESET_ALL}\n")
                 break
+
+            # Task Mode toggles (opt-in)
+            if cmd_lower in ["task mode on", "taskmode on", "enable task mode", "task on"]:
+                await ensure_task_mode_enabled()
+                continue
+
+            if cmd_lower in ["task mode off", "taskmode off", "disable task mode", "task off"]:
+                await disable_task_mode(clear_queue=True)
+                continue
             
             # Statistics (Intent Planning System)
             if cmd_lower == "stats" and memory_integrator:
@@ -854,6 +905,53 @@ async def process_user_input(
                 print(f"{Fore.GREEN}{'='*80}{Style.RESET_ALL}")
                 print(f"{Fore.GREEN}✓ All tasks completed successfully{Style.RESET_ALL}")
                 print(f"{Fore.GREEN}{'='*80}{Style.RESET_ALL}\n")
+                continue
+
+            # Chat-first smart routing (Intent Router + Capability Manager)
+            if chat_first and intent_router:
+                log_telemetry("routing_start", text=user_text)
+                route = await intent_router.route(
+                    user_text,
+                    safety_mode=session_control.safety_mode,
+                    current_capabilities=capability_manager.get_status() if capability_manager else None
+                )
+                log_telemetry("routing_result", route=route.type.value, risk=route.risk_level.value)
+
+                if route.requires_consent and safety_consent_manager:
+                    prompt = route.consent_message or "درخواست پرریسک است. آیا ادامه دهم؟ (y/n): "
+                    user_decision = input(f"{Fore.YELLOW}{prompt}{Style.RESET_ALL} ").strip().lower()
+                    allowed = user_decision in ["y", "yes", "بله"]
+                    safety_consent_manager.record_decision(
+                        route.intent.raw_request if route.intent else user_text,
+                        route.risk_level,
+                        allowed
+                    )
+                    if not allowed:
+                        print(f"{Fore.YELLOW}Action cancelled by user.{Style.RESET_ALL}\n")
+                        log_telemetry("consent_rejected", risk=route.risk_level.value)
+                        continue
+
+                if capability_manager and route.requires_activation:
+                    for cap in route.requires_activation:
+                        await capability_manager.enable(cap)
+
+                if route.type == RouteType.TASK_MODE:
+                    await ensure_task_mode_enabled()
+                    tasks = route.metadata.get("tasks") or extract_tasks_from_text(user_text)
+                    if not tasks:
+                        tasks = [user_text]
+                    for t in tasks:
+                        task_engine.add_task(t, mode="browser")
+                    print(f"{Fore.GREEN}✓ Added {len(tasks)} task(s) to queue.{Style.RESET_ALL}\n")
+                    log_telemetry("task_mode_queue", tasks=len(tasks))
+                elif route.type == RouteType.BROWSER_USE:
+                    print(f"{Fore.GREEN}🌐 Browser capability ready. Describe the page action to perform.{Style.RESET_ALL}\n")
+                elif route.type == RouteType.DESKTOP_AUTOMATION:
+                    print(f"{Fore.GREEN}🖥️ Desktop automation ready. Please specify the exact action.{Style.RESET_ALL}\n")
+                elif route.type == RouteType.AUTONOMOUS_AGENT:
+                    print(f"{Fore.GREEN}🤖 Autonomous agent primed for your goal.{Style.RESET_ALL}\n")
+                else:
+                    print(f"{Fore.CYAN}💬 Chat response routed. How can I assist further?{Style.RESET_ALL}\n")
                 continue
             
             # Intent Planning System - "plan" command
@@ -1068,6 +1166,7 @@ async def main() -> None:
     session_log = None
     master_log = None
     realtime_task = None
+    capability_manager: Optional[CapabilityManager] = None
     
     try:
         # Parse command-line arguments
@@ -1121,6 +1220,10 @@ async def main() -> None:
         capability_manager.register("autonomous_agent", risk_level="high")
         capability_manager.register("task_mode", risk_level="safe")
         logger.info("Copilot Mode components initialized with Safety & Consent")
+
+        if args.task_mode:
+            await capability_manager.enable("task_mode")
+            logger.info("Task Mode pre-enabled via CLI flag")
         
         # بررسی حالت --full
         if args.full:
@@ -1255,7 +1358,8 @@ async def main() -> None:
             plan_generator=plan_generator,
             plan_validator=plan_validator,
             memory_integrator=memory_integrator
-        )
+            plan_validator=plan_validator,
+            initial_task_mode=args.task_mode
 
     except KeyboardInterrupt:
         print(f"\n\n{Fore.YELLOW}{'='*80}{Style.RESET_ALL}")
@@ -1269,6 +1373,12 @@ async def main() -> None:
         logger.exception("Fatal error occurred")
         sys.exit(1)
     finally:
+        try:
+            if capability_manager:
+                await capability_manager.cleanup()
+        except Exception:
+            logger.warning("Capability cleanup failed", exc_info=True)
+
         if session_log:
             logger.info("="*80)
             logger.info(f"SESSION ENDED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")

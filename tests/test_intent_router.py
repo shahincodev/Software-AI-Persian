@@ -42,6 +42,14 @@ class TestIntentRouting:
         route = await router.route("یک فولدر جدید روی دسکتاپ بساز")
         assert route.type == RouteType.DESKTOP_AUTOMATION
         assert "desktop_automation" in route.requires_activation
+
+    @pytest.mark.asyncio
+    async def test_task_mode_routing(self, router):
+        """تست مسیریابی برای حالت تسک‌محور و استخراج چند تسک"""
+        route = await router.route("task one; task two")
+        assert route.type == RouteType.TASK_MODE
+        assert "task_mode" in route.requires_activation
+        assert route.metadata.get("tasks_count") == 2
     
     @pytest.mark.asyncio
     async def test_risky_action_consent(self, router):

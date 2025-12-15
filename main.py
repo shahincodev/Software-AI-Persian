@@ -910,10 +910,15 @@ async def process_user_input(
             # Chat-first smart routing (Intent Router + Capability Manager)
             if chat_first and intent_router:
                 log_telemetry("routing_start", text=user_text)
+                # فقط وضعیت بولی قابلیت‌ها را به روتر بدهیم
+                caps = None
+                if capability_manager:
+                    enabled = capability_manager.get_enabled()
+                    caps = {name: True for name in enabled}
                 route = await intent_router.route(
                     user_text,
                     safety_mode=session_control.safety_mode,
-                    current_capabilities=capability_manager.get_status() if capability_manager else None
+                    current_capabilities=caps
                 )
                 log_telemetry("routing_result", route=route.type.value, risk=route.risk_level.value)
 
@@ -966,20 +971,24 @@ async def process_user_input(
                 try:
                     # Step 1: Analyze Intent
                     print(f"{Fore.CYAN}[1/5] Analyzing intent...{Style.RESET_ALL}")
-                    intent = await intent_analyzer.analyze(request)
+                    analysis = await intent_analyzer.analyze(request)
+                    intent = analysis.intent
                     print(f"      Verb: {intent.verb}")
                     print(f"      Target: {intent.target}")
                     print(f"      Confidence: {intent.confidence:.0%}\n")
                     
                     # Step 2: Dialog (if needed)
-                    if dialog_manager and intent.missing_fields:
+                    if dialog_manager and analysis.missing_fields:
                         print(f"{Fore.CYAN}[2/5] Checking completeness...{Style.RESET_ALL}")
-                        print(f"      Missing: {', '.join(intent.missing_fields)}\n")
+                        print(f"      Missing: {', '.join(analysis.missing_fields)}\n")
                     else:
                         print(f"{Fore.CYAN}[2/5] Request is complete ✓{Style.RESET_ALL}\n")
                     
                     # Step 3: Generate Plan
                     print(f"{Fore.CYAN}[3/5] Generating execution plan...{Style.RESET_ALL}")
+                    if not plan_generator or not plan_validator:
+                        print(f"{Fore.YELLOW}⚠ Intent Planning components not initialized.{Style.RESET_ALL}\n")
+                        continue
                     plan = await plan_generator.generate_plan(intent)
                     print(f"      Total steps: {len(plan.steps)}")
                     for i, step in enumerate(plan.steps, 1):
@@ -1005,7 +1014,7 @@ async def process_user_input(
                             steps_failed=0,
                             total_steps=len(plan.steps),
                             actual_time_seconds=5.0,
-                            estimated_time_seconds=plan.estimated_time_seconds
+                            estimated_time_seconds=plan.total_estimated_time
                         )
                         print(f"      Record ID: {record_id}\n")
                     
@@ -1027,7 +1036,11 @@ async def process_user_input(
                 print(f"Request: {request}\n")
                 
                 try:
-                    intent = await intent_analyzer.analyze(request)
+                    analysis = await intent_analyzer.analyze(request)
+                    intent = analysis.intent
+                    if not plan_generator or not plan_validator:
+                        print(f"{Fore.YELLOW}⚠ Intent Planning components not initialized.{Style.RESET_ALL}\n")
+                        continue
                     plan = await plan_generator.generate_plan(intent)
                     validation = await plan_validator.validate(plan, intent)
                     risk_score = validation.safety_score
@@ -1058,7 +1071,7 @@ async def process_user_input(
                                 steps_failed=0,
                                 total_steps=len(plan.steps),
                                 actual_time_seconds=5.0,
-                                estimated_time_seconds=plan.estimated_time_seconds
+                                estimated_time_seconds=plan.total_estimated_time
                             )
                 
                 except Exception as e:
@@ -1210,21 +1223,6 @@ async def main() -> None:
         intent_router = IntentRouter()
         capability_manager = CapabilityManager()
         
-        # Initialize Safety & Consent Manager
-        safety_consent_manager = SafetyConsentManager()
-        session_control.set_safety_consent_manager(safety_consent_manager)
-        
-        # Register capabilities
-        capability_manager.register("browser_use", risk_level="medium")
-        capability_manager.register("desktop_automation", risk_level="high")
-        capability_manager.register("autonomous_agent", risk_level="high")
-        capability_manager.register("task_mode", risk_level="safe")
-        logger.info("Copilot Mode components initialized with Safety & Consent")
-
-        if args.task_mode:
-            await capability_manager.enable("task_mode")
-            logger.info("Task Mode pre-enabled via CLI flag")
-        
         # بررسی حالت --full
         if args.full:
             args.enable_automation = True
@@ -1247,6 +1245,21 @@ async def main() -> None:
             allowed_apps=args.allow_app,
             allowed_paths=args.allow_path,
         )
+        
+        # Initialize Safety & Consent Manager
+        safety_consent_manager = SafetyConsentManager()
+        session_control.set_safety_consent_manager(safety_consent_manager)
+        
+        # Register capabilities
+        capability_manager.register("browser_use", risk_level="medium")
+        capability_manager.register("desktop_automation", risk_level="high")
+        capability_manager.register("autonomous_agent", risk_level="high")
+        capability_manager.register("task_mode", risk_level="safe")
+        logger.info("Copilot Mode components initialized with Safety & Consent")
+
+        if args.task_mode:
+            await capability_manager.enable("task_mode")
+            logger.info("Task Mode pre-enabled via CLI flag")
         
         # مقداردهی اولیه قابلیت‌ها
         mouse = None
@@ -1357,9 +1370,9 @@ async def main() -> None:
             dialog_manager=dialog_manager,
             plan_generator=plan_generator,
             plan_validator=plan_validator,
-            memory_integrator=memory_integrator
-            plan_validator=plan_validator,
+            memory_integrator=memory_integrator,
             initial_task_mode=args.task_mode
+        )
 
     except KeyboardInterrupt:
         print(f"\n\n{Fore.YELLOW}{'='*80}{Style.RESET_ALL}")

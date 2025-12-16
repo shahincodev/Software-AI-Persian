@@ -228,18 +228,11 @@ class AIBrain:
             model = self.get_model(purpose=mode)
             
             # تبدیل prompt به فرمت مورد انتظار (Message object)
-            # برای مدل‌های مختلف، فرمت متفاوت نیاز است
-            from langchain_core.messages import HumanMessage, SystemMessage
-            
-            # بررسی نوع مدل برای استفاده از فرمت صحیح
-            model_type = type(model).__name__
-            
-            # برای Google از HumanMessage استفاده می‌کنیم
-            if 'Google' in model_type or 'Gemini' in model_type:
-                messages = [HumanMessage(content=prompt)]
-            # برای OpenAI و Groq از string یا dict استفاده می‌کنیم
-            else:
-                messages = prompt
+            # همهٔ مسیرها به HumanMessage استاندارد می‌شوند تا خطای
+            # «Unknown message type: <class 'str'>» رفع شود.
+            from langchain_core.messages import HumanMessage
+
+            messages = [HumanMessage(content=prompt)]
             
             # فراخوانی مدل - سازگار با APIهای مختلف
             if hasattr(model, 'ainvoke'):

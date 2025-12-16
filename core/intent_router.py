@@ -294,9 +294,9 @@ class IntentRouter:
             str: پیام تایید
         """
         return (
-            f"⚠️ این درخواست نیاز به تایید شما دارد:\n"
-            f"عمل: {intent.verb} → هدف: {intent.target}\n"
-            f"آیا اجازه می‌دهید؟ (بله/خیر)"
+            f"⚠️ This request requires your confirmation:\n"
+            f"Action: {intent.verb} → Target: {intent.target}\n"
+            f"Do you approve? (yes/no)"
         )
 
     def _extract_tasks(self, raw_request: str) -> List[str]:

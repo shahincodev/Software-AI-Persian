@@ -281,7 +281,8 @@ class IntentAnalyzer:
 فعل اصلی چیست؟ (مثال: open, play, create, delete, search)
 فقط یک کلمه جواب بده."""
         
-        response = await self.ai_brain.think(prompt)
+        # Use AI brain with fallback for robust verb extraction
+        response = await self.ai_brain.ask_with_fallback(prompt, mode="analyze")
         verb = response.strip().lower().split()[0] if response else "unknown"
         
         return verb, 0.70  # اطمینان متوسط برای AI
@@ -329,7 +330,8 @@ class IntentAnalyzer:
 کاربر چه چیزی را می‌خواهد {verb} کند؟ (مثال: notepad, steam, file)
 فقط یک کلمه جواب بده."""
         
-        response = await self.ai_brain.think(prompt)
+        # Use AI brain with fallback for robust target extraction
+        response = await self.ai_brain.ask_with_fallback(prompt, mode="analyze")
         target = response.strip().lower().split()[0] if response else "unknown"
         
         return target, 0.65

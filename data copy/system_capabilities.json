@@ -1,5 +1,5 @@
 {
-  "last_scan": "2025-12-16T15:02:24.726615",
+  "last_scan": "2025-12-16T15:11:01.742304",
   "capabilities": [
     {
       "name": "notepad.exe",
@@ -7,7 +7,7 @@
       "path": "C:\\WINDOWS\\system32\\notepad.exe",
       "version": null,
       "metadata": {},
-      "discovered_at": "2025-12-16T15:02:23.204444"
+      "discovered_at": "2025-12-16T15:11:00.072813"
     },
     {
       "name": "calc.exe",
@@ -15,7 +15,7 @@
       "path": "C:\\WINDOWS\\system32\\calc.exe",
       "version": null,
       "metadata": {},
-      "discovered_at": "2025-12-16T15:02:23.205853"
+      "discovered_at": "2025-12-16T15:11:00.073556"
     },
     {
       "name": "mspaint.exe",
@@ -23,7 +23,7 @@
       "path": "C:\\Users\\nilit\\AppData\\Local\\Microsoft\\WindowsApps\\mspaint.exe",
       "version": null,
       "metadata": {},
-      "discovered_at": "2025-12-16T15:02:23.208610"
+      "discovered_at": "2025-12-16T15:11:00.075356"
     },
     {
       "name": "winget",
@@ -33,7 +33,7 @@
       "metadata": {
         "category": "package_manager"
       },
-      "discovered_at": "2025-12-16T15:02:23.390899"
+      "discovered_at": "2025-12-16T15:11:00.260821"
     },
     {
       "name": "choco",
@@ -43,7 +43,7 @@
       "metadata": {
         "category": "package_manager"
       },
-      "discovered_at": "2025-12-16T15:02:23.874609"
+      "discovered_at": "2025-12-16T15:11:00.697002"
     },
     {
       "name": "pip",
@@ -53,7 +53,7 @@
       "metadata": {
         "category": "package_manager"
       },
-      "discovered_at": "2025-12-16T15:02:24.169888"
+      "discovered_at": "2025-12-16T15:11:01.095595"
     },
     {
       "name": "npm",
@@ -63,7 +63,7 @@
       "metadata": {
         "category": "package_manager"
       },
-      "discovered_at": "2025-12-16T15:02:24.451369"
+      "discovered_at": "2025-12-16T15:11:01.328964"
     },
     {
       "name": "operating_system",
@@ -76,7 +76,7 @@
         "machine": "AMD64",
         "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel"
       },
-      "discovered_at": "2025-12-16T15:02:24.478192"
+      "discovered_at": "2025-12-16T15:11:01.355396"
     },
     {
       "name": "cpu",
@@ -86,9 +86,9 @@
       "metadata": {
         "physical_cores": 16,
         "logical_cores": 24,
-        "frequency_mhz": 2200.0
+        "frequency_mhz": 1466.0
       },
-      "discovered_at": "2025-12-16T15:02:24.478253"
+      "discovered_at": "2025-12-16T15:11:01.355460"
     },
     {
       "name": "memory",
@@ -97,9 +97,9 @@
       "version": null,
       "metadata": {
         "total_gb": 15.73,
-        "available_gb": 3.32
+        "available_gb": 3.46
       },
-      "discovered_at": "2025-12-16T15:02:24.478370"
+      "discovered_at": "2025-12-16T15:11:01.355585"
     },
     {
       "name": "disk",
@@ -111,7 +111,7 @@
           {
             "device": "C:\\",
             "total_gb": 194.32,
-            "free_gb": 58.37
+            "free_gb": 58.33
           },
           {
             "device": "D:\\",
@@ -125,7 +125,7 @@
           }
         ]
       },
-      "discovered_at": "2025-12-16T15:02:24.478663"
+      "discovered_at": "2025-12-16T15:11:01.355915"
     },
     {
       "name": "python",
@@ -135,7 +135,7 @@
       "metadata": {
         "category": "development"
       },
-      "discovered_at": "2025-12-16T15:02:24.487623"
+      "discovered_at": "2025-12-16T15:11:01.364102"
     },
     {
       "name": "node",
@@ -145,7 +145,7 @@
       "metadata": {
         "category": "development"
       },
-      "discovered_at": "2025-12-16T15:02:24.502143"
+      "discovered_at": "2025-12-16T15:11:01.379349"
     },
     {
       "name": "git",
@@ -155,7 +155,7 @@
       "metadata": {
         "category": "development"
       },
-      "discovered_at": "2025-12-16T15:02:24.520658"
+      "discovered_at": "2025-12-16T15:11:01.397945"
     },
     {
       "name": "java",
@@ -165,7 +165,7 @@
       "metadata": {
         "category": "development"
       },
-      "discovered_at": "2025-12-16T15:02:24.705436"
+      "discovered_at": "2025-12-16T15:11:01.725383"
     },
     {
       "name": "dotnet",
@@ -175,7 +175,7 @@
       "metadata": {
         "category": "development"
       },
-      "discovered_at": "2025-12-16T15:02:24.726611"
+      "discovered_at": "2025-12-16T15:11:01.742299"
     }
   ]
 }

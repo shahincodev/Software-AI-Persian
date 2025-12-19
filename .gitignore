@@ -81,6 +81,7 @@ secrets.yaml
 data/logs/
 data/screenshots/
 data/*.sqlite3
+data_copy/
 
 # local settings
 local_settings.py

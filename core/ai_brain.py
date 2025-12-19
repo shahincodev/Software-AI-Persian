@@ -227,21 +227,36 @@ class AIBrain:
         try:
             model = self.get_model(purpose=mode)
             
-            # فراخوانی مدل - چند فرمت مختلف برای سازگاری OpenAI/Groq/Google
+            # فراخوانی مدل - انتخاب فرمت بر اساس نوع LLM
             def _build_human_message_list(p):
                 try:
                     from langchain_core.messages import HumanMessage
                     return [HumanMessage(content=p)]
                 except Exception:  # noqa: BLE001
-                    # اگر import یا سازگاری شکست خورد، به قالب دیکشنری برگردیم
                     return [{"role": "user", "content": p}]
 
-            formats = [
-                lambda p: p,  # تلاش با string خام
-                lambda p: [{"role": "user", "content": p}],  # قالب استاندارد OpenAI
-                lambda p: [{"role": "user", "content": [{"type": "text", "text": p}]}],  # قالب پیام ساختاریافته
-                lambda p: _build_human_message_list(p),  # HumanMessage برای گوگل
-            ]
+            module_name = getattr(model, "__module__", "").lower()
+            is_openai = "openai" in module_name
+            is_groq = "groq" in module_name
+            is_google = "google" in module_name
+
+            if is_openai or is_groq:
+                formats = [
+                    lambda p: [{"role": "user", "content": p}],
+                    lambda p: [{"role": "user", "content": [{"type": "text", "text": p}]}],
+                ]
+            elif is_google:
+                formats = [
+                    lambda p: _build_human_message_list(p),
+                    lambda p: [{"role": "user", "content": p}],
+                ]
+            else:
+                formats = [
+                    lambda p: p,
+                    lambda p: [{"role": "user", "content": p}],
+                    lambda p: [{"role": "user", "content": [{"type": "text", "text": p}]}],
+                    lambda p: _build_human_message_list(p),
+                ]
 
             async def _ainvoke_with_formats():
                 last_err = None

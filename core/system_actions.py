@@ -250,6 +250,55 @@ class TerminateProcessAction(SystemAction):
         return f"Terminating process {target}{force_str}"
 
 
+@dataclass
+class ExecuteCommandAction(SystemAction):
+    """اقدام برای اجرای دستورات شل/CMD مستقیماً."""
+    
+    command: str
+    shell: str = "cmd"  # cmd یا powershell
+    working_directory: Optional[str] = None
+    timeout: int = 30
+    
+    def get_risk_level(self) -> RiskLevel:
+        """تقییم خطر بر اساس دستور."""
+        dangerous_keywords = [
+            "rm -rf", "del /s", "format", "fdisk", "diskpart", "cipher /w",
+            "bcdedit", "wmic", "reg delete", "taskkill /f"
+        ]
+        
+        # دستورات ایمن (mkdir, echo, cd)
+        safe_keywords = ["mkdir", "md", "echo", "cd", "dir", "ls", "pwd"]
+        
+        cmd_lower = self.command.lower().strip()
+        
+        # بررسی دستورات خطرناک
+        for keyword in dangerous_keywords:
+            if keyword in cmd_lower:
+                return RiskLevel.CRITICAL
+        
+        # دستورات بسیار ایمن
+        for keyword in safe_keywords:
+            if cmd_lower.startswith(keyword):
+                return RiskLevel.LOW
+        
+        # سایر دستورات: متوسط
+        return RiskLevel.MEDIUM
+    
+    def validate(self) -> tuple[bool, str]:
+        """بررسی معتبر بودن دستور."""
+        if not self.command or not self.command.strip():
+            return False, "Command cannot be empty"
+        
+        if self.timeout < 1 or self.timeout > 300:
+            return False, "Timeout must be between 1 and 300 seconds"
+        
+        return True, "Valid"
+    
+    def describe(self) -> str:
+        """توضیح انسانی."""
+        return f"Execute command: {self.command}"
+
+
 # برای راحتی، تایپ‌های اقدامات را export می‌کنیم
 __all__ = [
     "RiskLevel",
@@ -260,4 +309,5 @@ __all__ = [
     "InstallPackageAction",
     "QueryHardwareAction",
     "TerminateProcessAction",
+    "ExecuteCommandAction",
 ]

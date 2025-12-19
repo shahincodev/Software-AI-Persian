@@ -23,6 +23,7 @@ from .system_actions import (
     RiskLevel,
     SystemAction,
     TerminateProcessAction,
+    ExecuteCommandAction,
 )
 
 logger = logging.getLogger(__name__)
@@ -140,6 +141,8 @@ class SafetyFilter:
             return self._validate_install_package(action, needs_consent)
         elif isinstance(action, TerminateProcessAction):
             return self._validate_terminate_process(action, needs_consent)
+        elif isinstance(action, ExecuteCommandAction):
+            return self._validate_execute_command(action, needs_consent)
         elif isinstance(action, QueryHardwareAction):
             # خواندن اطلاعات سخت‌افزاری همیشه ایمن است 
             return True, "Retrieving hardware information is safe", False
@@ -314,6 +317,36 @@ class UserConsentManager:
             logger.warning("User cancelled the approval request")
             self.approval_history[action.action_id] = False
             return False
+    
+    def _validate_execute_command(
+        self, action: ExecuteCommandAction, needs_consent: bool
+    ) -> tuple[bool, str, bool]:
+        """بررسی امنیت اجرای دستور."""
+        command = action.command.lower().strip()
+        
+        # دستورات ممنوع مطلق
+        forbidden_commands = [
+            "format c:", "del /s /q", "rm -rf /", "diskpart",
+            "cipher /w", "wmic logicaldisk", "reg delete hklm",
+            "bcdedit /set", "taskkill /f /im explorer"
+        ]
+        
+        for forbidden in forbidden_commands:
+            if forbidden in command:
+                logger.error("Command contains forbidden operation: %s", action.command)
+                return False, "Forbidden command - contains dangerous operations", True
+        
+        # دستورات ایمن (mkdir, echo, cd)
+        safe_prefixes = ["mkdir", "md", "echo", "cd", "dir", "type", "findstr"]
+        is_safe = any(command.startswith(prefix) for prefix in safe_prefixes)
+        
+        if is_safe:
+            logger.info("Command approved (safe): %s", action.command)
+            return True, "Safe command - approved", False
+        
+        # برای دستورات دیگر نیاز به تایید
+        logger.warning("Command requires approval: %s", action.command)
+        return True, "Command needs user approval", True
     
     def get_approval_rate(self) -> float:
         """درصد اقداماتی که تایید شده‌اند."""

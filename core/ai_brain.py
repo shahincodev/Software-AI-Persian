@@ -227,16 +227,10 @@ class AIBrain:
         try:
             model = self.get_model(purpose=mode)
             
-            # تبدیل prompt به فرمت مورد انتظار (Message object)
-            # همهٔ مسیرها به HumanMessage استاندارد می‌شوند تا خطای
-            # «Unknown message type: <class 'str'>» رفع شود.
-            from langchain_core.messages import HumanMessage
-
-            messages = [HumanMessage(content=prompt)]
-            
-            # فراخوانی مدل - سازگار با APIهای مختلف
+            # فراخوانی مدل - ارسال متن خام برای سازگاری با تمام APIها
+            # OpenAI/Groq/Google models مستقیماً متن را می‌خواهند
             if hasattr(model, 'ainvoke'):
-                response = await model.ainvoke(messages)
+                response = await model.ainvoke(prompt)
                 # Extract string content from response
                 if isinstance(response, str):
                     return response.strip()
@@ -248,7 +242,7 @@ class AIBrain:
                     logger.warning("Unexpected response type from ainvoke: %s", type(response))
                     return str(response).strip()
             elif hasattr(model, 'invoke'):
-                response = model.invoke(messages)
+                response = model.invoke(prompt)
                 # Extract string content from response
                 if isinstance(response, str):
                     return response.strip()

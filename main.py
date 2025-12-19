@@ -442,7 +442,13 @@ Examples:
     parser.add_argument(
         "--debug",
         action="store_true",
-        help="فعال‌سازی لاگ‌گیری دیباگ"
+        help="Enable debug logging (verbose output)"
+    )
+    
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Simulate actions without executing them"
     )
     
     parser.add_argument(
@@ -1200,6 +1206,7 @@ async def main() -> None:
         
         logger.info(f"Application started with mode={args.mode}, input_mode={args.input_mode}")
         logger.info(f"Debug mode: {args.debug}")
+        logger.info(f"Dry-run mode: {args.dry_run}")
         logger.info(f"Automation enabled: {args.enable_automation}")
         logger.info(f"Autonomous mode enabled: {args.enable_autonomous}")
         logger.info(
@@ -1216,7 +1223,7 @@ async def main() -> None:
         voice = VoiceManager(tts_provider=args.tts_provider)
         
         # Initialize intelligent system agent
-        system_agent = IntelligentSystemAgent(dry_run=args.debug)
+        system_agent = IntelligentSystemAgent(dry_run=args.dry_run)
         logger.info("Intelligent system agent initialized")
         
         # Initialize Copilot Mode components

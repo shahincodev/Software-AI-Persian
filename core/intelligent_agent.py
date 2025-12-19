@@ -21,6 +21,7 @@ from .system_actions import (
     LaunchAppAction,
     QueryHardwareAction,
     TerminateProcessAction,
+    ExecuteCommandAction,
 )
 from .system_capabilities import SystemCapabilityRegistry
 from .desktop_actions import (
@@ -718,6 +719,15 @@ class IntelligentSystemAgent:
                     process_name=params.get("process_name"),
                     process_id=params.get("process_id"),
                     force=params.get("force", False),
+                    dry_run=self.dry_run,
+                )
+            
+            elif action_type == "ExecuteCommand":
+                return ExecuteCommandAction(
+                    command=params.get("command", ""),
+                    shell=params.get("shell", "cmd"),
+                    working_directory=params.get("working_directory"),
+                    timeout=params.get("timeout", 30),
                     dry_run=self.dry_run,
                 )
             

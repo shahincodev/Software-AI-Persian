@@ -30,6 +30,7 @@ from .system_actions import (
     QueryHardwareAction,
     SystemAction,
     TerminateProcessAction,
+    ExecuteCommandAction,
 )
 
 logger = logging.getLogger(__name__)
@@ -410,6 +411,73 @@ class ProcessTerminator(ToolAdapter):
         return result
 
 
+class CommandExecutor:
+    """اجرای دستورات شل/CMD."""
+    
+    def __init__(self, dry_run: bool = False):
+        self.dry_run = dry_run
+    
+    def execute(self, action: ExecuteCommandAction) -> ActionResult:
+        """اجرای دستور."""
+        started_at = datetime.now()
+        result = ActionResult(
+            action_id=action.action_id,
+            status=ActionStatus.EXECUTING,
+            started_at=started_at,
+        )
+        
+        try:
+            if self.dry_run or action.dry_run:
+                result.status = ActionStatus.DRY_RUN
+                result.output = f"[DRY-RUN] Executing command: {action.command}"
+                logger.info("Dry-run: %s", result.output)
+            else:
+                # اجرای واقعی دستور
+                logger.info("Executing command: %s", action.command)
+                
+                # انتخاب shell بر اساس درخواست
+                shell = True if action.shell == "powershell" else False
+                
+                # اجرای دستور
+                proc = subprocess.Popen(
+                    action.command,
+                    shell=shell,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    cwd=action.working_directory,
+                    text=True
+                )
+                
+                try:
+                    stdout, stderr = proc.communicate(timeout=action.timeout)
+                    
+                    if proc.returncode == 0:
+                        result.status = ActionStatus.SUCCESS
+                        result.output = stdout.strip() if stdout else "Command executed successfully"
+                        result.metadata["return_code"] = 0
+                        logger.info("Command executed successfully: %s", action.command)
+                    else:
+                        result.status = ActionStatus.FAILED
+                        result.error = stderr.strip() if stderr else "Command failed"
+                        result.output = stdout.strip() if stdout else ""
+                        result.metadata["return_code"] = proc.returncode
+                        logger.error("Command failed with return code %d: %s", proc.returncode, stderr)
+                
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    result.status = ActionStatus.FAILED
+                    result.error = f"Command timed out after {action.timeout} seconds"
+                    logger.error("Command timed out: %s", action.command)
+        
+        except Exception as e:
+            result.status = ActionStatus.FAILED
+            result.error = f"Error executing command: {e}"
+            logger.exception("Error executing command: %s", action.command)
+        
+        result.completed_at = datetime.now()
+        return result
+
+
 class SystemToolAdapter:
     """رابط یکپارچه برای تمام آداپتورهای سیستمی."""
     
@@ -420,6 +488,7 @@ class SystemToolAdapter:
             InstallPackageAction: PackageInstaller(dry_run),
             QueryHardwareAction: HardwareQueryTool(dry_run),
             TerminateProcessAction: ProcessTerminator(dry_run),
+            ExecuteCommandAction: CommandExecutor(dry_run),
         }
     
     def execute(self, action: SystemAction) -> ActionResult:

@@ -254,7 +254,7 @@ class TerminateProcessAction(SystemAction):
 class ExecuteCommandAction(SystemAction):
     """اقدام برای اجرای دستورات شل/CMD مستقیماً."""
     
-    command: str
+    command: str = ""
     shell: str = "cmd"  # cmd یا powershell
     working_directory: Optional[str] = None
     timeout: int = 30

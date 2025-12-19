@@ -227,50 +227,62 @@ class AIBrain:
         try:
             model = self.get_model(purpose=mode)
             
-            # فراخوانی مدل - تلاش با string خام ابتدا، سپس HumanMessage
+            # فراخوانی مدل - چند فرمت مختلف برای سازگاری OpenAI/Groq/Google
+            def _build_human_message_list(p):
+                try:
+                    from langchain_core.messages import HumanMessage
+                    return [HumanMessage(content=p)]
+                except Exception:  # noqa: BLE001
+                    # اگر import یا سازگاری شکست خورد، به قالب دیکشنری برگردیم
+                    return [{"role": "user", "content": p}]
+
+            formats = [
+                lambda p: p,  # تلاش با string خام
+                lambda p: [{"role": "user", "content": p}],  # قالب استاندارد OpenAI
+                lambda p: [{"role": "user", "content": [{"type": "text", "text": p}]}],  # قالب پیام ساختاریافته
+                lambda p: _build_human_message_list(p),  # HumanMessage برای گوگل
+            ]
+
+            async def _ainvoke_with_formats():
+                last_err = None
+                for build in formats:
+                    try:
+                        payload = build(prompt)
+                        return await model.ainvoke(payload)
+                    except Exception as exc:  # noqa: BLE001
+                        last_err = exc
+                        continue
+                if last_err:
+                    raise last_err
+
+            def _invoke_with_formats():
+                last_err = None
+                for build in formats:
+                    try:
+                        payload = build(prompt)
+                        return model.invoke(payload)
+                    except Exception as exc:  # noqa: BLE001
+                        last_err = exc
+                        continue
+                if last_err:
+                    raise last_err
+
             if hasattr(model, 'ainvoke'):
-                try:
-                    # OpenAI/Groq models نیاز به string خام دارند
-                    response = await model.ainvoke(prompt)
-                except (ValueError, TypeError, AttributeError):
-                    # Google models نیاز به HumanMessage دارند
-                    from langchain_core.messages import HumanMessage
-                    messages = [HumanMessage(content=prompt)]
-                    response = await model.ainvoke(messages)
-                
-                # Extract string content from response
-                if isinstance(response, str):
-                    return response.strip()
-                elif hasattr(response, 'content'):
-                    return str(response.content).strip()
-                elif hasattr(response, 'completion'):
-                    return str(response.completion).strip()
-                else:
-                    logger.warning("Unexpected response type from ainvoke: %s", type(response))
-                    return str(response).strip()
+                response = await _ainvoke_with_formats()
             elif hasattr(model, 'invoke'):
-                try:
-                    # OpenAI/Groq models نیاز به string خام دارند
-                    response = model.invoke(prompt)
-                except (ValueError, TypeError, AttributeError):
-                    # Google models نیاز به HumanMessage دارند
-                    from langchain_core.messages import HumanMessage
-                    messages = [HumanMessage(content=prompt)]
-                    response = model.invoke(messages)
-                
-                # Extract string content from response
-                if isinstance(response, str):
-                    return response.strip()
-                elif hasattr(response, 'content'):
-                    return str(response.content).strip()
-                elif hasattr(response, 'completion'):
-                    return str(response.completion).strip()
-                else:
-                    logger.warning("Unexpected response type from invoke: %s", type(response))
-                    return str(response).strip()
+                response = _invoke_with_formats()
             else:
-                logger.error("Model does not support invoke/ainvoke")
-                return ""
+                raise ValueError("Model does not support invoke or ainvoke")
+
+            # Extract string content from response
+            if isinstance(response, str):
+                return response.strip()
+            if hasattr(response, 'content'):
+                return str(response.content).strip()
+            if hasattr(response, 'completion'):
+                return str(response.completion).strip()
+            logger.warning("Unexpected response type from invoke/ainvoke: %s", type(response))
+            return str(response).strip()
         
         except Exception as e:
             logger.exception("AI ask failed: %s", e)

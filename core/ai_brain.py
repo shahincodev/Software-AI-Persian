@@ -6,6 +6,8 @@
 
 اینجا از lazy-loading استفاده می‌کنیم تا بارگذاری ماژول‌های سنگین تنها هنگام نیاز انجام شود.
 همچنین امکان پیکربندی از طریق متغیرهای محیطی فراهم است.
+
+دارای پشتیبانی برای هزاران مدل مختلف با fallback خودکار - مانند Microsoft Copilot و GitHub Copilot
 """
 
 from __future__ import annotations
@@ -15,6 +17,8 @@ import logging
 import json
 import re
 from typing import Any
+
+from core.model_config import get_model_registry, ModelConfig
 
 logger = logging.getLogger(__name__)
 
@@ -88,45 +92,172 @@ class AIBrain:
             return "normal"
 
     def _load_model(self, name: str) -> Any:
-        """بارگذاری مدل با نام منطقی. این توابع importهای سنگین را محصور می‌کند."""
+        """بارگذاری مدل با نام منطقی. این توابع importهای سنگین را محصور می‌کند.
+        
+        پشتیبانی برای OpenRouter (OpenAI)، Google AI Studio، Groq و سایرین.
+        """
         try:
-            if name == "reasoning":
-                from browser_use.llm.google.chat import ChatGoogle
-
-                model = ChatGoogle(model=os.getenv("GOOGLE_REASONING_MODEL", "gemini-2.5-flash"),
-                                   temperature=float(os.getenv("MODEL_TEMPERATURE", "0.5")))
-            elif name == "system":
-                # برای عملیات سیستمی از مدل با دقت بالاتر استفاده کن
-                from browser_use.llm.google.chat import ChatGoogle
-
-                model = ChatGoogle(model=os.getenv("GOOGLE_SYSTEM_MODEL", "gemini-2.5-flash"),
-                                   temperature=float(os.getenv("SYSTEM_MODEL_TEMPERATURE", "0.3")))
-            elif name == "browser_use":
-                from browser_use.llm.browser_use.chat import ChatBrowserUse
-
-                model = ChatBrowserUse()
-            elif name == "fast":
-                from browser_use.llm.groq.chat import ChatGroq
-
-                model = ChatGroq(model=os.getenv("GROQ_MODEL", "groq-1"),
-                                  temperature=float(os.getenv("MODEL_TEMPERATURE", "0.7")))
-            elif name == "normal":
-                from browser_use.llm.openai.chat import ChatOpenAI
-
-                model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "openai/gpt-4o-mini"),
-                                    temperature=float(os.getenv("MODEL_TEMPERATURE", "0")))
+            # دریافت پیکربندی مدل
+            registry = get_model_registry()
+            model_config = registry.get_model(name)
+            
+            if not model_config:
+                logger.warning(f"Model config not found for {name}, using legacy mode")
+                # Fallback به سیستم قدیمی
+                return self._load_model_legacy(name)
+            
+            # بررسی کلید API
+            if model_config.api_key_env:
+                api_key = os.getenv(model_config.api_key_env)
+                if not api_key:
+                    raise ValueError(f"Missing API key: {model_config.api_key_env}")
+            
+            # بارگذاری بر اساس ارائه‌دهنده
+            if model_config.provider == "openrouter":
+                return self._load_openrouter_model(model_config)
+            elif model_config.provider == "google":
+                return self._load_google_model(model_config)
+            elif model_config.provider == "groq":
+                return self._load_groq_model(model_config)
+            elif model_config.provider == "ollama":
+                return self._load_ollama_model(model_config)
+            elif model_config.provider == "huggingface":
+                return self._load_huggingface_model(model_config)
             else:
-                # fallback برای مقادیر نامعتبر
-                logger.warning("Invalid model name: %s - use default model", name)
-                from browser_use.llm.openai.chat import ChatOpenAI
-
-                model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "openai/gpt-4o-mini"),
-                                    temperature=float(os.getenv("MODEL_TEMPERATURE", "0")))
-            logger.info("Artificial intelligence model opened: %s", name)
-            return model
+                logger.warning(f"Unknown provider: {model_config.provider}, using legacy mode")
+                return self._load_model_legacy(name)
+            
         except Exception as exc:
-            logger.exception("Error loading model. %s: %s", name, exc)
+            logger.exception("Error loading model %s: %s", name, exc)
             raise
+    
+    def _load_openrouter_model(self, config: ModelConfig) -> Any:
+        """بارگذاری مدل از طریق OpenRouter"""
+        try:
+            from browser_use.llm.openai.chat import ChatOpenAI
+            
+            api_key = os.getenv(config.api_key_env)
+            
+            # OpenRouter به عنوان OpenAI compatible endpoint
+            model = ChatOpenAI(
+                model=config.name,
+                temperature=config.temperature,
+                api_key=api_key,
+                base_url="https://openrouter.ai/api/v1"
+            )
+            logger.info(f"✅ Loaded OpenRouter model: {config.name}")
+            return model
+        except Exception as e:
+            logger.exception(f"Failed to load OpenRouter model {config.name}: {e}")
+            raise
+    
+    def _load_google_model(self, config: ModelConfig) -> Any:
+        """بارگذاری مدل از طریق Google AI Studio"""
+        try:
+            from browser_use.llm.google.chat import ChatGoogle
+            
+            # نام مدل برای Google (مثلاً: gemini-3-pro-preview)
+            model_name = config.name.replace("google-", "")
+            
+            model = ChatGoogle(
+                model=model_name,
+                temperature=config.temperature
+            )
+            logger.info(f"✅ Loaded Google model: {model_name}")
+            return model
+        except Exception as e:
+            logger.exception(f"Failed to load Google model {config.name}: {e}")
+            raise
+    
+    def _load_groq_model(self, config: ModelConfig) -> Any:
+        """بارگذاری مدل از طریق Groq"""
+        try:
+            from browser_use.llm.groq.chat import ChatGroq
+            
+            model_name = config.name.replace("groq-", "")
+            
+            model = ChatGroq(
+                model=model_name,
+                temperature=config.temperature
+            )
+            logger.info(f"✅ Loaded Groq model: {model_name}")
+            return model
+        except Exception as e:
+            logger.exception(f"Failed to load Groq model {config.name}: {e}")
+            raise
+    
+    def _load_ollama_model(self, config: ModelConfig) -> Any:
+        """بارگذاری مدل محلی Ollama"""
+        try:
+            from langchain_community.llms import Ollama
+            
+            model_name = config.name.replace("ollama-", "")
+            
+            model = Ollama(
+                model=model_name,
+                base_url=config.base_url or "http://localhost:11434",
+                temperature=config.temperature
+            )
+            logger.info(f"✅ Loaded Ollama model: {model_name}")
+            return model
+        except Exception as e:
+            logger.exception(f"Failed to load Ollama model {config.name}: {e}")
+            raise
+    
+    def _load_huggingface_model(self, config: ModelConfig) -> Any:
+        """بارگذاری مدل از طریق HuggingFace Inference"""
+        try:
+            from langchain_huggingface import HuggingFaceEndpoint
+            
+            api_key = os.getenv(config.api_key_env)
+            repo_id = config.name.replace("huggingface-", "")
+            
+            model = HuggingFaceEndpoint(
+                repo_id=repo_id,
+                huggingfacehub_api_token=api_key,
+                temperature=config.temperature,
+                model_kwargs={"max_length": config.max_tokens}
+            )
+            logger.info(f"✅ Loaded HuggingFace model: {repo_id}")
+            return model
+        except Exception as e:
+            logger.exception(f"Failed to load HuggingFace model {config.name}: {e}")
+            raise
+    
+    def _load_model_legacy(self, name: str) -> Any:
+        """سیستم قدیمی برای compatibility"""
+        if name == "reasoning":
+            from browser_use.llm.google.chat import ChatGoogle
+
+            model = ChatGoogle(model=os.getenv("GOOGLE_REASONING_MODEL", "gemini-2.5-flash"),
+                               temperature=float(os.getenv("MODEL_TEMPERATURE", "0.5")))
+        elif name == "system":
+            from browser_use.llm.google.chat import ChatGoogle
+
+            model = ChatGoogle(model=os.getenv("GOOGLE_SYSTEM_MODEL", "gemini-2.5-flash"),
+                               temperature=float(os.getenv("SYSTEM_MODEL_TEMPERATURE", "0.3")))
+        elif name == "browser_use":
+            from browser_use.llm.browser_use.chat import ChatBrowserUse
+
+            model = ChatBrowserUse()
+        elif name == "fast":
+            from browser_use.llm.groq.chat import ChatGroq
+
+            model = ChatGroq(model=os.getenv("GROQ_MODEL", "groq-1"),
+                              temperature=float(os.getenv("MODEL_TEMPERATURE", "0.7")))
+        elif name == "normal":
+            from browser_use.llm.openai.chat import ChatOpenAI
+
+            model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "openai/gpt-4o-mini"),
+                                temperature=float(os.getenv("MODEL_TEMPERATURE", "0")))
+        else:
+            logger.warning("Invalid model name: %s - use default model", name)
+            from browser_use.llm.openai.chat import ChatOpenAI
+
+            model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "openai/gpt-4o-mini"),
+                                temperature=float(os.getenv("MODEL_TEMPERATURE", "0")))
+        logger.info("Artificial intelligence model opened (legacy): %s", name)
+        return model
 
     def get_model(self, purpose: str | None = None, task: str | None = None) -> Any:
         """انتخاب خودکار مدل بر اساس تسک یا منظور.
@@ -169,7 +300,8 @@ class AIBrain:
     async def ask_with_fallback(self, prompt: str, mode: str = "normal", max_tokens: int = 500) -> str:
         """پرسش هوشمند با fallback خودکار به مدل‌های دیگر.
         
-        اگر یک مدل فیل شد، خودکار مدل بعدی را امتحان می‌کند.
+        اگر یک مدل فیل شد، خودکار مدل‌های بعدی را امتحان می‌کند - مانند GitHub Copilot.
+        از registry استفاده می‌کند تا دسترسی به هزاران مدل داشته باشیم.
         
         Args:
             prompt: سوال یا دستور
@@ -179,53 +311,85 @@ class AIBrain:
         Returns:
             پاسخ متنی AI (از اولین مدل موفق)
         """
-        # لیست اولویت مدل‌ها برای fallback
-        fallback_order = {
-            "system": ["system", "normal", "fast", "reasoning"],  # Gemini → OpenAI → Groq → Gemini Reasoning
-            "normal": ["normal", "fast", "system", "reasoning"],  # OpenAI → Groq → Gemini → Reasoning
-            "fast": ["fast", "normal", "system", "reasoning"],    # Groq → OpenAI → Gemini → Reasoning
-            "reasoning": ["reasoning", "system", "normal", "fast"] # Reasoning → Gemini → OpenAI → Groq
+        registry = get_model_registry()
+        available_models = registry.get_available_models()
+        
+        if not available_models:
+            logger.error("❌ No available models found! Check your API keys.")
+            logger.info("📋 Available models: %s", json.dumps(registry.export_config(), indent=2))
+            return ""
+        
+        # لاگ مدل‌های دردسترس
+        logger.info(f"🤖 Available models ({len(available_models)}):")
+        for m in available_models[:5]:  # فقط 5 تای اول
+            logger.info(f"   - {m.name} (priority: {m.priority})")
+        if len(available_models) > 5:
+            logger.info(f"   ... and {len(available_models) - 5} more")
+        
+        # لیست مدل‌های قدیمی برای compatibility
+        legacy_fallback_order = {
+            "system": ["system", "normal", "fast", "reasoning"],
+            "normal": ["normal", "fast", "system", "reasoning"],
+            "fast": ["fast", "normal", "system", "reasoning"],
+            "reasoning": ["reasoning", "system", "normal", "fast"]
         }
         
-        models_to_try = fallback_order.get(mode, ["normal", "fast", "system"])
-        
-        for i, model_mode in enumerate(models_to_try):
+        # سعی اول: از registry استفاده کن
+        for i, model_config in enumerate(available_models):
             try:
-                logger.info(f"🤖 Trying model {i+1}/{len(models_to_try)}: {model_mode}")
+                logger.info(f"🤖 Trying model {i+1}/{len(available_models)}: {model_config.name}")
                 
-                result = await self.ask(prompt, mode=model_mode, max_tokens=max_tokens)
+                # بارگذاری مدل
+                if model_config.name not in self._models:
+                    self._models[model_config.name] = self._load_model(model_config.name)
+                
+                model = self._models[model_config.name]
+                result = await self.ask(prompt, mode=model_config.name, max_tokens=max_tokens)
                 
                 if result and result.strip():
                     if i > 0:
-                        logger.info(f"✅ Success with fallback model: {model_mode}")
+                        logger.info(f"✅ Success with fallback model: {model_config.name}")
                     return result
                 else:
-                    logger.warning(f"⚠️ Model {model_mode} returned empty response")
+                    logger.warning(f"⚠️ Model {model_config.name} returned empty response")
                     
             except Exception as e:
-                logger.warning(f"❌ Model {model_mode} failed: {e}")
-                if i == len(models_to_try) - 1:
-                    # آخرین مدل هم فیل شد
-                    logger.error("💥 All models failed!")
-                    return ""
-                # ادامه به مدل بعدی
+                logger.warning(f"❌ Model {model_config.name} failed: {e}")
+                if i == len(available_models) - 1:
+                    logger.error("💥 All available models failed!")
                 continue
         
         return ""
+    
     
     async def ask(self, prompt: str, mode: str = "normal", max_tokens: int = 500) -> str:
         """پرسش ساده از AI و دریافت پاسخ متنی.
         
         Args:
             prompt: سوال یا دستور
-            mode: نوع مدل ('system', 'normal', 'reasoning', 'fast')
+            mode: نام مدل (می‌تواند نام registry یا نام قدیمی باشد)
             max_tokens: حداکثر طول پاسخ
         
         Returns:
             پاسخ متنی AI
         """
         try:
-            model = self.get_model(purpose=mode)
+            # اگر mode یک نام registry است، به‌طور مستقیم لاد کن
+            registry = get_model_registry()
+            model_config = registry.get_model(mode)
+            
+            if model_config:
+                # نام مدل registry
+                if mode not in self._models:
+                    self._models[mode] = self._load_model(mode)
+                model = self._models[mode]
+                logger.debug(f"Using registry model: {mode} ({model_config.provider})")
+            else:
+                # فرض کن که mode یک نام قدیمی است
+                if mode not in self._models:
+                    self._models[mode] = self._load_model(mode)
+                model = self._models[mode]
+                logger.debug(f"Using legacy model: {mode}")
             
             # فراخوانی مدل - ساخت پیام بر اساس provider (OpenAI/Groq/Google)
             module_name = getattr(model, "__module__", "").lower()

@@ -1,5 +1,5 @@
 # Core runtime
-browser-use>=0.9.1
+browser-use>=0.11.0
 python-dotenv>=1.0.0
 playwright>=1.36.0
 pyfiglet>=1.0.4
@@ -32,11 +32,34 @@ soundfile>=0.12.1
 pyaudio>=0.2.13; platform_system == "Windows"  # for Windows
 # For non-Windows systems, install pyaudio using system package manager
 
-# AI/LLM Support
-google-generativeai>=0.3.0  # Google Gemini API
-openai>=1.0.0  # OpenAI API (optional)
-langchain>=0.1.0  # LangChain framework (optional)
-groq>=0.4.0  # Groq API (optional)
+# AI/LLM Support - Multiple Providers
+# ================================================================================
+# OpenRouter (100+ مدل: OpenAI, Claude, Mistral, Llama, ...)
+# Google Gemini (رایگان)
+# Groq (رایگان و سریع)
+# Ollama (محلی)
+# HuggingFace (متنوع)
+# ================================================================================
+
+# OpenRouter - OpenAI compatible endpoint
+openai>=1.3.0  # برای OpenRouter (OpenAI compatible)
+
+# Google Gemini API
+google-generativeai>=0.3.0
+
+# Groq API
+groq>=0.4.0
+
+# LangChain - برای پشتیبانی از مدل‌های متعدد
+langchain>=0.1.0
+langchain-community>=0.1.0
+langchain-huggingface>=0.0.1
+
+# Ollama support (optional محلی)
+langchain-community>=0.1.0  # شامل Ollama
+
+# HuggingFace Inference
+huggingface-hub>=0.17.0
 
 # Optional (platform helpers)
 pywin32>=305; platform_system == "Windows"

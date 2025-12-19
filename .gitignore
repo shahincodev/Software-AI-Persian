@@ -90,6 +90,19 @@ tmp/
 temp/
 __pycache__/
 
+# Lock files
+*.lock
+*-lock.json
+package-lock.json
+yarn.lock
+poetry.lock
+Pipfile.lock
+requirements.lock
+composer.lock
+Gemfile.lock
+pnpm-lock.yaml
+bun.lockb
+
 # Test artifacts
 test_screenshot.png
 *.png

@@ -227,10 +227,13 @@ class AIBrain:
         try:
             model = self.get_model(purpose=mode)
             
-            # فراخوانی مدل - ارسال متن خام برای سازگاری با تمام APIها
-            # OpenAI/Groq/Google models مستقیماً متن را می‌خواهند
+            # تبدیل prompt به HumanMessage برای سازگاری با browser-use models
+            from langchain_core.messages import HumanMessage
+            messages = [HumanMessage(content=prompt)]
+            
+            # فراخوانی مدل
             if hasattr(model, 'ainvoke'):
-                response = await model.ainvoke(prompt)
+                response = await model.ainvoke(messages)
                 # Extract string content from response
                 if isinstance(response, str):
                     return response.strip()
@@ -242,7 +245,7 @@ class AIBrain:
                     logger.warning("Unexpected response type from ainvoke: %s", type(response))
                     return str(response).strip()
             elif hasattr(model, 'invoke'):
-                response = model.invoke(prompt)
+                response = model.invoke(messages)
                 # Extract string content from response
                 if isinstance(response, str):
                     return response.strip()

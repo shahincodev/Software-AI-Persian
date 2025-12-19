@@ -442,13 +442,13 @@ Examples:
     parser.add_argument(
         "--debug",
         action="store_true",
-        help="Enable debug logging (verbose output)"
+        help="فعال کردن ثبت گزارش اشکال‌زدایی (خروجی طولانی)"
     )
     
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Simulate actions without executing them"
+        help="شبیه‌سازی اقدامات بدون اجرای واقعی آنها"
     )
     
     parser.add_argument(

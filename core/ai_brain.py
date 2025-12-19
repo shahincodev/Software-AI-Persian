@@ -227,65 +227,30 @@ class AIBrain:
         try:
             model = self.get_model(purpose=mode)
             
-            # فراخوانی مدل - انتخاب فرمت بر اساس نوع LLM
-            def _build_human_message_list(p):
-                try:
-                    from langchain_core.messages import HumanMessage
-                    return [HumanMessage(content=p)]
-                except Exception:  # noqa: BLE001
-                    return [{"role": "user", "content": p}]
-
+            # فراخوانی مدل - ساخت پیام بر اساس provider (OpenAI/Groq/Google)
             module_name = getattr(model, "__module__", "").lower()
-            is_openai = "openai" in module_name
-            is_groq = "groq" in module_name
-            is_google = "google" in module_name
 
-            if is_openai or is_groq:
-                formats = [
-                    lambda p: [{"role": "user", "content": p}],
-                    lambda p: [{"role": "user", "content": [{"type": "text", "text": p}]}],
-                ]
-            elif is_google:
-                formats = [
-                    lambda p: _build_human_message_list(p),
-                    lambda p: [{"role": "user", "content": p}],
-                ]
-            else:
-                formats = [
-                    lambda p: p,
-                    lambda p: [{"role": "user", "content": p}],
-                    lambda p: [{"role": "user", "content": [{"type": "text", "text": p}]}],
-                    lambda p: _build_human_message_list(p),
-                ]
+            def _build_provider_message(p):
+                try:
+                    if "openai" in module_name:
+                        from browser_use.llm.openai.serializer import UserMessage  # type: ignore
+                        return [UserMessage(content=p)]
+                    if "groq" in module_name:
+                        from browser_use.llm.groq.serializer import UserMessage  # type: ignore
+                        return [UserMessage(content=p)]
+                    if "google" in module_name:
+                        from browser_use.llm.google.serializer import UserMessage  # type: ignore
+                        return [UserMessage(content=p)]
+                except Exception:
+                    logger.exception("Failed to build provider-specific message; falling back to raw prompt")
+                return p  # fallback: raw string
 
-            async def _ainvoke_with_formats():
-                last_err = None
-                for build in formats:
-                    try:
-                        payload = build(prompt)
-                        return await model.ainvoke(payload)
-                    except Exception as exc:  # noqa: BLE001
-                        last_err = exc
-                        continue
-                if last_err:
-                    raise last_err
-
-            def _invoke_with_formats():
-                last_err = None
-                for build in formats:
-                    try:
-                        payload = build(prompt)
-                        return model.invoke(payload)
-                    except Exception as exc:  # noqa: BLE001
-                        last_err = exc
-                        continue
-                if last_err:
-                    raise last_err
+            payload = _build_provider_message(prompt)
 
             if hasattr(model, 'ainvoke'):
-                response = await _ainvoke_with_formats()
+                response = await model.ainvoke(payload)
             elif hasattr(model, 'invoke'):
-                response = _invoke_with_formats()
+                response = model.invoke(payload)
             else:
                 raise ValueError("Model does not support invoke or ainvoke")
 

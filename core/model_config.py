@@ -52,58 +52,58 @@ class ModelRegistry:
         # OpenRouter درگذر برای OpenAI - مدل‌های بسیاری در دسترس
         
         self.register_model(ModelConfig(
-            name="openrouter-gpt-4o",
+            name="openai/gpt-oss-120b",
             provider="openrouter",
             api_key_env="OPENROUTER_API_KEY",
             base_url="https://openrouter.ai/api/v1",
             temperature=0.5,
             max_tokens=4000,
             priority=100,
-            description="OpenAI GPT-4o via OpenRouter"
+            description="OpenAI gpt-oss-120b OpenRouter"
         ))
         
         self.register_model(ModelConfig(
-            name="openrouter-gpt-4-turbo",
+            name="openai/gpt-5.2",
             provider="openrouter",
             api_key_env="OPENROUTER_API_KEY",
             base_url="https://openrouter.ai/api/v1",
             temperature=0.5,
             max_tokens=4000,
             priority=99,
-            description="OpenAI GPT-4 Turbo via OpenRouter"
+            description="OpenAI GPT-5.2 via OpenRouter"
         ))
         
         self.register_model(ModelConfig(
-            name="openrouter-gpt-3.5-turbo",
+            name="openai/gpt-5-mini",
             provider="openrouter",
             api_key_env="OPENROUTER_API_KEY",
             base_url="https://openrouter.ai/api/v1",
             temperature=0.7,
             max_tokens=4000,
             priority=90,
-            description="OpenAI GPT-3.5 Turbo via OpenRouter"
+            description="OpenAI GPT-5-mini Turbo via OpenRouter"
         ))
         
         self.register_model(ModelConfig(
-            name="openrouter-claude-3-opus",
+            name="anthropic/claude-sonnet-4.5",
             provider="openrouter",
             api_key_env="OPENROUTER_API_KEY",
             base_url="https://openrouter.ai/api/v1",
             temperature=0.5,
             max_tokens=4000,
             priority=98,
-            description="Anthropic Claude 3 Opus via OpenRouter"
+            description="Anthropic Claude Sonnet 4.5 Opus via OpenRouter"
         ))
         
         self.register_model(ModelConfig(
-            name="openrouter-mistral-large",
+            name="mistralai/ministral-14b-2512",
             provider="openrouter",
             api_key_env="OPENROUTER_API_KEY",
             base_url="https://openrouter.ai/api/v1",
             temperature=0.5,
             max_tokens=4000,
             priority=85,
-            description="Mistral Large via OpenRouter"
+            description="Ministral 3 14B 2512via OpenRouter"
         ))
         
         # ================== Google AI Studio (رایگان) ==================
@@ -120,45 +120,45 @@ class ModelRegistry:
         ))
         
         self.register_model(ModelConfig(
-            name="google-gemini-2-flash",
+            name="gemini-3-flash-preview",
             provider="google",
             api_key_env="GOOGLE_API_KEY",
             temperature=0.5,
             max_tokens=4000,
             priority=80,
-            description="Google Gemini 2.5 Flash (fast)"
+            description="Google Gemini 3 Flash (fast)"
         ))
         
         self.register_model(ModelConfig(
-            name="google-gemini-2-pro",
+            name="gemini-2.5-flash",
             provider="google",
             api_key_env="GOOGLE_API_KEY",
             temperature=0.5,
             max_tokens=4000,
             priority=88,
-            description="Google Gemini 2.5 Pro"
+            description="Google Gemini 2.5 Flash"
         ))
         
         # ================== Groq (سریع و رایگان) ==================
         
         self.register_model(ModelConfig(
-            name="groq-mixtral-8x7b",
+            name="llama-3.1-8b-instant",
             provider="groq",
             api_key_env="GROQ_API_KEY",
             temperature=0.5,
             max_tokens=4000,
             priority=75,
-            description="Groq Mixtral 8x7B (very fast)"
+            description="Groq Llama 3.1 8B (very fast)"
         ))
         
         self.register_model(ModelConfig(
-            name="groq-llama-3.1-70b",
+            name="llama-3.3-70b-versatile",
             provider="groq",
             api_key_env="GROQ_API_KEY",
             temperature=0.5,
             max_tokens=4000,
             priority=78,
-            description="Groq Llama 3.1 70B"
+            description="Groq Llama 3.3 70B"
         ))
         
         # ================== Ollama (محلی) ==================
@@ -178,13 +178,13 @@ class ModelRegistry:
         # ================== HuggingFace Inference ==================
         
         self.register_model(ModelConfig(
-            name="huggingface-mistral-7b",
+            name="deepseek-ai/DeepSeek-V3.2",
             provider="huggingface",
             api_key_env="HUGGINGFACE_API_KEY",
             temperature=0.5,
             max_tokens=2000,
             priority=60,
-            description="HuggingFace Mistral 7B"
+            description="HuggingFace DeepSeek-V3.2"
         ))
         
         logger.info("✅ Loaded %d models from default registry", len(self.models))

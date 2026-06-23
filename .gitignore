@@ -107,3 +107,8 @@ bun.lockb
 test_screenshot.png
 *.png
 !docs/**/*.png
+
+# Agent/Config files
+AGENTS.md
+CONVENTIONS.md
+skills/

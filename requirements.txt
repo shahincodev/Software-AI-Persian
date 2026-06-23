@@ -29,8 +29,7 @@ gTTS>=2.3.0
 pydub>=0.25.1
 sounddevice>=0.4.6
 soundfile>=0.12.1
-pyaudio>=0.2.13; platform_system == "Windows"  # for Windows
-# For non-Windows systems, install pyaudio using system package manager
+# pyaudio removed: not used in codebase, requires portaudio.h build dependency
 
 # AI/LLM Support - Multiple Providers
 # ================================================================================

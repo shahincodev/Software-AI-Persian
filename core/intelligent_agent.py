@@ -63,6 +63,9 @@ class SystemActionParser:
             r'write\s+["\']([^"\']+)["\']',
             r'بنویس\s+["\']([^"\']+)["\']',
             r'enter\s+["\']([^"\']+)["\']',
+            r'type\s+(\S.+?)(?:\.|,| and | then |$)',
+            r'write\s+(\S.+?)(?:\.|,| and | then |$)',
+            r'enter\s+(\S.+?)(?:\.|,| and | then |$)',
         ]
         
         self.drag_patterns = [
@@ -104,43 +107,18 @@ class SystemActionParser:
         user_lower = user_request.lower()
         actions = []
         
-        # Desktop Actions با Regex
-        click_action = self._parse_click_action(user_request)
-        if click_action:
-            return [click_action]
-        
-        type_action = self._parse_type_action(user_request)
-        if type_action:
-            return [type_action]
-        
-        drag_action = self._parse_drag_action(user_request)
-        if drag_action:
-            return [drag_action]
-        
-        wait_action = self._parse_wait_action(user_request)
-        if wait_action:
-            return [wait_action]
-        
-        hotkey_action = self._parse_hotkey_action(user_request)
-        if hotkey_action:
-            return [hotkey_action]
-        
-        scroll_action = self._parse_scroll_action(user_request)
-        if scroll_action:
-            return [scroll_action]
-        
-        # System Actions - استفاده از AI برای استخراج نام
+        # Phase 1 — System actions FIRST (open app before interacting)
         if any(kw in user_lower for kw in ['open', 'launch', 'start', 'run', 'باز', 'اجرا', 'شروع']):
             app_name = await self._ai_extract_app_name(user_request)
             if app_name:
                 actions.append({
                     "type": "LaunchApp",
-                    "params": {"app_name": app_name, "arguments": []},
+                    "params": {"app_name": app_name, "arguments": [], "require_consent": False},
                     "priority": "normal",
                     "description": f"Open {app_name}"
                 })
         
-        elif any(kw in user_lower for kw in ['install', 'setup', 'نصب']):
+        if any(kw in user_lower for kw in ['install', 'setup', 'نصب']):
             package = await self._ai_extract_package_name(user_request)
             if package:
                 actions.append({
@@ -150,7 +128,7 @@ class SystemActionParser:
                     "description": f"Install {package}"
                 })
         
-        elif any(kw in user_lower for kw in ['close', 'kill', 'terminate', 'stop', 'بستن', 'توقف']):
+        if any(kw in user_lower for kw in ['close', 'kill', 'terminate', 'stop', 'بستن', 'توقف']):
             process = await self._ai_extract_app_name(user_request)
             if process:
                 actions.append({
@@ -160,19 +138,15 @@ class SystemActionParser:
                     "description": f"Close {process}"
                 })
         
-        elif any(kw in user_lower for kw in ['create', 'make', 'new', 'build', 'ایجاد', 'ساخت', 'جدید']):
+        if any(kw in user_lower for kw in ['create', 'make', 'new', 'build', 'ایجاد', 'ساخت', 'جدید']):
             folder_keywords = ['folder', 'directory', 'پوشه', 'دایرکتوری']
             file_keywords = ['file', 'document', 'text', 'فایل', 'متن']
-            is_folder = any(kw in user_lower for kw in folder_keywords)
-            is_file = any(kw in user_lower for kw in file_keywords)
             
-            if is_folder:
-                # Extract folder name or generate a default one
+            if any(kw in user_lower for kw in folder_keywords):
                 folder_name = self._extract_name_after_keyword(user_request, ['folder', 'directory', 'پوشه', 'دایرکتوری called', 'named', 'نام'])
                 if not folder_name:
                     folder_name = "New Folder"
                 
-                # Determine location
                 location = "desktop"
                 if 'desktop' in user_lower or 'میز' in user_lower or 'دسکتاپ' in user_lower:
                     desktop = str(Path.home() / "Desktop")
@@ -194,7 +168,8 @@ class SystemActionParser:
                     "priority": "normal",
                     "description": f"Create folder '{folder_name}' on {location}"
                 })
-            elif is_file:
+            
+            if any(kw in user_lower for kw in file_keywords):
                 file_name = self._extract_name_after_keyword(user_request, ['file', 'document', 'فایل', 'document called', 'named', 'نام'])
                 if not file_name:
                     file_name = "new_file.txt"
@@ -219,13 +194,38 @@ class SystemActionParser:
                     "description": f"Create file '{file_name}' on desktop"
                 })
         
-        elif any(kw in user_lower for kw in ['hardware', 'سخت‌افزار', 'cpu', 'ram', 'memory', 'info']):
+        if any(kw in user_lower for kw in ['hardware', 'سخت‌افزار', 'cpu', 'ram', 'memory', 'info']):
             actions.append({
                 "type": "QueryHardware",
                 "params": {"query_type": "all"},
                 "priority": "normal",
                 "description": "Get hardware information"
             })
+        
+        # Phase 2 — Desktop actions SECOND (after system setup)
+        click_action = self._parse_click_action(user_request)
+        if click_action:
+            actions.append(click_action)
+        
+        type_action = self._parse_type_action(user_request)
+        if type_action:
+            actions.append(type_action)
+        
+        drag_action = self._parse_drag_action(user_request)
+        if drag_action:
+            actions.append(drag_action)
+        
+        wait_action = self._parse_wait_action(user_request)
+        if wait_action:
+            actions.append(wait_action)
+        
+        hotkey_action = self._parse_hotkey_action(user_request)
+        if hotkey_action:
+            actions.append(hotkey_action)
+        
+        scroll_action = self._parse_scroll_action(user_request)
+        if scroll_action:
+            actions.append(scroll_action)
         
         return actions
     
@@ -452,7 +452,7 @@ class SystemActionParser:
     
     
     async def _ai_extract_app_name(self, request: str) -> Optional[str]:
-        """استخراج نام برنامه با AI."""
+        """استخراج نام برنامه با AI یا fallback رجکس."""
         try:
             prompt = f"""Extract the application name from this request and return ONLY the executable name with .exe extension.
 If the app is common, use standard Windows executable names.
@@ -471,9 +471,6 @@ Return ONLY the .exe filename, nothing else:"""
             response = await self.ai_brain.ask(prompt, mode="system", max_tokens=50)
             
             if response:
-                # پاکسازی و استخراج نام exe
-                # Response should be a string from ai_brain.ask()
-                # If it's not a string, try to extract the content
                 if isinstance(response, str):
                     exe_name = response.strip().lower()
                 elif hasattr(response, 'content'):
@@ -484,7 +481,6 @@ Return ONLY the .exe filename, nothing else:"""
                     logger.error("Unexpected response type: %s", type(response))
                     exe_name = str(response).strip().lower()
                 
-                # Clean up any quotation marks or extra whitespace
                 exe_name = exe_name.strip("\"'` \n\t")
                 
                 if not exe_name.endswith('.exe'):
@@ -494,6 +490,15 @@ Return ONLY the .exe filename, nothing else:"""
         
         except Exception as e:
             logger.error("AI app extraction failed: %s", e)
+        
+        # Fallback: regex when AI is unavailable
+        match = re.search(r'(?:open|launch|start|run|باز|اجرا|شروع)\s+(\w+)', request, re.IGNORECASE)
+        if match:
+            app_name = match.group(1).lower()
+            if not app_name.endswith('.exe'):
+                app_name += '.exe'
+            logger.info("Regex fallback extracted app name: %s", app_name)
+            return app_name
         
         return None
     
@@ -550,22 +555,22 @@ Return ONLY the package name:"""
         location_words = ['on', 'in', 'at', 'to', 'into', 'onto', 'under', 'روی', 'در', 'به', 'توی']
         for kw in keywords:
             # Try single or double quoted name: folder "My Folder" or folder 'My Folder'
-            quoted = re.search(rf"""{re.escape(kw)}\s+["'""]([^"'""]+)["'""]""", request, re.IGNORECASE)
+            quoted = re.search(rf"""\b{re.escape(kw)}\s+["'""]([^"'""]+)["'""]""", request, re.IGNORECASE)
             if quoted:
                 return quoted.group(1).strip()
             # Try "called/named X" pattern
-            called = re.search(rf'{re.escape(kw)}\s+(?:called|named|به\s+نام)\s+["\']?([^"\']+?)["\']?(?:\s+|$)', request, re.IGNORECASE)
+            called = re.search(rf'\b{re.escape(kw)}\s+(?:called|named|به\s+نام)\s+["\']?([^"\']+?)["\']?(?:\s+|$)', request, re.IGNORECASE)
             if called:
                 name = called.group(1).strip()
                 if name and len(name) < 100 and name.lower() not in location_words:
                     return name
             # Skip if immediately followed by a location word
             for loc in location_words:
-                if re.search(rf'{re.escape(kw)}\s+{re.escape(loc)}\b', request, re.IGNORECASE):
+                if re.search(rf'\b{re.escape(kw)}\s+{re.escape(loc)}\b', request, re.IGNORECASE):
                     break
             else:
                 # Not followed by location word — capture next word(s) as name
-                word_after = re.search(rf'{re.escape(kw)}\s+(\S+)', request, re.IGNORECASE)
+                word_after = re.search(rf'\b{re.escape(kw)}\s+(\S+)', request, re.IGNORECASE)
                 if word_after:
                     name = word_after.group(1).strip().rstrip('.,;:\'"')
                     if name and len(name) < 100 and name.lower() not in location_words:
@@ -806,6 +811,7 @@ class IntelligentSystemAgent:
                     arguments=params.get("arguments", []),
                     working_directory=params.get("working_directory"),
                     dry_run=self.dry_run,
+                    require_consent=params.get("require_consent", True),
                 )
             
             elif action_type == "InstallPackage":
@@ -815,12 +821,14 @@ class IntelligentSystemAgent:
                     version=params.get("version"),
                     silent=params.get("silent", True),
                     dry_run=self.dry_run,
+                    require_consent=params.get("require_consent", True),
                 )
             
             elif action_type == "QueryHardware":
                 return QueryHardwareAction(
                     query_type=params.get("query_type", "all"),
                     dry_run=self.dry_run,
+                    require_consent=params.get("require_consent", True),
                 )
             
             elif action_type == "TerminateProcess":
@@ -829,6 +837,7 @@ class IntelligentSystemAgent:
                     process_id=params.get("process_id"),
                     force=params.get("force", False),
                     dry_run=self.dry_run,
+                    require_consent=params.get("require_consent", True),
                 )
             
             elif action_type == "ExecuteCommand":
@@ -838,6 +847,7 @@ class IntelligentSystemAgent:
                     working_directory=params.get("working_directory"),
                     timeout=params.get("timeout", 30),
                     dry_run=self.dry_run,
+                    require_consent=params.get("require_consent", True),
                 )
             
             else:

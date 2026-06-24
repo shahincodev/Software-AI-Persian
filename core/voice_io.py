@@ -31,15 +31,35 @@ class VoiceInput:
     def __init__(self) -> None:
         """مقداردهی اولیه تشخیص گفتار"""
         self.recognizer = sr.Recognizer()
-        self.microphone = sr.Microphone()
+        self.microphone: Optional[sr.Microphone] = None
+        self.microphone_available = False
         self.stop_listening: Optional[Callable[[], None]] = None
         self.audio_queue = queue.Queue()
         self.listening_thread: Optional[threading.Thread] = None
         self.is_listening = False
-        self._setup_recognition()
+        self._init_microphone()
+
+    def _init_microphone(self) -> None:
+        """تلاش برای مقداردهی اولیه میکروفون (در صورت نصب نبودن PyAudio خطا نمی‌دهد)"""
+        try:
+            self.microphone = sr.Microphone()
+            self.microphone_available = True
+            self._setup_recognition()
+            logger.info("Voice input initialized (microphone available)")
+        except AttributeError:
+            logger.warning("PyAudio not installed. Voice input disabled. Install with: pip install pyaudio")
+            self.microphone_available = False
+        except OSError as e:
+            logger.warning(f"Microphone not available: {e}")
+            self.microphone_available = False
+        except Exception as e:
+            logger.warning(f"Could not initialize microphone: {e}")
+            self.microphone_available = False
 
     def _setup_recognition(self) -> None:
         """تنظیم پارامترهای تشخیص صدا و حذف نویز محیط"""
+        if not self.microphone_available or self.microphone is None:
+            return
         with self.microphone as source:
             self.recognizer.adjust_for_ambient_noise(source, duration=1)
             # تنظیم حساسیت تشخیص صدا
@@ -55,6 +75,9 @@ class VoiceInput:
         Returns:
             تاپلی شامل (متن تشخیص داده شده, کد زبان) یا ('', '') در صورت خطا
         """
+        if not self.microphone_available or self.microphone is None:
+            logger.warning("Voice input not available (PyAudio not installed)")
+            return "", ""
         try:
             with self.microphone as source:
                 logger.info("Listening for voice input...")
@@ -90,6 +113,9 @@ class VoiceInput:
         Args:
             callback: تابعی که با متن تشخیص داده شده فراخوانی می‌شود
         """
+        if not self.microphone_available:
+            logger.warning("Voice input not available (PyAudio not installed)")
+            return
         def listener_thread():
             while self.is_listening:
                 text, lang = self.listen_once()

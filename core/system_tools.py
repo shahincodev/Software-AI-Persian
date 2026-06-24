@@ -435,13 +435,10 @@ class CommandExecutor:
                 # اجرای واقعی دستور
                 logger.info("Executing command: %s", action.command)
                 
-                # انتخاب shell بر اساس درخواست
-                shell = True if action.shell == "powershell" else False
-                
-                # اجرای دستور
+                # اجرای دستور در shell مربوطه (cmd یا powershell)
                 proc = subprocess.Popen(
                     action.command,
-                    shell=shell,
+                    shell=True,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     cwd=action.working_directory,

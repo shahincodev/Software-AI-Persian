@@ -956,13 +956,31 @@ async def process_user_input(
                     print(f"{Fore.GREEN}✓ Added {len(tasks)} task(s) to queue.{Style.RESET_ALL}\n")
                     log_telemetry("task_mode_queue", tasks=len(tasks))
                 elif route.type == RouteType.BROWSER_USE:
-                    print(f"{Fore.GREEN}🌐 Browser capability ready. Describe the page action to perform.{Style.RESET_ALL}\n")
+                    print(f"{Fore.GREEN}🌐 Executing browser action: {user_text}{Style.RESET_ALL}\n")
+                    result = await system_agent.process_request(user_text)
+                    print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
+                    log_telemetry("browser_action_executed", result=result[:100] if result else "")
                 elif route.type == RouteType.DESKTOP_AUTOMATION:
-                    print(f"{Fore.GREEN}🖥️ Desktop automation ready. Please specify the exact action.{Style.RESET_ALL}\n")
+                    print(f"{Fore.GREEN}🖥️ Executing desktop automation: {user_text}{Style.RESET_ALL}\n")
+                    result = await system_agent.process_request(user_text)
+                    print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
+                    log_telemetry("desktop_automation_executed", result=result[:100] if result else "")
                 elif route.type == RouteType.AUTONOMOUS_AGENT:
-                    print(f"{Fore.GREEN}🤖 Autonomous agent primed for your goal.{Style.RESET_ALL}\n")
+                    goal = route.metadata.get("goal", user_text)
+                    print(f"{Fore.GREEN}🤖 Executing autonomous goal: {goal}{Style.RESET_ALL}\n")
+                    if autonomous_agent:
+                        result = await autonomous_agent.execute_goal(goal)
+                        if result.get("success"):
+                            print(f"{Fore.GREEN}✓ Goal completed successfully!{Style.RESET_ALL}\n")
+                        else:
+                            print(f"{Fore.RED}❌ Goal failed: {result.get('error', 'Unknown error')}{Style.RESET_ALL}\n")
+                        log_telemetry("autonomous_goal_executed", success=result.get("success", False))
+                    else:
+                        print(f"{Fore.YELLOW}⚠ Autonomous agent not initialized.{Style.RESET_ALL}\n")
                 else:
-                    print(f"{Fore.CYAN}💬 Chat response routed. How can I assist further?{Style.RESET_ALL}\n")
+                    print(f"{Fore.CYAN}💬 Processing request...{Style.RESET_ALL}\n")
+                    result = await system_agent.process_request(user_text)
+                    print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
                 continue
             
             # Intent Planning System - "plan" command

@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+from pathlib import Path
 from typing import Any, Optional
 
 from .ai_brain import AIBrain
@@ -157,6 +158,65 @@ class SystemActionParser:
                     "params": {"process_name": process, "force": False},
                     "priority": "normal",
                     "description": f"Close {process}"
+                })
+        
+        elif any(kw in user_lower for kw in ['create', 'make', 'new', 'build', 'ایجاد', 'ساخت', 'جدید']):
+            folder_keywords = ['folder', 'directory', 'پوشه', 'دایرکتوری']
+            file_keywords = ['file', 'document', 'text', 'فایل', 'متن']
+            is_folder = any(kw in user_lower for kw in folder_keywords)
+            is_file = any(kw in user_lower for kw in file_keywords)
+            
+            if is_folder:
+                # Extract folder name or generate a default one
+                folder_name = self._extract_name_after_keyword(user_request, ['folder', 'directory', 'پوشه', 'دایرکتوری called', 'named', 'نام'])
+                if not folder_name:
+                    folder_name = "New Folder"
+                
+                # Determine location
+                location = "desktop"
+                if 'desktop' in user_lower or 'میز' in user_lower or 'دسکتاپ' in user_lower:
+                    desktop = str(Path.home() / "Desktop")
+                    folder_path = str(Path(desktop) / folder_name)
+                else:
+                    location_path = self._extract_path(user_request)
+                    if location_path:
+                        folder_path = str(Path(location_path) / folder_name)
+                    else:
+                        folder_path = str(Path.home() / "Desktop" / folder_name)
+                
+                actions.append({
+                    "type": "ExecuteCommand",
+                    "params": {
+                        "command": f'mkdir "{folder_path}" 2>nul',
+                        "shell": "cmd",
+                        "timeout": 10
+                    },
+                    "priority": "normal",
+                    "description": f"Create folder '{folder_name}' on {location}"
+                })
+            elif is_file:
+                file_name = self._extract_name_after_keyword(user_request, ['file', 'document', 'فایل', 'document called', 'named', 'نام'])
+                if not file_name:
+                    file_name = "new_file.txt"
+                
+                if 'desktop' in user_lower or 'میز' in user_lower or 'دسکتاپ' in user_lower:
+                    file_path = str(Path.home() / "Desktop" / file_name)
+                else:
+                    location_path = self._extract_path(user_request)
+                    if location_path:
+                        file_path = str(Path(location_path) / file_name)
+                    else:
+                        file_path = str(Path.home() / "Desktop" / file_name)
+                
+                actions.append({
+                    "type": "ExecuteCommand",
+                    "params": {
+                        "command": f'type nul > "{file_path}" 2>nul',
+                        "shell": "cmd",
+                        "timeout": 10
+                    },
+                    "priority": "normal",
+                    "description": f"Create file '{file_name}' on desktop"
                 })
         
         elif any(kw in user_lower for kw in ['hardware', 'سخت‌افزار', 'cpu', 'ram', 'memory', 'info']):
@@ -486,6 +546,54 @@ Return ONLY the package name:"""
         """DEPRECATED: Use _ai_extract_app_name instead."""
         return self._extract_app_name(request)
     
+    def _extract_name_after_keyword(self, request: str, keywords: list[str]) -> Optional[str]:
+        location_words = ['on', 'in', 'at', 'to', 'into', 'onto', 'under', 'روی', 'در', 'به', 'توی']
+        for kw in keywords:
+            # Try single or double quoted name: folder "My Folder" or folder 'My Folder'
+            quoted = re.search(rf"""{re.escape(kw)}\s+["'""]([^"'""]+)["'""]""", request, re.IGNORECASE)
+            if quoted:
+                return quoted.group(1).strip()
+            # Try "called/named X" pattern
+            called = re.search(rf'{re.escape(kw)}\s+(?:called|named|به\s+نام)\s+["\']?([^"\']+?)["\']?(?:\s+|$)', request, re.IGNORECASE)
+            if called:
+                name = called.group(1).strip()
+                if name and len(name) < 100 and name.lower() not in location_words:
+                    return name
+            # Skip if immediately followed by a location word
+            for loc in location_words:
+                if re.search(rf'{re.escape(kw)}\s+{re.escape(loc)}\b', request, re.IGNORECASE):
+                    break
+            else:
+                # Not followed by location word — capture next word(s) as name
+                word_after = re.search(rf'{re.escape(kw)}\s+(\S+)', request, re.IGNORECASE)
+                if word_after:
+                    name = word_after.group(1).strip().rstrip('.,;:\'"')
+                    if name and len(name) < 100 and name.lower() not in location_words:
+                        return name
+        return None
+
+    def _extract_path(self, request: str) -> Optional[str]:
+        """استخراج مسیر از درخواست کاربر.
+
+        Args:
+            request: متن درخواست کاربر
+
+        Returns:
+            مسیر استخراج شده یا None
+        """
+        path_patterns = [
+            r'(?:in|on|at|to|into|در|روی|به|توی)\s+["\']?(?:[A-Za-z]:\\[^\s"\']+)["\']?',
+            r'(?:in|on|at|to|into|در|روی|به|توی)\s+["\']?(?:\\\\[^\s"\']+)["\']?',
+        ]
+        for pattern in path_patterns:
+            match = re.search(pattern, request, re.IGNORECASE)
+            if match:
+                path = re.sub(r'^(?:in|on|at|to|into|در|روی|به|توی)\s+["\']?', '', match.group(0))
+                path = path.strip().strip('"\'')
+                if Path(path).exists():
+                    return path
+        return None
+
     def _build_system_context(self) -> str:
         """ساخت اطلاعات زمینه‌ای سیستم."""
         context_parts = ["Current system information:"]

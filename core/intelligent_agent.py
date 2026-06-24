@@ -653,88 +653,89 @@ class IntelligentSystemAgent:
             self.registry.scan_system()
     
     async def process_request(self, user_request: str) -> str:
-        """پردازش درخواست کاربر و اجرای اقدامات.
-        
-        Args:
-            user_request: درخواست طبیعی کاربر
-        
-        Returns:
-            پاسخ نهایی برای کاربر
-        """
+        """پردازش درخواست کاربر و اجرای اقدامات به صورت ترتیبی."""
         logger.info("Processing request: %s", user_request)
-        
-        # تجزیه درخواست به اقدامات
+
+        # Phase 1 — Parse and create all action objects
         actions_data = await self.parser.parse_request(user_request)
-        
         if not actions_data:
             return "متأسفم، نتوانستم درخواست شما را درک کنم. لطفاً واضح‌تر بیان کنید."
-        
-        # تبدیل به اقدامات واقعی
-        results = []
+
+        action_items: list[tuple[Any, dict[str, Any]]] = []
         for action_data in actions_data:
-            action_type = action_data.get("type", "")
             action = self._create_action(action_data)
-            
             if not action:
                 logger.warning("Failed to create action: %s", action_data)
                 continue
-            
-            description = action_data.get("description", "Unknown action")
-            
-            # Desktop Actions از طریق ActionController اجرا می‌شوند
-            if action_type.startswith("Desktop"):
-                try:
-                    # استفاده از execute_action برای Desktop Actions
-                    outcome = self.action_controller.execute_action(action, auto_consent=False)
-                    
-                    if outcome.result.value == "success":
-                        results.append(f"✅ {description}")
-                        if outcome.position:
-                            results.append(f"   Position: {outcome.position}")
-                    else:
-                        results.append(f"❌ {description}")
-                        if outcome.error:
-                            results.append(f"   Error: {outcome.error}")
-                        elif outcome.message:
-                            results.append(f"   {outcome.message}")
-                
-                except Exception as e:
-                    logger.exception("Error executing desktop action: %s", e)
-                    results.append(f"❌ {description}")
-                    results.append(f"   Error: {str(e)}")
-            
-            # System Actions از طریق ExecutionManager اجرا می‌شوند
-            else:
-                # اضافه کردن به صف
-                priority = self._parse_priority(action_data.get("priority", "normal"))
-                action_id = self.executor.submit(action, priority=priority)
-                results.append(f"✓ {description}")
-        
-        # اگر System Actions هست، اجرا کن
-        if any(not a.get("type", "").startswith("Desktop") for a in actions_data):
-            execution_results = await self.executor.execute_all()
-            
-            # اضافه کردن نتایج system actions
-            for i, exec_result in enumerate(execution_results):
-                if exec_result.success:
-                    if exec_result.output and not self.dry_run:
-                        output_preview = exec_result.output[:200]
-                        results.append(f"   Output: {output_preview}...")
-                else:
-                    if exec_result.error:
-                        results.append(f"   Error: {exec_result.error}")
-        
-        if not results:
+            action_items.append((action, action_data))
+
+        if not action_items:
             return "No executable actions were identified."
-        
-        # ساخت پاسخ
-        response = "\n".join(results)
-        
-        # اضافه کردن آمار
-        stats = self.executor.get_stats()
-        if stats['total_succeeded'] > 0 or stats['total_failed'] > 0:
-            response += f"\n\n📊 System Actions: {stats['total_succeeded']} succeeded, {stats['total_failed']} failed"
-        
+
+        # Phase 2 — Execute strictly sequentially
+        succeeded = 0
+        failed = 0
+        previous_failed = False
+        output_lines: list[str] = []
+
+        for action, action_data in action_items:
+            description = action_data.get("description", "Unknown action")
+
+            # Dependency failed — mark remaining as failed without running
+            if previous_failed:
+                output_lines.append(f"❌ {description}")
+                failed += 1
+                continue
+
+            # Single source of truth: System actions have an adapter registered
+            is_system_action = type(action) in self.executor.adapter.adapters
+
+            try:
+                if is_system_action:
+                    # Through ExecutionManager: safety filter → consent → adapter
+                    result = await self.executor.execute_single(action)
+
+                    if result and result.success:
+                        output_lines.append(f"✅ {description}")
+                        succeeded += 1
+                    else:
+                        msg = f" ({result.error})" if result and result.error else ""
+                        output_lines.append(f"❌ {description}{msg}")
+                        failed += 1
+                        previous_failed = True
+                else:
+                    # Desktop action through ActionController
+                    outcome = self.action_controller.execute_action(action, auto_consent=False)
+
+                    if outcome.result.value == "success":
+                        output_lines.append(f"✅ {description}")
+                        if outcome.position:
+                            output_lines.append(f"   Position: {outcome.position}")
+                        succeeded += 1
+                    else:
+                        output_lines.append(f"❌ {description}")
+                        if outcome.error:
+                            output_lines.append(f"   Error: {outcome.error}")
+                        elif outcome.message:
+                            output_lines.append(f"   {outcome.message}")
+                        failed += 1
+                        previous_failed = True
+
+            except Exception as e:
+                logger.exception("Error executing action: %s", e)
+                output_lines.append(f"❌ {description}")
+                output_lines.append(f"   Error: {str(e)}")
+                failed += 1
+                previous_failed = True
+
+        if not output_lines:
+            return "No executable actions were identified."
+
+        response = "\n".join(output_lines)
+
+        if succeeded > 0 or failed > 0:
+            response += f"\n\n📊 Summary: {succeeded} succeeded, {failed} failed"
+
         return response
     
     def _create_action(self, action_data: dict[str, Any]) -> Optional[Any]:

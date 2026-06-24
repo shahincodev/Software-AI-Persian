@@ -1,7 +1,7 @@
 # 🔧 خلاصه رفع باگ‌های بحرانی سیستم
 ## Software-AI (Persian Version)
 
-**📅 تاریخ:** 2 دسامبر 2025  
+**📅 تاریخ:** 24 ژوئن 2026 (آخرین به‌روزرسانی)  
 **🎯 هدف:** رفع تمامی مشکلات بحرانی شناسایی شده در گزارش تحلیل لاگ
 
 ---
@@ -69,9 +69,52 @@ except ValueError as e:
 
 ---
 
+#### 3. ✅ Execution Order & False Success — سه باگ زنجیره‌ای در process_request
+**تاریخ رفع:** 24 ژوئن 2026 — مستند کامل: `docs/bugfix-execution-order-stdin-display-2026-06-24.md`
+
+**مشکل:** در یک اجرای تست `open notepad and write hello` سه باگ مجزا کشف شد:
+
+**باگ ۳-الف: ترتیب اجرا (Wrong Execution Order)**
+- `TypeAction` (تایپ متن) ۰٫۷۴ ثانیه **پیش از** `LaunchApp` (باز کردن Notepad) اجرا شد.
+- **علت:** dispatch دو-مسیره در `process_request()` — اکشن‌های Desktop بلافاصله (inline) اجرا می‌شدند، اکشن‌های System در صف قرار می‌گرفتند.
+- **فایل:** `core/intelligent_agent.py` (خطوط ۶۸۸-۷۱۰ کد قبلی)
+
+**باگ ۳-ب: آلودگی STDIN (STDIN Cross-Contamination)**
+- `pyautogui.write("hello")` به ترمینال فعال فرستاده شد (چون Notepad باز نبود)، کاراکترها وارد `sys.stdin` شدند و توسط `input()` مربوط به مجوز LaunchApp مصرف شدند.
+- **علت:** نتیجهٔ مستقیم باگ ۳-الف — TypeAction قبل از LaunchApp اجرا شد.
+- **فایل:** `core/safety_filter.py` (خط ۳۳۴ — `input()` در `request_consent`)
+
+**باگ ۳-پ: نمایش نادرست موفقیت (False-Success Display)**
+- `✓ Type 'hello' in Notepad` در زمان ارسال به صف (قبل از اجرا) چاپ می‌شد، و آمار نهایی فقط System Actions را شمارش می‌کرد.
+- **علت:** خط `results.append(f"✓ {description}")` در زمان submit (نه بعد از اجرا) اضافه می‌شد؛ آمار از `executor.get_stats()` می‌آمد که فقط System actions را پوشش می‌داد.
+- **فایل:** `core/intelligent_agent.py` (خطوط ۷۱۱ و ۷۳۴ کد قبلی)
+
+**راه‌حل پیاده‌سازی شده:**
+- ✅ `execute_single()` به `ExecutionManager` اضافه شد — اجرای یک اکشن بدون عبور از queue (رفع خطر stale-queue)
+- ✅ `process_request()` بازنویسی شد — dispatch تک‌مسیرهٔ ترتیبی جایگزین dispatch دو-مسیره
+- ✅ هر `✅`/`❌` از نتیجهٔ واقعی `result.success` می‌آید، نه از زمان submit
+- ✅ آمار شامل ALL actions (Desktop + System) می‌شود: `📊 Summary: X succeeded, Y failed`
+- ✅ مسیریابی با source of truth واحد: `type(action) in executor.adapter.adapters`
+- ✅ Dependency cascade: اگر یک اکشن fail شود، بقیه ❌ می‌شوند بدون اجرا
+
+**فایل‌های تغییر یافته:**
+- `core/execution_manager.py` — متد `execute_single()` اضافه شد (خط ۲۴۹)
+- `core/intelligent_agent.py` — `process_request()` بازنویسی شد (خطوط ۶۵۵-۷۳۹)
+
+**فایل‌های جدید:**
+- `tests/test_execution_fixes.py` — ۳ تست مجزا (یکی per bug)
+- `docs/bugfix-execution-order-stdin-display-2026-06-24.md` — گزارش کامل
+
+**نتیجه تست:**
+```
+RESULT: 3/3 passed
+```
+
+---
+
 ### 🟠 اولویت بالا (HIGH)
 
-#### 3. ✅ Tesseract OCR Integration
+#### 4. ✅ Tesseract OCR Integration
 **مشکل:**
 ```
 TesseractNotFoundError: 10+ مورد
@@ -110,7 +153,7 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 
 ---
 
-#### 4. ✅ Vision API Mismatch
+#### 5. ✅ Vision API Mismatch
 **مشکل:**
 ```python
 TypeError: DesktopVision.find_text() got an unexpected keyword argument 'confidence'
@@ -135,7 +178,7 @@ location = self.vision.find_text(target, confidence_threshold=confidence)
 
 ### 🟡 اولویت متوسط (MEDIUM)
 
-#### 5. ✅ Whitelist Consistency - Explorer.exe تناقض
+#### 6. ✅ Whitelist Consistency - Explorer.exe تناقض
 **مشکل:** explorer.exe گاهی مجاز، گاهی غیرمجاز شناخته می‌شد
 
 **راه‌حل پیاده‌سازی شده:**
@@ -161,7 +204,7 @@ self.always_allowed: set[str] = {
 
 ---
 
-#### 6. ✅ Input Sanitization - داده‌های مشکوک AI
+#### 7. ✅ Input Sanitization - داده‌های مشکوک AI
 **مشکل:** ورودی‌های حاوی `completion=` و `thinking=`
 
 **راه‌حل پیاده‌سازی شده:**
@@ -191,7 +234,7 @@ def _sanitize_ai_response(self, response: str) -> str:
 
 ---
 
-#### 7. ✅ Memory Optimization
+#### 8. ✅ Memory Optimization
 **مشکل:** مصرف بالای RAM (85.4% peak)
 
 **راه‌حل پیاده‌سازی شده:**
@@ -375,8 +418,8 @@ print(f"RAM usage: {usage['short_term_size_mb']:.2f} MB")
 **✅ همه مشکلات بحرانی رفع شده‌اند!**  
 **🎉 سیستم آماده برای استفاده در production است.**
 
-**نسخه:** 2.1  
-**تاریخ آخرین به‌روزرسانی:** 2 دسامبر 2025
+**نسخه:** 2.2  
+**تاریخ آخرین به‌روزرسانی:** 24 ژوئن 2026
 
 ---
 

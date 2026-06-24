@@ -105,8 +105,10 @@ bun.lockb
 
 # Test artifacts
 test_screenshot.png
+test_input.txt
 *.png
 !docs/**/*.png
+data/system_capabilities.json
 
 # Agent/Config files
 AGENTS.md

@@ -246,6 +246,28 @@ class ExecutionManager:
         
         return result
     
+    async def execute_single(self, action: SystemAction) -> ActionResult:
+        """اجرای یک اقدام به تنهایی بدون استفاده از صف.
+
+        از کل pipeline امنیتی (اعتبارسنجی، تایید، اجرا، لاگ) عبور می‌کند
+        ولی صف را دست نمی‌زند — برای استفاده در اجرای ترتیبی امن است
+        حتی اگر صف حاوی آیتم‌های قدیمی باشد.
+
+        Args:
+            action: اقدام برای اجرا
+
+        Returns:
+            ActionResult با نتیجهٔ کامل
+        """
+        result = await self._execute_action(action)
+        self.stats["total_executed"] += 1
+        if result.success:
+            self.stats["total_succeeded"] += 1
+        else:
+            self.stats["total_failed"] += 1
+        self._audit_log(action, result)
+        return result
+
     async def execute_all(self, wait_between: float = 0.1) -> list[ActionResult]:
         """اجرای تمام اقدامات در صف.
         

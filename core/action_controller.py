@@ -46,10 +46,17 @@ from core.keyboard_control import KeyboardController
 from core.desktop_vision import DesktopVision, ImageMatch
 from core.smart_wait import SmartWaiter
 from core.system_actions import SystemAction, RiskLevel, ActionStatus
+from core.system_actions import (
+    InstallPackageAction, LaunchAppAction,
+    QueryHardwareAction, TerminateProcessAction, ExecuteCommandAction
+)
 from core.desktop_actions import (
     ClickAction, TypeAction, WaitAction,
     DragDropAction, HotkeyAction, ScrollAction
 )
+from core.execution_manager import ExecutionManager, ExecutionPriority
+from core.intent_analyzer import SystemActionParser
+from core.system_capabilities import SystemCapabilityRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +109,8 @@ class ActionController:
         vision: Optional[DesktopVision] = None,
         waiter: Optional[SmartWaiter] = None,
         enable_state_tracking: bool = True,
-        screenshot_dir: Optional[Path] = None
+        screenshot_dir: Optional[Path] = None,
+        dry_run: bool = False,
     ):
         """مقداردهی اولیه ActionController.
         
@@ -113,12 +121,14 @@ class ActionController:
             waiter: سیستم انتظار هوشمند (اگر None باشد، یکی جدید می‌سازد)
             enable_state_tracking: فعال‌سازی ذخیره‌سازی وضعیت
             screenshot_dir: مسیر ذخیره اسکرین‌شات‌ها
+            dry_run: شبیه‌سازی بدون اجرای واقعی
         """
         self.mouse = mouse or MouseController()
         self.keyboard = keyboard or KeyboardController()
         self.vision = vision or DesktopVision()
         self.waiter = waiter or SmartWaiter(vision_system=self.vision)
         
+        self.dry_run = dry_run
         self.enable_state_tracking = enable_state_tracking
         self.screenshot_dir = screenshot_dir or Path("data/screenshots")
         self.screenshot_dir.mkdir(parents=True, exist_ok=True)
@@ -1326,6 +1336,188 @@ class ActionController:
         elif action.direction == "right":
             # اسکرول افقی - نیاز به پیاده‌سازی در MouseController
             pass
+
+    def create_action(self, action_data: dict[str, Any]) -> Optional[Any]:
+        action_type = action_data.get("type")
+        params = action_data.get("params", {})
+
+        try:
+            if action_type == "DesktopClick":
+                return ClickAction(
+                    target=params.get("target", ""),
+                    button=params.get("button", "left"),
+                    clicks=params.get("clicks", 1),
+                    verify=params.get("verify", True),
+                    confidence=params.get("confidence", 0.8),
+                    timeout=params.get("timeout", 10),
+                )
+            elif action_type == "DesktopType":
+                return TypeAction(
+                    text=params.get("text", ""),
+                    target=params.get("target"),
+                    clear_first=params.get("clear_first", False),
+                    interval=params.get("interval", 0.05),
+                    verify=params.get("verify", True),
+                    use_clipboard=params.get("use_clipboard", False),
+                )
+            elif action_type == "DesktopWait":
+                return WaitAction(
+                    wait_type=params.get("wait_type", "time"),
+                    target=params.get("target"),
+                    timeout=params.get("timeout", 30),
+                    check_interval=params.get("check_interval", 0.5),
+                    inverse=params.get("inverse", False),
+                )
+            elif action_type == "DesktopDragDrop":
+                return DragDropAction(
+                    source=params.get("source", ""),
+                    target=params.get("target", ""),
+                    duration=params.get("duration", 0.5),
+                    verify=params.get("verify", True),
+                    button=params.get("button", "left"),
+                )
+            elif action_type == "DesktopHotkey":
+                return HotkeyAction(
+                    keys=params.get("keys", []),
+                    interval=params.get("interval", 0.1),
+                    hold_duration=params.get("hold_duration", 0.0),
+                )
+            elif action_type == "DesktopScroll":
+                return ScrollAction(
+                    direction=params.get("direction", "down"),
+                    clicks=params.get("clicks", 3),
+                    target=params.get("target"),
+                    smooth=params.get("smooth", False),
+                )
+            elif action_type == "LaunchApp":
+                return LaunchAppAction(
+                    app_name=params.get("app_name", ""),
+                    app_path=params.get("app_path"),
+                    arguments=params.get("arguments", []),
+                    working_directory=params.get("working_directory"),
+                    dry_run=self.dry_run,
+                    require_consent=params.get("require_consent", True),
+                )
+            elif action_type == "InstallPackage":
+                return InstallPackageAction(
+                    package_name=params.get("package_name", ""),
+                    package_manager=params.get("package_manager", "winget"),
+                    version=params.get("version"),
+                    silent=params.get("silent", True),
+                    dry_run=self.dry_run,
+                    require_consent=params.get("require_consent", True),
+                )
+            elif action_type == "QueryHardware":
+                return QueryHardwareAction(
+                    query_type=params.get("query_type", "all"),
+                    dry_run=self.dry_run,
+                    require_consent=params.get("require_consent", True),
+                )
+            elif action_type == "TerminateProcess":
+                return TerminateProcessAction(
+                    process_name=params.get("process_name"),
+                    process_id=params.get("process_id"),
+                    force=params.get("force", False),
+                    dry_run=self.dry_run,
+                    require_consent=params.get("require_consent", True),
+                )
+            elif action_type == "ExecuteCommand":
+                return ExecuteCommandAction(
+                    command=params.get("command", ""),
+                    shell=params.get("shell", "cmd"),
+                    working_directory=params.get("working_directory"),
+                    timeout=params.get("timeout", 30),
+                    dry_run=self.dry_run,
+                    require_consent=params.get("require_consent", True),
+                )
+            else:
+                logger.warning("Unknown action type: %s", action_type)
+                return None
+
+        except Exception as e:
+            logger.exception("Error creating action %s: %s", action_type, e)
+            return None
+
+    async def process_request(self, user_request: str) -> str:
+        logger.info("Processing request: %s", user_request)
+
+        registry = SystemCapabilityRegistry()
+        if registry.needs_refresh():
+            logger.info("Scanning system for capabilities...")
+            registry.scan_system()
+
+        parser = SystemActionParser(registry)
+        actions_data = await parser.parse_request(user_request)
+        if not actions_data:
+            return "متأسفم، نتوانستم درخواست شما را درک کنم. لطفاً واضح‌تر بیان کنید."
+
+        executor = ExecutionManager(dry_run=self.dry_run)
+        action_items: list[tuple[Any, dict[str, Any]]] = []
+        for action_data in actions_data:
+            action = self.create_action(action_data)
+            if not action:
+                logger.warning("Failed to create action: %s", action_data)
+                continue
+            action_items.append((action, action_data))
+
+        if not action_items:
+            return "No executable actions were identified."
+
+        succeeded = 0
+        failed = 0
+        previous_failed = False
+        output_lines: list[str] = []
+
+        for action, action_data in action_items:
+            description = action_data.get("description", "Unknown action")
+            if previous_failed:
+                output_lines.append(f"❌ {description}")
+                failed += 1
+                continue
+
+            is_system_action = type(action) in executor.adapter.adapters
+
+            try:
+                if is_system_action:
+                    result = await executor.execute_single(action)
+                    if result and result.success:
+                        output_lines.append(f"✅ {description}")
+                        succeeded += 1
+                    else:
+                        msg = f" ({result.error})" if result and result.error else ""
+                        output_lines.append(f"❌ {description}{msg}")
+                        failed += 1
+                        previous_failed = True
+                else:
+                    outcome = self.execute_action(action, auto_consent=False)
+                    if outcome.result.value == "success":
+                        output_lines.append(f"✅ {description}")
+                        if outcome.position:
+                            output_lines.append(f"   Position: {outcome.position}")
+                        succeeded += 1
+                    else:
+                        output_lines.append(f"❌ {description}")
+                        if outcome.error:
+                            output_lines.append(f"   Error: {outcome.error}")
+                        elif outcome.message:
+                            output_lines.append(f"   {outcome.message}")
+                        failed += 1
+                        previous_failed = True
+
+            except Exception as e:
+                logger.exception("Error executing action: %s", e)
+                output_lines.append(f"❌ {description}")
+                output_lines.append(f"   Error: {str(e)}")
+                failed += 1
+                previous_failed = True
+
+        if not output_lines:
+            return "No executable actions were identified."
+
+        response = "\n".join(output_lines)
+        if succeeded > 0 or failed > 0:
+            response += f"\n\n📊 Summary: {succeeded} succeeded, {failed} failed"
+        return response
 
 
 # ==================== EXPORTS ====================

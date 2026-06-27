@@ -9,8 +9,11 @@ Memory Integrator - یکپارچه‌سازی حافظه و یادگیری
 سیستم حافظه یادگیری از موفقیت‌ها و شکست‌ها برای بهبود مستمر استفاده می‌کند.
 """
 
+import time
+import uuid
 from dataclasses import dataclass, field
-from typing import Optional, Dict, List, Tuple, Any
+from threading import Lock
+from typing import Optional, Dict, List, Tuple, Any, Iterable
 from enum import Enum
 from datetime import datetime, timedelta
 import hashlib
@@ -535,3 +538,277 @@ class MemoryIntegrator:
         recommendations["memory_stats"] = stats
         
         return recommendations
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Content Memory (merged from memory_system.py)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@dataclass
+class MemoryItem:
+    id: str
+    content: str
+    metadata: Dict[str, Any]
+    created_at: float
+    expires_at: Optional[float] = None
+
+
+class ShortTermMemory:
+    """حافظهٔ کوتاه‌مدت: ذخیره در RAM با TTL."""
+
+    def __init__(self) -> None:
+        self._store: Dict[str, MemoryItem] = {}
+        self._lock = Lock()
+
+    def add(self, content: str, ttl: Optional[float] = None, metadata: Optional[Dict[str, Any]] = None) -> MemoryItem:
+        if metadata is None:
+            metadata = {}
+        item_id = str(uuid.uuid4())
+        now = time.time()
+        expires_at = now + ttl if ttl is not None else None
+        item = MemoryItem(id=item_id, content=content, metadata=metadata, created_at=now, expires_at=expires_at)
+        with self._lock:
+            self._store[item_id] = item
+        return item
+
+    def get(self, item_id: str) -> Optional[MemoryItem]:
+        with self._lock:
+            item = self._store.get(item_id)
+            if item is None:
+                return None
+            if item.expires_at is not None and time.time() > item.expires_at:
+                del self._store[item_id]
+                return None
+            return item
+
+    def query(self, keyword: str, limit: int = 10) -> List[MemoryItem]:
+        keyword_lower = keyword.lower()
+        matches: List[MemoryItem] = []
+        with self._lock:
+            self._cleanup_locked()
+            for item in self._store.values():
+                if (keyword_lower in item.content.lower() or
+                    any(keyword_lower in str(v).lower() for v in item.metadata.values())):
+                    matches.append(item)
+                    if len(matches) >= limit:
+                        break
+                else:
+                    meta_str = json.dumps(item.metadata, ensure_ascii=False).lower()
+                    if keyword_lower in meta_str:
+                        matches.append(item)
+                        if len(matches) >= limit:
+                            break
+        return matches
+
+    def all_items(self) -> List[MemoryItem]:
+        with self._lock:
+            self._cleanup_locked()
+            return list(self._store.values())
+
+    def _cleanup_locked(self) -> None:
+        now = time.time()
+        to_delete = [item_id for item_id, item in self._store.items()
+                     if item.expires_at is not None and now > item.expires_at]
+        for item_id in to_delete:
+            del self._store[item_id]
+
+    def cleanup(self) -> None:
+        with self._lock:
+            self._cleanup_locked()
+
+    def pop_oldest(self) -> Optional[MemoryItem]:
+        with self._lock:
+            if not self._store:
+                return None
+            oldest_item = min(self._store.values(), key=lambda item: item.created_at)
+            del self._store[oldest_item.id]
+            return oldest_item
+
+
+class LongTermMemory:
+    """حافظهٔ بلندمدت: ذخیره‌سازی پایدار با SQLite."""
+
+    def __init__(self, db_path: Optional[str] = None) -> None:
+        if db_path is None:
+            db_path = str(Path("./data").resolve() / "memories.sqlite3")
+        self._db_path = db_path
+        self._conn = sqlite3.connect(self._db_path, check_same_thread=False)
+        self._lock = Lock()
+        self._ensure_tables()
+
+    def _ensure_tables(self) -> None:
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS memories (
+                    id TEXT PRIMARY KEY,
+                    content TEXT NOT NULL,
+                    metadata TEXT,
+                    created_at REAL NOT NULL
+                )
+            """)
+            self._conn.commit()
+
+    def add(self, content: str, metadata: Optional[Dict[str, Any]] = None) -> MemoryItem:
+        if metadata is None:
+            metadata = {}
+        item_id = str(uuid.uuid4())
+        now = time.time()
+        meta_json = json.dumps(metadata, ensure_ascii=False)
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                INSERT INTO memories (id, content, metadata, created_at)
+                VALUES (?, ?, ?, ?)
+            """, (item_id, content, meta_json, now))
+            self._conn.commit()
+        return MemoryItem(id=item_id, content=content, metadata=metadata, created_at=now)
+
+    def get(self, item_id: str) -> Optional[MemoryItem]:
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("SELECT id, content, metadata, created_at FROM memories WHERE id = ?", (item_id,))
+            row = cursor.fetchone()
+            if row is None:
+                return None
+            meta_dict = json.loads(row[2]) if row[2] else {}
+            return MemoryItem(id=row[0], content=row[1], metadata=meta_dict, created_at=row[3])
+
+    def search(self, query: str, limit: int = 10) -> List[MemoryItem]:
+        like_q = f"%{query}%"
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT id, content, metadata, created_at FROM memories
+                WHERE content LIKE ? OR metadata LIKE ?
+                LIMIT ?
+            """, (like_q, like_q, limit))
+            rows = cursor.fetchall()
+            results: List[MemoryItem] = []
+            for row in rows:
+                meta_dict = json.loads(row[2]) if row[2] else {}
+                results.append(MemoryItem(id=row[0], content=row[1], metadata=meta_dict, created_at=row[3]))
+            return results
+
+    def delete(self, item_id: str) -> bool:
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("DELETE FROM memories WHERE id = ?", (item_id,))
+            self._conn.commit()
+            return cursor.rowcount > 0
+
+    def all(self, limit: int = 100) -> List[MemoryItem]:
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+                SELECT id, content, metadata, created_at FROM memories
+                ORDER BY created_at DESC
+                LIMIT ?
+            """, (limit,))
+            rows = cursor.fetchall()
+            results: List[MemoryItem] = []
+            for row in rows:
+                meta_dict = json.loads(row[2]) if row[2] else {}
+                results.append(MemoryItem(id=row[0], content=row[1], metadata=meta_dict, created_at=row[3]))
+            return results
+
+    def close(self) -> None:
+        with self._lock:
+            try:
+                self._conn.commit()
+            finally:
+                self._conn.close()
+
+
+class MemoryManager:
+    """مدیریت یکپارچهٔ حافظه: ترکیب short-term و long-term."""
+
+    def __init__(self, *, lt_db_path: Optional[str] = None, consolidation_threshold: int = 50) -> None:
+        self.short = ShortTermMemory()
+        self.long = LongTermMemory(db_path=lt_db_path)
+        self._consolidation_threshold = max(1, int(consolidation_threshold))
+        self._lock = Lock()
+
+    def remember_short(self, content: str, ttl: Optional[float] = 60.0, metadata: Optional[Dict[str, Any]] = None) -> MemoryItem:
+        item = self.short.add(content, ttl=ttl, metadata=metadata)
+        self._maybe_consolidate()
+        return item
+
+    def remember_long(self, content: str, metadata: Optional[Dict[str, Any]] = None) -> MemoryItem:
+        return self.long.add(content, metadata=metadata)
+
+    def recall(self, query: str, limit: int = 10) -> List[MemoryItem]:
+        results: List[MemoryItem] = []
+        results.extend(self.short.query(query, limit=limit))
+        if len(results) < limit:
+            remaining = limit - len(results)
+            results.extend(self.long.search(query, limit=remaining))
+        return results
+
+    def forget_long(self, item_id: str) -> bool:
+        return self.long.delete(item_id)
+
+    def _maybe_consolidate(self) -> None:
+        with self._lock:
+            items = self.short.all_items()
+            if len(items) <= self._consolidation_threshold:
+                return
+            to_move_count = len(items) - self._consolidation_threshold
+            for _ in range(to_move_count):
+                old = self.short.pop_oldest()
+                if old is None:
+                    continue
+                self.long.add(content=old.content, metadata=old.metadata)
+
+    def shutdown(self) -> None:
+        self.short.cleanup()
+        self.long.close()
+
+    def optimize_memory(self, max_short_term_items: int = 100, max_long_term_items: int = 10000) -> Dict[str, int]:
+        logger = logging.getLogger(__name__)
+        stats = {
+            "short_term_before": 0, "short_term_after": 0, "short_term_cleaned": 0,
+            "long_term_before": 0, "long_term_after": 0, "long_term_cleaned": 0,
+        }
+        with self._lock:
+            short_items = self.short.all_items()
+            stats["short_term_before"] = len(short_items)
+            self.short.cleanup()
+            current_items = self.short.all_items()
+            if len(current_items) > max_short_term_items:
+                excess = len(current_items) - max_short_term_items
+                for _ in range(excess):
+                    old_item = self.short.pop_oldest()
+                    if old_item:
+                        self.long.add(content=old_item.content, metadata=old_item.metadata)
+            stats["short_term_after"] = len(self.short.all_items())
+            stats["short_term_cleaned"] = stats["short_term_before"] - stats["short_term_after"]
+        with self.long._lock:
+            cursor = self.long._conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM memories")
+            stats["long_term_before"] = cursor.fetchone()[0]
+            if stats["long_term_before"] > max_long_term_items:
+                excess = stats["long_term_before"] - max_long_term_items
+                cursor.execute("DELETE FROM memories WHERE id IN (SELECT id FROM memories ORDER BY created_at ASC LIMIT ?)", (excess,))
+                self.long._conn.commit()
+            cursor.execute("SELECT COUNT(*) FROM memories")
+            stats["long_term_after"] = cursor.fetchone()[0]
+            stats["long_term_cleaned"] = stats["long_term_before"] - stats["long_term_after"]
+        logger.info(f"Memory optimized: Short-term: {stats['short_term_before']} → {stats['short_term_after']} (-{stats['short_term_cleaned']}), Long-term: {stats['long_term_before']} → {stats['long_term_after']} (-{stats['long_term_cleaned']})")
+        return stats
+
+    def get_memory_usage(self) -> Dict[str, Any]:
+        import sys
+        short_items = self.short.all_items()
+        with self.long._lock:
+            cursor = self.long._conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM memories")
+            long_count = cursor.fetchone()[0]
+        short_size = sum(sys.getsizeof(item.content) + sys.getsizeof(str(item.metadata)) for item in short_items)
+        return {
+            "short_term_count": len(short_items),
+            "long_term_count": long_count,
+            "short_term_size_bytes": short_size,
+            "short_term_size_mb": short_size / (1024 * 1024),
+            "consolidation_threshold": self._consolidation_threshold,
+        }

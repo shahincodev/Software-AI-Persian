@@ -21,42 +21,39 @@ import asyncio
 import logging
 import shutil
 import sys
+import warnings
 from pathlib import Path
-from typing import Optional, Any, List
+from typing import Optional, Any, List, Dict
 from colorama import init as colorama_init, Fore, Style
 from datetime import datetime
 
-# Import core components
+# Core foundation
 from core.intelligent_agent import IntelligentSystemAgent
-from core.memory_system import MemoryManager
 from core.task_engine import TaskEngine
 from core.voice_io import VoiceManager
+from dotenv import load_dotenv
+from core.logging_config import setup_logging, install_exception_hook
 
-# Desktop Automation
+# Capability-driven architecture
+from core.capability_manager import CapabilityManager, CapabilityType
+from core.intent_router import IntentRouter, RouteType
+from core.intent_analyzer import IntentAnalyzer
+from core.memory_integrator import MemoryIntegrator, MemoryManager, PlanStatus
+
+# Safety & Consent Manager
+from core.safety_consent_manager import SafetyConsentManager, RiskLevel
+
+# Capability factories (for lazy registration)
+from core.ai_brain import AIBrain
 from core.mouse_control import MouseController
 from core.keyboard_control import KeyboardController
 from core.smart_wait import SmartWaiter
 from core.desktop_vision import DesktopVision
 from core.action_controller import ActionController
 from core.autonomous_agent import AutonomousAgent
-
-# Intent Planning System (Latest Feature!)
-from core.intent_analyzer import IntentAnalyzer
-from core.dialog_manager import DialogManager
 from core.plan_generator import PlanGenerator
-from core.plan_validator import PlanValidator, ValidationLevel
-from core.memory_integrator import MemoryIntegrator, PlanStatus
+from core.plan_validator import PlanValidator
 from core.realtime_loop import RealtimeLoop
-
-# Copilot Mode - Intent Router & Capability Manager
-from core.intent_router import IntentRouter, RouteType
-from core.capability_manager import CapabilityManager, CapabilityType
-
-# Safety & Consent Manager
-from core.safety_consent_manager import SafetyConsentManager, RiskLevel
-
-from dotenv import load_dotenv
-from core.logging_config import setup_logging, install_exception_hook
 
 colorama_init(autoreset=True)
 logger = logging.getLogger(__name__)
@@ -420,38 +417,6 @@ Examples:
     )
     
     parser.add_argument(
-        "--mode",
-        choices=["browser", "code"],
-        default="browser",
-        help="حالت اجرا برای تسک‌ها"
-    )
-
-    parser.add_argument(
-        "--task-mode",
-        action="store_true",
-        help="حالت پروژه/تسک: صف‌بندی و اجرای دستورات ساخت‌یافته"
-    )
-
-    parser.add_argument(
-        "--concurrency",
-        type=int,
-        default=2,
-        help="تعداد پردازش‌های همزمان برای TaskEngine (پیشنهادی: 2)"
-    )
-    
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="فعال کردن ثبت گزارش اشکال‌زدایی (خروجی طولانی)"
-    )
-    
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="شبیه‌سازی اقدامات بدون اجرای واقعی آنها"
-    )
-    
-    parser.add_argument(
         "--input-mode",
         choices=["text", "voice"],
         default="text",
@@ -464,26 +429,31 @@ Examples:
         default="gtts",
         help="ارائه‌دهنده تبدیل متن به گفتار"
     )
-    
+
     parser.add_argument(
-        "--enable-automation",
-        "--automation",
+        "--debug",
         action="store_true",
-        help="فعال‌سازی اتوماسیون دسکتاپ (ماوس، کیبورد، بینایی، Smart Wait)"
+        help="فعال کردن ثبت گزارش اشکال‌زدایی (خروجی طولانی)"
     )
     
     parser.add_argument(
-        "--enable-autonomous",
-        "--autonomous",
+        "--dry-run",
         action="store_true",
-        help="فعال‌سازی عامل خودران (اجرای اهداف مبتنی بر بینایی)"
+        help="شبیه‌سازی اقدامات بدون اجرای واقعی آنها"
     )
-    
+
     parser.add_argument(
-        "--enable-intent-planning",
-        "--intent-planning",
-        action="store_true",
-        help="فعال‌سازی سیستم برنامه‌ریزی نیت (پردازش هوشمند درخواست‌ها)"
+        "--mode",
+        choices=["browser", "code"],
+        default="browser",
+        help="[deprecated] حالت اجرا برای تسک‌ها — سیستم خودکار تشخیص می‌دهد"
+    )
+
+    parser.add_argument(
+        "--concurrency",
+        type=int,
+        default=2,
+        help="تعداد پردازش‌های همزمان برای TaskEngine (پیشنهادی: 2)"
     )
 
     parser.add_argument(
@@ -513,25 +483,22 @@ Examples:
         default=[],
         help="افزودن مسیر یا پوشه مجاز (قابل تکرار). مثال: --allow-path C:/Projects"
     )
-    
-    parser.add_argument(
-        "--full",
-        action="store_true",
-        help="فعال‌سازی همه قابلیت‌ها (Automation + Autonomous + Intent Planning)"
-    )
 
-    parser.add_argument(
-        "--realtime",
-        action="store_true",
-        help="فعال‌سازی حلقه سبک زمان‌واقعی (capture/interpret/act). پیشنهادی با --safety-mode power"
-    )
-
-    parser.add_argument(
-        "--realtime-fps",
-        type=float,
-        default=1.0,
-        help="تعداد فریم در ثانیه برای حلقه زمان‌واقعی (۰.۲ تا ۱۰). پیش‌فرض: ۱.۰"
-    )
+    # Mode flags — kept for backward compat but deprecated
+    parser.add_argument("--enable-automation", "--automation", action="store_true",
+                        help=argparse.SUPPRESS)
+    parser.add_argument("--enable-autonomous", "--autonomous", action="store_true",
+                        help=argparse.SUPPRESS)
+    parser.add_argument("--enable-intent-planning", "--intent-planning", action="store_true",
+                        help=argparse.SUPPRESS)
+    parser.add_argument("--full", action="store_true",
+                        help=argparse.SUPPRESS)
+    parser.add_argument("--realtime", action="store_true",
+                        help=argparse.SUPPRESS)
+    parser.add_argument("--realtime-fps", type=float, default=1.0,
+                        help=argparse.SUPPRESS)
+    parser.add_argument("--task-mode", action="store_true",
+                        help=argparse.SUPPRESS)
 
     return parser.parse_args()
 
@@ -643,41 +610,28 @@ def log_risk_decision(action: str, safety_mode: str, risk_score: float, threshol
         # لاگ نباید اجرای اصلی را متوقف کند
         pass
 
-async def process_user_input(
-    task_engine: TaskEngine, 
-    memory: MemoryManager, 
-    mode: str, 
-    input_mode: str, 
-    voice: VoiceManager, 
+async def process_capability_loop(
+    args: argparse.Namespace,
+    memory: MemoryManager,
+    voice: VoiceManager,
     system_agent: IntelligentSystemAgent,
+    intent_router: IntentRouter,
+    capability_manager: CapabilityManager,
+    safety_consent_manager: SafetyConsentManager,
     session_control: SessionControl,
-    intent_router: Optional[IntentRouter] = None,
-    capability_manager: Optional[CapabilityManager] = None,
-    safety_consent_manager: Optional[SafetyConsentManager] = None,
-    chat_first: bool = False,
-    mouse: Optional[MouseController] = None,
-    keyboard: Optional[KeyboardController] = None,
-    smart_wait: Optional[SmartWaiter] = None,
-    vision: Optional[DesktopVision] = None,
-    action_controller: Optional[ActionController] = None,
-    autonomous_agent: Optional[AutonomousAgent] = None,
-    intent_analyzer: Optional[IntentAnalyzer] = None,
-    dialog_manager: Optional[DialogManager] = None,
-    plan_generator: Optional[PlanGenerator] = None,
-    plan_validator: Optional[PlanValidator] = None,
-    memory_integrator: Optional[MemoryIntegrator] = None,
-    initial_task_mode: bool = False
 ) -> None:
-    """پردازش ورودی کاربر در یک حلقه تعاملی پیشرفته با پشتیبانی چندزبانه و اتوماسیون."""
+    """Capability-driven main interaction loop — acquires capabilities lazily via CapabilityManager."""
+    current_lang = "en"
+    input_mode = args.input_mode
+    task_engine = TaskEngine(concurrency=args.concurrency)
+    mode = args.mode
 
     print_banner(banner, color=Fore.CYAN)
-    
+
     welcome_message = "Welcome to Software-AI: Intelligent Windows Automation System"
-    current_lang = "en"
-    
     if input_mode == "voice":
         voice.speak(welcome_message, lang=current_lang, block=True)
-    
+
     print(f"\n{Fore.GREEN}{welcome_message}{Style.RESET_ALL}")
     print(f"{Fore.YELLOW}Version 1.0.0 | Powered by AI | Persian & English Support{Style.RESET_ALL}\n")
     print(f"{Fore.MAGENTA}Safety mode: {session_control.safety_mode.upper()} | Risk threshold: {session_control.risk_threshold}{Style.RESET_ALL}")
@@ -687,70 +641,20 @@ async def process_user_input(
         print(f"{Fore.MAGENTA}Allowed paths: {', '.join(session_control.allowed_paths)}{Style.RESET_ALL}")
     print()
 
-    if chat_first:
-        print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}{'CHAT MODE (DEFAULT)':^80}{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
-        print(f"{Fore.YELLOW}Free-form chat. Ask any question or request.{Style.RESET_ALL}")
-        print(f"{Fore.YELLOW}System will enable web/automation/task capabilities as needed.{Style.RESET_ALL}\n")
-        print(f"{Fore.MAGENTA}Examples:{Style.RESET_ALL}")
-        print(f"  {Fore.GREEN}Write a professional email{Style.RESET_ALL}")
-        print(f"  {Fore.GREEN}Create a new folder on desktop{Style.RESET_ALL}")
-        print(f"  {Fore.GREEN}Check USD price on the web{Style.RESET_ALL}\n")
-    else:
-        print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}{'AVAILABLE COMMANDS':^80}{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
-        
-        print(f"{Fore.YELLOW}Core Commands:{Style.RESET_ALL}")
-        print(f"  {Fore.GREEN}help{Style.RESET_ALL}               - Show all available commands")
-        print(f"  {Fore.GREEN}start / run{Style.RESET_ALL}        - Execute queued tasks")
-        print(f"  {Fore.GREEN}clear{Style.RESET_ALL}              - Clear task queue")
-        print(f"  {Fore.GREEN}pause / resume{Style.RESET_ALL}     - Pause or resume actions (kill-switch ready)")
-        print(f"  {Fore.GREEN}stop / panic{Style.RESET_ALL}       - Emergency stop and exit session")
-        print(f"  {Fore.GREEN}exit / quit{Style.RESET_ALL}        - Exit the application\n")
-    
-    if intent_analyzer:
-        print(f"{Fore.MAGENTA}Intent Planning System:{Style.RESET_ALL}")
-        print(f"  {Fore.MAGENTA}plan <request>{Style.RESET_ALL}   - Intelligent plan generation")
-        print(f"  {Fore.MAGENTA}smart <request>{Style.RESET_ALL}  - Auto-analyze and execute")
-        print(f"  {Fore.MAGENTA}stats{Style.RESET_ALL}             - Show execution statistics\n")
-    
-    if autonomous_agent:
-        print(f"{Fore.BLUE}Autonomous Agent:{Style.RESET_ALL}")
-        print(f"  {Fore.BLUE}goal <description>{Style.RESET_ALL} - Execute vision-based goal\n")
-    
-    if mouse or keyboard or vision:
-        print(f"{Fore.GREEN}Desktop Automation:{Style.RESET_ALL}")
-        if mouse:
-            print(f"  {Fore.GREEN}mouse position{Style.RESET_ALL}   - Get mouse position")
-            print(f"  {Fore.GREEN}mouse click{Style.RESET_ALL}      - Click at current position")
-        if keyboard:
-            print(f"  {Fore.GREEN}type <text>{Style.RESET_ALL}      - Type text")
-        if vision:
-            print(f"  {Fore.GREEN}vision screenshot{Style.RESET_ALL} - Capture screen")
-        print()
-    
-    print(f"{Fore.YELLOW}Examples:{Style.RESET_ALL}")
-    if chat_first:
-        print(f"  Say: prepare a shopping list")
-        print(f"  Say: list tasks and prioritize them for me")
-        print(f"  Say: check the weather on the web")
-    else:
-        if intent_analyzer:
-            print(f"  plan open notepad")
-            print(f"  smart create a folder on desktop")
-        if autonomous_agent:
-            print(f"  goal go to E: and create MyDocs folder")
-        print(f"  type Hello World")
-    
-    print(f"\n{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
+    print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{'CHAT MODE (DEFAULT)':^80}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
+    print(f"{Fore.YELLOW}Free-form chat. Ask any question or request.{Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}System will enable web/automation/task capabilities as needed.{Style.RESET_ALL}\n")
+    print(f"{Fore.MAGENTA}Examples:{Style.RESET_ALL}")
+    print(f"  {Fore.GREEN}Write a professional email{Style.RESET_ALL}")
+    print(f"  {Fore.GREEN}Create a new folder on desktop{Style.RESET_ALL}")
+    print(f"  {Fore.GREEN}Check USD price on the web{Style.RESET_ALL}\n")
     print(f"{Fore.YELLOW}Type your command and press Enter...{Style.RESET_ALL}\n")
 
-    task_mode_enabled = initial_task_mode
+    task_mode_enabled = False
 
     def log_telemetry(event: str, **data: Any) -> None:
-        """ثبت رویدادهای سبک برای مشاهده‌پذیری."""
         try:
             payload = " ".join([f"{k}={v}" for k, v in data.items()]) if data else ""
             logger.info("TELEMETRY event=%s %s", event, payload)
@@ -758,21 +662,17 @@ async def process_user_input(
             pass
 
     async def ensure_task_mode_enabled() -> None:
-        """فعال‌سازی حالت تسک‌محور در صورت نیاز."""
         nonlocal task_mode_enabled
         if task_mode_enabled:
             return
-        if capability_manager:
-            await capability_manager.enable("task_mode")
+        await capability_manager.activate("task_mode")
         task_mode_enabled = True
         log_telemetry("task_mode_enabled")
         print(f"{Fore.GREEN}✓ Task Mode enabled. Tasks will be queued and run via TaskEngine.{Style.RESET_ALL}")
 
     async def disable_task_mode(clear_queue: bool = True) -> None:
-        """غیرفعال‌سازی حالت تسک و تمیزکاری اختیاری صف."""
         nonlocal task_mode_enabled
-        if capability_manager:
-            await capability_manager.disable("task_mode")
+        await capability_manager.deactivate("task_mode")
         if clear_queue:
             task_engine.queue.clear()
         task_mode_enabled = False
@@ -780,7 +680,6 @@ async def process_user_input(
         print(f"{Fore.YELLOW}Task Mode disabled.{Style.RESET_ALL}")
 
     def extract_tasks_from_text(text: str) -> List[str]:
-        """استخراج تسک‌ها با جداکننده‌های رایج."""
         separators = [";", "\n", "،"]
         for sep in separators:
             if sep in text:
@@ -792,18 +691,17 @@ async def process_user_input(
         while True:
             user_text = ""
             if input_mode == "voice":
-                print(f"{Fore.CYAN}🎤 Listening for a new task...{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}🎤 Listening...{Style.RESET_ALL}")
                 user_text, detected_lang = voice.listen(timeout=10)
                 if user_text and detected_lang:
                     current_lang = detected_lang
                     print(f"{Fore.GREEN}✓ Detected: {user_text}{Style.RESET_ALL}")
                 else:
-                    print(f"{Fore.YELLOW}⚠ No voice input detected. Say 'start' to execute tasks.{Style.RESET_ALL}")
+                    print(f"{Fore.YELLOW}⚠ No voice input.{Style.RESET_ALL}")
                     continue
             else:
                 try:
-                    user_text = input(f"{Fore.CYAN}📝 New Task (or 'run' to start) > {Style.RESET_ALL}").strip()
-                    # For text input, assume English
+                    user_text = input(f"{Fore.CYAN}> {Style.RESET_ALL}").strip()
                     current_lang = "en"
                 except EOFError:
                     break
@@ -811,59 +709,50 @@ async def process_user_input(
             if not user_text:
                 continue
 
-            # دستورات اصلی
             cmd_lower = user_text.lower()
 
-            # توقف کامل
             if session_control.stopped:
-                print(f"{Fore.RED}🛑 Session stopped. Restart the app to continue.{Style.RESET_ALL}")
+                print(f"{Fore.RED}🛑 Session stopped.{Style.RESET_ALL}")
                 break
 
-            # اگر در حالت pause است و فرمان کنترل نیست
             if session_control.paused and cmd_lower not in ["resume", "stop", "exit", "quit"]:
-                print(f"{Fore.YELLOW}⏸️  Session is paused. Type 'resume' to continue or 'stop' to end.{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}⏸️  Paused. Type 'resume' to continue.{Style.RESET_ALL}")
                 continue
 
-            # Pause
+            # ── Core session control commands ──
             if cmd_lower == "pause":
                 session_control.pause()
-                print(f"{Fore.YELLOW}⏸️  Paused. Actions are halted until you 'resume'.{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}⏸️  Paused.{Style.RESET_ALL}")
                 continue
 
-            # Resume
             if cmd_lower == "resume":
                 session_control.resume()
-                print(f"{Fore.GREEN}▶️  Resumed. Actions are enabled again.{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}▶️  Resumed.{Style.RESET_ALL}")
                 continue
 
-            # Stop / kill-switch
             if cmd_lower in ["stop", "panic", "kill", "abort"]:
                 session_control.stop()
-                print(f"{Fore.RED}🛑 Emergency stop activated. Exiting session.{Style.RESET_ALL}")
+                print(f"{Fore.RED}🛑 Emergency stop.{Style.RESET_ALL}")
                 break
-            
-            # Help command
+
             if cmd_lower == "help":
                 print(f"\n{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
                 print(f"{Fore.CYAN}{'COMMAND REFERENCE':^80}{Style.RESET_ALL}")
                 print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
-                print(f"{Fore.GREEN}Available commands are listed above{Style.RESET_ALL}\n")
+                print(f"{Fore.GREEN}Just type what you want me to do!{Style.RESET_ALL}\n")
                 continue
-            
-            # Clear queue
+
             if cmd_lower == "clear":
                 task_engine.queue.clear()
-                print(f"{Fore.GREEN}✓ Task queue cleared{Style.RESET_ALL}\n")
+                print(f"{Fore.GREEN}✓ Queue cleared.{Style.RESET_ALL}\n")
                 continue
-            
-            # Exit
+
             if cmd_lower in ["exit", "quit"]:
                 print(f"\n{Fore.YELLOW}{'='*80}{Style.RESET_ALL}")
                 print(f"{Fore.YELLOW}Thank you for using Software-AI!{Style.RESET_ALL}")
                 print(f"{Fore.YELLOW}{'='*80}{Style.RESET_ALL}\n")
                 break
 
-            # Task Mode toggles (opt-in)
             if cmd_lower in ["task mode on", "taskmode on", "enable task mode", "task on"]:
                 await ensure_task_mode_enabled()
                 continue
@@ -871,398 +760,274 @@ async def process_user_input(
             if cmd_lower in ["task mode off", "taskmode off", "disable task mode", "task off"]:
                 await disable_task_mode(clear_queue=True)
                 continue
-            
-            # Statistics (Intent Planning System)
-            if cmd_lower == "stats" and memory_integrator:
-                stats = memory_integrator.get_statistics()
-                print(f"\n{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
-                print(f"{Fore.CYAN}{'EXECUTION STATISTICS':^80}{Style.RESET_ALL}")
-                print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
-                print(f"  Total Executions  : {stats.get('total_executions', 0)}")
-                print(f"  Successful        : {Fore.GREEN}{stats.get('successful', 0)}{Style.RESET_ALL}")
-                print(f"  Failed            : {Fore.RED}{stats.get('failed', 0)}{Style.RESET_ALL}")
-                print(f"  Success Rate      : {stats.get('success_rate', 0):.1f}%")
-                print(f"  Avg Execution Time: {stats.get('avg_execution_time', 0):.2f}s\n")
-                print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
-                continue
-            
-            # Run/Start
-            if cmd_lower in ["run", "start"]:
-                if not task_engine.queue:
-                    print(f"{Fore.YELLOW}⚠ No tasks to run. Please add tasks first.{Style.RESET_ALL}\n")
-                    continue
-                
-                print(f"\n{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
-                print(f"{Fore.CYAN}🚀 Executing {len(task_engine.queue)} task(s)...{Style.RESET_ALL}")
-                print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
 
-                tasks_list = list(task_engine.queue)
-                results = await task_engine.run_all()
-
-                for (task_text, task_mode), result in zip(tasks_list, results):
-                    if result:
-                        memory.remember_long(
-                            content=result,
-                            metadata={"type": "task_result", "original_task": task_text, "mode": task_mode}
-                        )
-                        print(f"{Fore.GREEN}✓ Task completed: {task_text[:50]}...{Style.RESET_ALL}")
-                        print(f"  Result: {result[:100]}...\n")
-                
-                print(f"{Fore.GREEN}{'='*80}{Style.RESET_ALL}")
-                print(f"{Fore.GREEN}✓ All tasks completed successfully{Style.RESET_ALL}")
-                print(f"{Fore.GREEN}{'='*80}{Style.RESET_ALL}\n")
-                continue
-
-            # Chat-first smart routing (Intent Router + Capability Manager)
-            if chat_first and intent_router:
-                log_telemetry("routing_start", text=user_text)
-                # فقط وضعیت بولی قابلیت‌ها را به روتر بدهیم
-                caps = None
-                if capability_manager:
-                    enabled = capability_manager.get_enabled()
-                    caps = {name: True for name in enabled}
-                route = await intent_router.route(
-                    user_text,
-                    safety_mode=session_control.safety_mode,
-                    current_capabilities=caps
-                )
-                log_telemetry("routing_result", route=route.type.value, risk=route.risk_level.value)
-
-                if route.requires_consent and safety_consent_manager:
-                    prompt = route.consent_message or "This action is risky. Continue? (y/n): "
-                    user_decision = input(f"{Fore.YELLOW}{prompt}{Style.RESET_ALL} ").strip().lower()
-                    allowed = user_decision in ["y", "yes"]
-                    safety_consent_manager.record_decision(
-                        route.intent.raw_request if route.intent else user_text,
-                        route.risk_level,
-                        allowed
-                    )
-                    if not allowed:
-                        print(f"{Fore.YELLOW}Action cancelled by user.{Style.RESET_ALL}\n")
-                        log_telemetry("consent_rejected", risk=route.risk_level.value)
-                        continue
-
-                if capability_manager and route.requires_activation:
-                    for cap in route.requires_activation:
-                        await capability_manager.enable(cap)
-
-                if route.type == RouteType.TASK_MODE:
-                    await ensure_task_mode_enabled()
-                    tasks = route.metadata.get("tasks") or extract_tasks_from_text(user_text)
-                    if not tasks:
-                        tasks = [user_text]
-                    for t in tasks:
-                        task_engine.add_task(t, mode="browser")
-                    print(f"{Fore.GREEN}✓ Added {len(tasks)} task(s) to queue.{Style.RESET_ALL}\n")
-                    log_telemetry("task_mode_queue", tasks=len(tasks))
-                elif route.type == RouteType.BROWSER_USE:
-                    print(f"{Fore.GREEN}🌐 Executing browser action: {user_text}{Style.RESET_ALL}\n")
-                    result = await system_agent.process_request(user_text)
-                    print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
-                    log_telemetry("browser_action_executed", result=result[:100] if result else "")
-                elif route.type == RouteType.DESKTOP_AUTOMATION:
-                    print(f"{Fore.GREEN}🖥️ Executing desktop automation: {user_text}{Style.RESET_ALL}\n")
-                    result = await system_agent.process_request(user_text)
-                    print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
-                    log_telemetry("desktop_automation_executed", result=result[:100] if result else "")
-                elif route.type == RouteType.AUTONOMOUS_AGENT:
-                    goal = route.metadata.get("goal", user_text)
-                    print(f"{Fore.GREEN}🤖 Executing autonomous goal: {goal}{Style.RESET_ALL}\n")
-                    if autonomous_agent:
-                        result = await autonomous_agent.execute_goal(goal)
-                        if result.get("success"):
-                            print(f"{Fore.GREEN}✓ Goal completed successfully!{Style.RESET_ALL}\n")
-                        else:
-                            print(f"{Fore.RED}❌ Goal failed: {result.get('error', 'Unknown error')}{Style.RESET_ALL}\n")
-                        log_telemetry("autonomous_goal_executed", success=result.get("success", False))
-                    else:
-                        print(f"{Fore.YELLOW}⚠ Autonomous agent not initialized.{Style.RESET_ALL}\n")
-                else:
-                    print(f"{Fore.CYAN}💬 Processing request...{Style.RESET_ALL}\n")
-                    result = await system_agent.process_request(user_text)
-                    print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
-                continue
-            
-            # Intent Planning System - "plan" command
-            if cmd_lower.startswith("plan ") and intent_analyzer:
+            # ── Explicit backward-compat commands ──
+            # plan <request> — explicit intent analysis
+            if cmd_lower.startswith("plan "):
                 request = user_text[5:].strip()
-                
-                print(f"\n{Fore.MAGENTA}{'='*80}{Style.RESET_ALL}")
-                print(f"{Fore.MAGENTA}🧠 INTENT PLANNING SYSTEM{Style.RESET_ALL}")
-                print(f"{Fore.MAGENTA}{'='*80}{Style.RESET_ALL}\n")
-                print(f"Request: {request}\n")
-                
-                try:
-                    # Step 1: Analyze Intent
-                    print(f"{Fore.CYAN}[1/5] Analyzing intent...{Style.RESET_ALL}")
-                    analysis = await intent_analyzer.analyze(request)
-                    intent = analysis.intent
-                    print(f"      Verb: {intent.verb}")
-                    print(f"      Target: {intent.target}")
-                    print(f"      Confidence: {intent.confidence:.0%}\n")
-                    
-                    # Step 2: Dialog (if needed)
-                    if dialog_manager and analysis.missing_fields:
-                        print(f"{Fore.CYAN}[2/5] Checking completeness...{Style.RESET_ALL}")
-                        print(f"      Missing: {', '.join(analysis.missing_fields)}\n")
-                    else:
-                        print(f"{Fore.CYAN}[2/5] Request is complete ✓{Style.RESET_ALL}\n")
-                    
-                    # Step 3: Generate Plan
-                    print(f"{Fore.CYAN}[3/5] Generating execution plan...{Style.RESET_ALL}")
-                    if not plan_generator or not plan_validator:
-                        print(f"{Fore.YELLOW}⚠ Intent Planning components not initialized.{Style.RESET_ALL}\n")
-                        continue
-                    plan = await plan_generator.generate_plan(intent)
-                    print(f"      Total steps: {len(plan.steps)}")
-                    for i, step in enumerate(plan.steps, 1):
-                        print(f"      {i}. {step.action}")
-                    print()
-                    
-                    # Step 4: Validate
-                    print(f"{Fore.CYAN}[4/5] Validating plan...{Style.RESET_ALL}")
-                    validation = await plan_validator.validate(plan, intent, ValidationLevel.STRICT)
-                    print(f"      Valid: {validation.is_valid}")
-                    print(f"      Safety Score: {validation.safety_score}/100")
-                    print(f"      Reliability: {validation.reliability_score}/100\n")
-                    print(f"      Threshold ({session_control.safety_mode}): {session_control.risk_threshold}\n")
-                    
-                    # Step 5: Record
-                    if memory_integrator:
-                        print(f"{Fore.CYAN}[5/5] Recording to memory...{Style.RESET_ALL}")
-                        record_id = memory_integrator.record_execution(
-                            plan_id=plan.plan_id,
-                            intent=intent,
-                            status=PlanStatus.SUCCESSFUL,
-                            steps_succeeded=len(plan.steps),
-                            steps_failed=0,
-                            total_steps=len(plan.steps),
-                            actual_time_seconds=5.0,
-                            estimated_time_seconds=plan.total_estimated_time
-                        )
-                        print(f"      Record ID: {record_id}\n")
-                    
-                    print(f"{Fore.GREEN}{'='*80}{Style.RESET_ALL}")
-                    print(f"{Fore.GREEN}✓ Plan generated successfully!{Style.RESET_ALL}")
-                    print(f"{Fore.GREEN}{'='*80}{Style.RESET_ALL}\n")
-                
-                except Exception as e:
-                    print(f"{Fore.RED}❌ Error: {str(e)}{Style.RESET_ALL}\n")
-                    logger.exception("Intent planning failed")
-                
-                continue
-            
-            # Intent Planning System - "smart" command (auto-execute)
-            if cmd_lower.startswith("smart ") and intent_analyzer:
-                request = user_text[6:].strip()
-                
-                print(f"\n{Fore.MAGENTA}🧠 Smart execution mode...{Style.RESET_ALL}")
-                print(f"Request: {request}\n")
-                
-                try:
-                    analysis = await intent_analyzer.analyze(request)
-                    intent = analysis.intent
-                    if not plan_generator or not plan_validator:
-                        print(f"{Fore.YELLOW}⚠ Intent Planning components not initialized.{Style.RESET_ALL}\n")
-                        continue
-                    plan = await plan_generator.generate_plan(intent)
-                    validation = await plan_validator.validate(plan, intent)
-                    risk_score = validation.safety_score
-                    allowed = validation.is_valid and (
-                        risk_score >= session_control.risk_threshold or session_control.safety_mode == "power"
-                    )
+                analyzer = await capability_manager.activate("intent_analysis")
+                if not analyzer:
+                    print(f"{Fore.YELLOW}⚠ Intent analyzer not available.{Style.RESET_ALL}\n")
+                    continue
+                print(f"\n{Fore.MAGENTA}🧠 Analyzing: {request}{Style.RESET_ALL}\n")
+                analysis = await analyzer.analyze(request)
+                intent = analysis.intent
+                print(f"  Verb: {intent.verb}")
+                print(f"  Target: {intent.target}")
+                print(f"  Confidence: {intent.confidence:.0%}\n")
 
-                    log_risk_decision("smart", session_control.safety_mode, risk_score, session_control.risk_threshold)
-
-                    if not validation.is_valid:
-                        print(f"{Fore.RED}❌ Plan validation failed (invalid plan){Style.RESET_ALL}\n")
-                    elif not allowed:
-                        print(
-                            f"{Fore.RED}❌ Blocked by risk threshold ({risk_score} < {session_control.risk_threshold} in SAFE mode){Style.RESET_ALL}\n"
-                        )
-                    else:
-                        if session_control.safety_mode == "power" and risk_score < session_control.risk_threshold:
-                            print(
-                                f"{Fore.YELLOW}⚠ Continuing in POWER mode despite risk {risk_score} (threshold {session_control.risk_threshold}){Style.RESET_ALL}"
-                            )
-                        print(f"{Fore.GREEN}✓ Plan validated and executed{Style.RESET_ALL}\n")
-                        if memory_integrator:
-                            memory_integrator.record_execution(
-                                plan_id=plan.plan_id,
-                                intent=intent,
+                plan_gen = await capability_manager.activate("plan_generation")
+                plan_val = await capability_manager.activate("plan_validation")
+                if plan_gen and plan_val:
+                    plan = await plan_gen.generate_plan(intent)
+                    validation = await plan_val.validate(plan, intent)
+                    if validation.is_valid:
+                        print(f"{Fore.GREEN}✓ Plan generated ({len(plan.steps)} steps){Style.RESET_ALL}\n")
+                        mem_int = await capability_manager.activate("execution_history")
+                        if mem_int:
+                            mem_int.record_execution(
+                                plan_id=plan.plan_id, intent=intent,
                                 status=PlanStatus.SUCCESSFUL,
-                                steps_succeeded=len(plan.steps),
-                                steps_failed=0,
-                                total_steps=len(plan.steps),
-                                actual_time_seconds=5.0,
+                                steps_succeeded=len(plan.steps), steps_failed=0,
+                                total_steps=len(plan.steps), actual_time_seconds=0,
                                 estimated_time_seconds=plan.total_estimated_time
                             )
-                
-                except Exception as e:
-                    print(f"{Fore.RED}❌ Error: {str(e)}{Style.RESET_ALL}\n")
-                    logger.exception("Smart execution failed")
-                
+                    else:
+                        print(f"{Fore.RED}❌ Plan validation failed{Style.RESET_ALL}\n")
+                else:
+                    print(f"{Fore.YELLOW}⚠ Planning components not available.{Style.RESET_ALL}\n")
                 continue
-            
-            # Autonomous Agent - "goal" command
-            if cmd_lower.startswith("goal ") and autonomous_agent:
-                goal_description = user_text[5:].strip()
-                
-                if goal_description:
-                    print(f"\n{Fore.BLUE}{'='*80}{Style.RESET_ALL}")
-                    print(f"{Fore.BLUE}🎯 AUTONOMOUS AGENT{Style.RESET_ALL}")
-                    print(f"{Fore.BLUE}{'='*80}{Style.RESET_ALL}\n")
-                    print(f"Goal: {goal_description}\n")
-                    
-                    try:
-                        result = await autonomous_agent.execute_goal(goal_description)
-                        
-                        if result['success']:
-                            print(f"{Fore.GREEN}{'='*80}{Style.RESET_ALL}")
-                            print(f"{Fore.GREEN}✓ Goal completed successfully!{Style.RESET_ALL}")
-                            print(f"{Fore.GREEN}{'='*80}{Style.RESET_ALL}\n")
-                            print(f"Total steps: {result['total_steps']}\n")
-                            
-                            print(f"{Fore.CYAN}Steps executed:{Style.RESET_ALL}")
-                            for step in result.get('steps', []):
-                                print(f"  {step['number']}. {step['description']}")
-                                if step.get('result'):
-                                    print(f"     → {step['result']}")
-                            print()
-                            
-                            memory.remember_long(
-                                content=str(result),
-                                metadata={"type": "autonomous_goal", "goal": goal_description}
+
+            # smart <request> — auto-analyze and execute
+            if cmd_lower.startswith("smart "):
+                request = user_text[6:].strip()
+                analyzer = await capability_manager.activate("intent_analysis")
+                if not analyzer:
+                    print(f"{Fore.YELLOW}⚠ Intent analyzer not available.{Style.RESET_ALL}\n")
+                    continue
+                print(f"\n{Fore.MAGENTA}🧠 Smart execution: {request}{Style.RESET_ALL}\n")
+                analysis = await analyzer.analyze(request)
+                intent = analysis.intent
+
+                plan_gen = await capability_manager.activate("plan_generation")
+                plan_val = await capability_manager.activate("plan_validation")
+                if plan_gen and plan_val:
+                    plan = await plan_gen.generate_plan(intent)
+                    validation = await plan_val.validate(plan, intent)
+                    if validation.is_valid:
+                        print(f"{Fore.GREEN}✓ Plan validated and executed{Style.RESET_ALL}\n")
+                        mem_int = await capability_manager.activate("execution_history")
+                        if mem_int:
+                            mem_int.record_execution(
+                                plan_id=plan.plan_id, intent=intent,
+                                status=PlanStatus.SUCCESSFUL,
+                                steps_succeeded=len(plan.steps), steps_failed=0,
+                                total_steps=len(plan.steps), actual_time_seconds=0,
+                                estimated_time_seconds=plan.total_estimated_time
                             )
-                        else:
-                            print(f"{Fore.RED}{'='*80}{Style.RESET_ALL}")
-                            print(f"{Fore.RED}❌ Goal execution failed{Style.RESET_ALL}")
-                            print(f"{Fore.RED}{'='*80}{Style.RESET_ALL}\n")
-                            print(f"Error: {result.get('error', 'Unknown error')}\n")
-                    
-                    except Exception as e:
-                        print(f"{Fore.RED}❌ Autonomous Agent error: {str(e)}{Style.RESET_ALL}\n")
-                        logger.exception("Autonomous Agent execution failed")
+                    else:
+                        print(f"{Fore.RED}❌ Plan validation failed{Style.RESET_ALL}\n")
                 else:
-                    print(f"\n{Fore.YELLOW}Usage: goal <description>{Style.RESET_ALL}")
-                    print(f"Example: goal Go to E: and create MyDocs folder\n")
-                
+                    result = await system_agent.process_request(request)
+                    print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
                 continue
-            
-            # Desktop Automation - Mouse
-            if cmd_lower.startswith("mouse ") and mouse:
-                await handle_mouse_command(user_text, mouse, voice, current_lang, input_mode)
+
+            # goal <description> — autonomous agent
+            if cmd_lower.startswith("goal "):
+                goal = user_text[5:].strip()
+                agent = await capability_manager.activate("autonomous_agent")
+                if not agent:
+                    print(f"{Fore.YELLOW}⚠ Autonomous agent not available.{Style.RESET_ALL}\n")
+                    continue
+                print(f"\n{Fore.BLUE}🎯 Goal: {goal}{Style.RESET_ALL}\n")
+                result = await agent.execute_goal(goal)
+                if result.get("success"):
+                    print(f"{Fore.GREEN}✓ Goal completed!{Style.RESET_ALL}\n")
+                else:
+                    print(f"{Fore.RED}❌ Failed: {result.get('error', 'Unknown')}{Style.RESET_ALL}\n")
                 continue
-            
-            # Desktop Automation - Keyboard
-            if cmd_lower.startswith(("type ", "keyboard ")) and keyboard:
-                await handle_keyboard_command(user_text, keyboard, voice, current_lang, input_mode)
+
+            # mouse <command>
+            if cmd_lower.startswith("mouse "):
+                mouse = await capability_manager.activate("desktop_mouse")
+                if mouse:
+                    await handle_mouse_command(user_text, mouse, voice, current_lang, input_mode)
+                else:
+                    print(f"{Fore.YELLOW}⚠ Mouse control not available.{Style.RESET_ALL}\n")
                 continue
-            
-            # Desktop Automation - Smart Wait
-            if cmd_lower.startswith("wait ") and smart_wait:
-                await handle_wait_command(user_text, smart_wait, voice, current_lang, input_mode)
+
+            # type/keyboard <text>
+            if cmd_lower.startswith(("type ", "keyboard ")):
+                keyboard = await capability_manager.activate("desktop_keyboard")
+                if keyboard:
+                    await handle_keyboard_command(user_text, keyboard, voice, current_lang, input_mode)
+                else:
+                    print(f"{Fore.YELLOW}⚠ Keyboard control not available.{Style.RESET_ALL}\n")
                 continue
-            
-            # Desktop Automation - Vision
-            if cmd_lower.startswith(("vision ", "screenshot")) and vision:
-                await handle_vision_command(user_text, vision, mouse, voice, current_lang, input_mode)
+
+            # wait <command>
+            if cmd_lower.startswith("wait "):
+                smart_wait = await capability_manager.activate("smart_waiting")
+                if smart_wait:
+                    await handle_wait_command(user_text, smart_wait, voice, current_lang, input_mode)
+                else:
+                    print(f"{Fore.YELLOW}⚠ Smart wait not available.{Style.RESET_ALL}\n")
                 continue
-            
-            # پیش‌فرض: System Agent یا افزودن به صف
+
+            # vision/screenshot <command>
+            if cmd_lower.startswith(("vision ", "screenshot")):
+                vision = await capability_manager.activate("screen_observation")
+                mouse = capability_manager.get("desktop_mouse")
+                if vision:
+                    await handle_vision_command(user_text, vision, mouse, voice, current_lang, input_mode)
+                else:
+                    print(f"{Fore.YELLOW}⚠ Vision not available.{Style.RESET_ALL}\n")
+                continue
+
+            # ── Smart Routing via IntentRouter ──
+            log_telemetry("routing_start", text=user_text)
+            caps = {name: True for name in capability_manager.get_enabled()}
+            route = await intent_router.route(
+                user_text,
+                safety_mode=session_control.safety_mode,
+                current_capabilities=caps,
+            )
+            log_telemetry("routing_result", route=route.type.value, risk=route.risk_level.value)
+
+            # Consent check
+            if route.requires_consent and safety_consent_manager:
+                prompt = route.consent_message or "Continue? (y/n): "
+                allowed = input(f"{Fore.YELLOW}{prompt}{Style.RESET_ALL} ").strip().lower() in ["y", "yes"]
+                safety_consent_manager.record_decision(
+                    route.intent.raw_request if route.intent else user_text,
+                    route.risk_level,
+                    allowed,
+                )
+                if not allowed:
+                    print(f"{Fore.YELLOW}Cancelled.{Style.RESET_ALL}\n")
+                    log_telemetry("consent_rejected", risk=route.risk_level.value)
+                    continue
+
+            # Activate required capabilities
+            for cap in route.requires_activation:
+                await capability_manager.activate(cap)
+
+            # Execute based on route type
+            if route.type == RouteType.TASK_MODE:
+                await ensure_task_mode_enabled()
+                tasks = route.metadata.get("tasks") or extract_tasks_from_text(user_text)
+                for t in (tasks or [user_text]):
+                    task_engine.add_task(t, mode="browser")
+                print(f"{Fore.GREEN}✓ Added {len(tasks or [user_text])} task(s) to queue.{Style.RESET_ALL}\n")
+
+            elif route.type == RouteType.BROWSER_USE:
+                result = await system_agent.process_request(user_text)
+                print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
+
+            elif route.type == RouteType.DESKTOP_AUTOMATION:
+                result = await system_agent.process_request(user_text)
+                print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
+
+            elif route.type == RouteType.AUTONOMOUS_AGENT:
+                agent = capability_manager.get("autonomous_agent")
+                goal = route.metadata.get("goal", user_text)
+                if agent:
+                    result = await agent.execute_goal(goal)
+                    if result.get("success"):
+                        print(f"{Fore.GREEN}✓ Goal completed!{Style.RESET_ALL}\n")
+                    else:
+                        print(f"{Fore.RED}❌ Failed: {result.get('error', 'Unknown')}{Style.RESET_ALL}\n")
+                else:
+                    print(f"{Fore.YELLOW}⚠ Autonomous agent not available.{Style.RESET_ALL}\n")
+
+            elif route.type == RouteType.CLARIFICATION_NEEDED:
+                msg = route.consent_message or "I didn't understand. Please rephrase."
+                print(f"{Fore.YELLOW}{msg}{Style.RESET_ALL}\n")
+
             else:
-                is_system_task = await _is_system_request(user_text, system_agent)
-                
-                if is_system_task:
-                    print(f"\n{Fore.CYAN}🤖 Processing with System Agent...{Style.RESET_ALL}\n")
-                    
-                    try:
-                        result = await system_agent.process_request(user_text)
-                        print(f"{Fore.GREEN}✓ Result:{Style.RESET_ALL} {result}\n")
-                    except Exception as e:
-                        print(f"{Fore.RED}❌ Error: {str(e)}{Style.RESET_ALL}\n")
-                        logger.exception("System task failed")
-                else:
-                    memory.remember_short(
-                        content=user_text,
-                        ttl=3600,
-                        metadata={"type": "user_task", "mode": mode}
-                    )
-                    task_engine.add_task(user_text, mode=mode)
-                    print(f"{Fore.GREEN}✓ Task added to queue: {user_text[:60]}...{Style.RESET_ALL}\n")
-                    print(f"{Fore.YELLOW}Type 'start' or 'run' to execute{Style.RESET_ALL}\n")
+                result = await system_agent.process_request(user_text)
+                print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
+
+            memory.remember_short(
+                content=user_text, ttl=3600,
+                metadata={"type": "user_request", "route": route.type.value}
+            )
 
     except KeyboardInterrupt:
-        print(f"\n{Fore.YELLOW}🛑 Shutting down gracefully...{Style.RESET_ALL}")
+        print(f"\n{Fore.YELLOW}🛑 Shutting down...{Style.RESET_ALL}")
     finally:
         memory.shutdown()
         voice.shutdown()
 
+
 async def main() -> None:
-    """Main application entry point."""
+    """Main application entry point — Capability-Driven Architecture."""
     session_log = None
     master_log = None
     realtime_task = None
-    capability_manager: Optional[CapabilityManager] = None
     
     try:
-        # Parse command-line arguments
         args = parse_arguments()
-
-        # Setup environment
         setup_environment()
-
-        # Initialize logging after environment setup, respecting --debug flag
         session_log, master_log = setup_logging(level=logging.DEBUG if args.debug else None)
         install_exception_hook()
         
-        # نمایش اطلاعات لاگ برای کاربر
         print(f"\n{Fore.CYAN}📝 Logging Information:{Style.RESET_ALL}")
         print(f"   Session Log: {session_log}")
-        print(f"   Master Log:  {master_log}")
-        print(f"   {Fore.GREEN}✓ All outputs will be saved to these files{Style.RESET_ALL}\n")
+        print(f"   Master Log:  {master_log}\n")
         
-        logger.info(f"Application started with mode={args.mode}, input_mode={args.input_mode}")
-        logger.info(f"Debug mode: {args.debug}")
-        logger.info(f"Dry-run mode: {args.dry_run}")
-        logger.info(f"Automation enabled: {args.enable_automation}")
-        logger.info(f"Autonomous mode enabled: {args.enable_autonomous}")
-        logger.info(
-            "Safety mode=%s risk_threshold=%d allow_app=%s allow_path=%s",
-            args.safety_mode,
-            args.risk_threshold,
-            args.allow_app,
-            args.allow_path,
-        )
+        logger.info(f"Application started: input_mode={args.input_mode}, safety={args.safety_mode}")
         
-        # Initialize core components
-        task_engine = TaskEngine(concurrency=args.concurrency)
+        # ── Core always-active components ──
         memory = MemoryManager()
         voice = VoiceManager(tts_provider=args.tts_provider)
-        
-        # Initialize intelligent system agent
         system_agent = IntelligentSystemAgent(dry_run=args.dry_run)
-        logger.info("Intelligent system agent initialized")
-        
-        # Initialize Copilot Mode components
         intent_router = IntentRouter()
+        
+        # ── Capability Manager — register ALL capabilities with lazy factories ──
         capability_manager = CapabilityManager()
         
-        # بررسی حالت --full
-        if args.full:
-            args.enable_automation = True
-            args.enable_autonomous = True
-            args.enable_intent_planning = True
-            args.realtime = True
+        capability_manager.register("intent_analysis", factory=lambda: IntentAnalyzer())
+        capability_manager.register("plan_generation", factory=lambda: PlanGenerator())
+        capability_manager.register("plan_validation", factory=lambda: PlanValidator())
+        capability_manager.register("execution_history",
+                                    factory=lambda: MemoryIntegrator("data/memories.sqlite3"))
+        capability_manager.register("desktop_mouse",
+                                    factory=lambda: MouseController())
+        capability_manager.register("desktop_keyboard",
+                                    factory=lambda: KeyboardController())
+        capability_manager.register("screen_observation",
+                                    factory=lambda: DesktopVision())
+        capability_manager.register("smart_waiting",
+                                    factory=lambda: SmartWaiter())
+        capability_manager.register("action_execution",
+                                    factory=lambda: ActionController(),
+                                    dependencies=["desktop_mouse", "desktop_keyboard",
+                                                  "screen_observation", "smart_waiting"])
+        capability_manager.register("autonomous_agent",
+                                    factory=lambda: AutonomousAgent(
+                                        vision=DesktopVision(),
+                                        mouse=MouseController(),
+                                        keyboard=KeyboardController(),
+                                    ),
+                                    dependencies=["screen_observation", "desktop_mouse", "desktop_keyboard"])
+        capability_manager.register("realtime_loop",
+                                    factory=lambda: RealtimeLoop(
+                                        vision=DesktopVision(),
+                                        session_control=session_control,
+                                        fps=args.realtime_fps,
+                                        max_actions=3,
+                                    ),
+                                    dependencies=["screen_observation"])
 
-        chat_first = not (
-            args.enable_automation
-            or args.enable_autonomous
-            or args.enable_intent_planning
-            or args.realtime
-            or args.full
-            or args.task_mode
-        )
+        # Legacy capability registrations (for backward compat routing)
+        capability_manager.register("browser_use", risk_level="medium",
+                                    dependencies=["intent_analysis"])
+        capability_manager.register("desktop_automation", risk_level="high",
+                                    dependencies=["action_execution"])
+        capability_manager.register("autonomous_agent_cap", risk_level="high",
+                                    dependencies=["autonomous_agent"])
+        capability_manager.register("task_mode", risk_level="safe")
 
         session_control = SessionControl(
             safety_mode=args.safety_mode,
@@ -1271,173 +1036,45 @@ async def main() -> None:
             allowed_paths=args.allow_path,
         )
         
-        # Initialize Safety & Consent Manager
         safety_consent_manager = SafetyConsentManager()
         session_control.set_safety_consent_manager(safety_consent_manager)
-        
-        # Register capabilities
-        capability_manager.register("browser_use", risk_level="medium")
-        capability_manager.register("desktop_automation", risk_level="high")
-        capability_manager.register("autonomous_agent", risk_level="high")
-        capability_manager.register("task_mode", risk_level="safe")
-        logger.info("Copilot Mode components initialized with Safety & Consent")
 
-        if args.task_mode:
-            await capability_manager.enable("task_mode")
-            logger.info("Task Mode pre-enabled via CLI flag")
-        
-        # مقداردهی اولیه قابلیت‌ها
-        mouse = None
-        keyboard = None
-        smart_wait = None
-        vision = None
-        action_controller = None
-        autonomous_agent = None
-        intent_analyzer = None
-        dialog_manager = None
-        plan_generator = None
-        plan_validator = None
-        memory_integrator = None
-        
-        # Desktop Automation
-        if args.enable_automation:
-            try:
-                mouse = MouseController()
-                keyboard = KeyboardController()
-                smart_wait = SmartWaiter()
-                vision = DesktopVision()
-                action_controller = ActionController()
-                logger.info("✅ Desktop Automation initialized")
-            except Exception as e:
-                logger.warning(f"Desktop Automation initialization failed: {e}")
-        
-        # Autonomous Agent
-        if args.enable_autonomous:
-            try:
-                if not vision:
-                    vision = DesktopVision()
-                if not mouse:
-                    mouse = MouseController()
-                if not keyboard:
-                    keyboard = KeyboardController()
-                
-                autonomous_agent = AutonomousAgent(
-                    vision=vision,
-                    mouse=mouse,
-                    keyboard=keyboard
-                )
-                logger.info("✅ Autonomous Agent initialized")
-            except Exception as e:
-                logger.warning(f"Autonomous Agent initialization failed: {e}")
-        
-        # Intent Planning System (جدیدترین فیچر!)
-        if args.enable_intent_planning:
-            try:
-                intent_analyzer = IntentAnalyzer()
-                dialog_manager = DialogManager()
-                plan_generator = PlanGenerator()
-                plan_validator = PlanValidator()
-                memory_integrator = MemoryIntegrator("data/memories.sqlite3")
-                logger.info("✅ Intent Planning System initialized")
-            except Exception as e:
-                logger.warning(f"Intent Planning System initialization failed: {e}")
-        
-        # نمایش وضعیت قابلیت‌ها
-        if not chat_first:
-            print_features_status(
-                automation=args.enable_automation,
-                autonomous=args.enable_autonomous,
-                intent_planning=args.enable_intent_planning,
-                mouse=mouse,
-                keyboard=keyboard,
-                vision=vision,
-                action_controller=action_controller
-            )
-
-        # راه‌اندازی حلقه زمان‌واقعی در صورت درخواست
-        if args.realtime and vision:
-            try:
-                realtime_loop = RealtimeLoop(
-                    vision=vision,
-                    session_control=session_control,
-                    action_controller=action_controller,
-                    fps=args.realtime_fps,
-                    max_actions=3,
-                )
-                realtime_task = asyncio.create_task(realtime_loop.run_loop())
-                logger.info("Realtime loop started")
-                print(f"{Fore.CYAN}⚡ Realtime loop enabled (fps={args.realtime_fps}){Style.RESET_ALL}\n")
-            except Exception as e:
-                logger.warning(f"Failed to start realtime loop: {e}")
-        elif args.realtime and not vision:
-            print(f"{Fore.YELLOW}⚠ Realtime loop requested but vision not initialized.{Style.RESET_ALL}\n")
-
-        # پردازش ورودی کاربر
-        await process_user_input(
-            task_engine, 
-            memory, 
-            args.mode, 
-            args.input_mode, 
-            voice, 
-            system_agent,
-            session_control,
+        # ── Execute capability-driven conversation loop ──
+        await process_capability_loop(
+            args=args,
+            memory=memory,
+            voice=voice,
+            system_agent=system_agent,
             intent_router=intent_router,
             capability_manager=capability_manager,
             safety_consent_manager=safety_consent_manager,
-            chat_first=chat_first,
-            mouse=mouse,
-            keyboard=keyboard,
-            smart_wait=smart_wait,
-            vision=vision,
-            action_controller=action_controller,
-            autonomous_agent=autonomous_agent,
-            intent_analyzer=intent_analyzer,
-            dialog_manager=dialog_manager,
-            plan_generator=plan_generator,
-            plan_validator=plan_validator,
-            memory_integrator=memory_integrator,
-            initial_task_mode=args.task_mode
+            session_control=session_control,
         )
 
     except KeyboardInterrupt:
-        print(f"\n\n{Fore.YELLOW}{'='*80}{Style.RESET_ALL}")
-        print(f"{Fore.YELLOW}Interrupted by user. Shutting down gracefully...{Style.RESET_ALL}")
-        print(f"{Fore.YELLOW}{'='*80}{Style.RESET_ALL}\n")
+        print(f"\n\n{Fore.YELLOW}Interrupted by user. Shutting down...{Style.RESET_ALL}\n")
         logger.info("Application interrupted by user")
     except Exception as e:
-        print(f"\n{Fore.RED}{'='*80}{Style.RESET_ALL}")
-        print(f"{Fore.RED}Fatal error occurred: {str(e)}{Style.RESET_ALL}")
-        print(f"{Fore.RED}{'='*80}{Style.RESET_ALL}\n")
+        print(f"\n{Fore.RED}Fatal error: {str(e)}{Style.RESET_ALL}\n")
         logger.exception("Fatal error occurred")
         sys.exit(1)
     finally:
         try:
-            if capability_manager:
-                await capability_manager.cleanup()
+            await capability_manager.cleanup()
         except Exception:
-            logger.warning("Capability cleanup failed", exc_info=True)
+            pass
 
         if session_log:
-            logger.info("="*80)
             logger.info(f"SESSION ENDED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-            logger.info(f"Session log: {session_log}")
-            logger.info(f"Master log: {master_log}")
-            logger.info("="*80)
-            
             print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
             print(f"{Fore.CYAN}{'SESSION SUMMARY':^80}{Style.RESET_ALL}")
             print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
             print(f"  Session Log : {session_log}")
-            print(f"  Master Log  : {master_log}")
-            print(f"\n  {Fore.GREEN}✓ All logs saved successfully{Style.RESET_ALL}\n")
+            print(f"  Master Log  : {master_log}\n")
             print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
 
-        # توقف حلقه زمان‌واقعی در پایان
-        try:
-            if realtime_task:
-                realtime_task.cancel()
-        except Exception:
-            pass
+        if realtime_task:
+            realtime_task.cancel()
 
 
 if __name__ == "__main__":

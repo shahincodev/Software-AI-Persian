@@ -475,6 +475,36 @@ class CommandExecutor:
         return result
 
 
+def get_system_info() -> dict:
+    """دریافت اطلاعات سیستم (CPU, RAM, Disk).
+
+    Returns:
+        dict: اطلاعات سیستم
+    """
+    try:
+        cpu_percent = psutil.cpu_percent(interval=1)
+        cpu_count = psutil.cpu_count()
+
+        memory = psutil.virtual_memory()
+        ram_total_gb = memory.total / (1024 ** 3)
+        ram_available_gb = memory.available / (1024 ** 3)
+        ram_percent = memory.percent
+
+        disk = psutil.disk_usage('/')
+        disk_total_gb = disk.total / (1024 ** 3)
+        disk_free_gb = disk.free / (1024 ** 3)
+        disk_percent = disk.percent
+
+        return {
+            "cpu": {"usage_percent": cpu_percent, "cores": cpu_count},
+            "ram": {"total_gb": round(ram_total_gb, 2), "available_gb": round(ram_available_gb, 2), "used_percent": ram_percent},
+            "disk": {"total_gb": round(disk_total_gb, 2), "free_gb": round(disk_free_gb, 2), "used_percent": disk_percent},
+        }
+    except Exception as e:
+        logger.error(f"Error getting system info: {e}")
+        return {"error": str(e)}
+
+
 class SystemToolAdapter:
     """رابط یکپارچه برای تمام آداپتورهای سیستمی."""
     

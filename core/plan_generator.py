@@ -29,7 +29,7 @@ from enum import Enum
 import uuid
 from datetime import datetime
 
-from core.intent_analyzer import Intent
+from core.intent_analyzer import Intent, IntentAnalysisResult
 from core.ai_brain import AIBrain
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -235,7 +235,7 @@ class PlanGenerator:
         و یک ExecutionPlan دقیق و بهینه تولید می‌کند.
         
         Args:
-            intent: Intent کامل (از Dialog Manager)
+            intent: Intent کامل (از Dialog Manager) یا IntentAnalysisResult
             context: اطلاعات زمینه‌ای اضافی
             optimize: آیا پلان را بهینه‌سازی کنیم؟
         
@@ -245,6 +245,8 @@ class PlanGenerator:
         مثال:
             >>> plan = await generator.generate_plan(intent, optimize=True)
         """
+        if isinstance(intent, IntentAnalysisResult):
+            intent = intent.intent
         self._plan_counter += 1
         plan_id = f"plan_{self._plan_counter}"
         

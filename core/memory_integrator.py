@@ -24,7 +24,7 @@ from pathlib import Path
 
 from core.plan_generator import ExecutionPlan, ExecutionStep
 from core.plan_validator import ValidationReport, ValidationStatus
-from core.intent_analyzer import Intent
+from core.intent_analyzer import Intent, IntentAnalysisResult
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -493,6 +493,8 @@ class MemoryIntegrator:
 
     def _hash_intent(self, intent: Intent) -> str:
         """تولید Hash برای Intent"""
+        if isinstance(intent, IntentAnalysisResult):
+            intent = intent.intent
         intent_str = f"{intent.verb}:{intent.target}:{intent.language}"
         return hashlib.md5(intent_str.encode()).hexdigest()[:16]
 

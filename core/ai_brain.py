@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import os
 import logging
 import json
@@ -412,9 +413,15 @@ class AIBrain:
             payload = _build_provider_message(prompt)
 
             if hasattr(model, 'ainvoke'):
-                response = await model.ainvoke(payload)
+                response = await asyncio.wait_for(
+                    model.ainvoke(payload),
+                    timeout=60.0
+                )
             elif hasattr(model, 'invoke'):
-                response = model.invoke(payload)
+                response = await asyncio.wait_for(
+                    asyncio.get_event_loop().run_in_executor(None, model.invoke, payload),
+                    timeout=60.0
+                )
             else:
                 raise ValueError("Model does not support invoke or ainvoke")
 

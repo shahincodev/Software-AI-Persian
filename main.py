@@ -28,7 +28,6 @@ from colorama import init as colorama_init, Fore, Style
 from datetime import datetime
 
 # Core foundation
-from core.intelligent_agent import IntelligentSystemAgent
 from core.task_engine import TaskEngine
 from core.voice_io import VoiceManager
 from dotenv import load_dotenv
@@ -39,12 +38,13 @@ from core.capability_manager import CapabilityManager, CapabilityType
 from core.intent_router import IntentRouter, RouteType
 from core.intent_analyzer import IntentAnalyzer
 from core.memory_integrator import MemoryIntegrator, MemoryManager, PlanStatus
+from core.ai_brain import AIBrain
 
 # Safety & Consent Manager
 from core.safety_consent_manager import SafetyConsentManager, RiskLevel
 
 # Capability factories (for lazy registration)
-from core.ai_brain import AIBrain
+from core.action_controller import ActionController
 from core.mouse_control import MouseController
 from core.keyboard_control import KeyboardController
 from core.smart_wait import SmartWaiter
@@ -59,12 +59,12 @@ colorama_init(autoreset=True)
 logger = logging.getLogger(__name__)
 
 
-async def _is_system_request(user_text: str, system_agent: IntelligentSystemAgent) -> bool:
+async def _is_system_request(user_text: str, action_controller: ActionController) -> bool:
     """تشخیص هوشمند درخواست‌های مرتبط با سیستم.
     
     Args:
         user_text: متن درخواست کاربر
-        system_agent: نماینده سیستم برای دسترسی به AI
+        action_controller: نماینده سیستم برای دسترسی به AI
     
     Returns:
         True اگر درخواست مرتبط با سیستم است
@@ -614,7 +614,7 @@ async def process_capability_loop(
     args: argparse.Namespace,
     memory: MemoryManager,
     voice: VoiceManager,
-    system_agent: IntelligentSystemAgent,
+    action_controller: ActionController,
     intent_router: IntentRouter,
     capability_manager: CapabilityManager,
     safety_consent_manager: SafetyConsentManager,
@@ -625,6 +625,7 @@ async def process_capability_loop(
     input_mode = args.input_mode
     task_engine = TaskEngine(concurrency=args.concurrency)
     mode = args.mode
+    chat_brain = AIBrain()
 
     print_banner(banner, color=Fore.CYAN)
 
@@ -828,7 +829,7 @@ async def process_capability_loop(
                     else:
                         print(f"{Fore.RED}❌ Plan validation failed{Style.RESET_ALL}\n")
                 else:
-                    result = await system_agent.process_request(request)
+                    result = await action_controller.process_request(request)
                     print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
                 continue
 
@@ -921,11 +922,11 @@ async def process_capability_loop(
                 print(f"{Fore.GREEN}✓ Added {len(tasks or [user_text])} task(s) to queue.{Style.RESET_ALL}\n")
 
             elif route.type == RouteType.BROWSER_USE:
-                result = await system_agent.process_request(user_text)
+                result = await action_controller.process_request(user_text)
                 print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
 
             elif route.type == RouteType.DESKTOP_AUTOMATION:
-                result = await system_agent.process_request(user_text)
+                result = await action_controller.process_request(user_text)
                 print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
 
             elif route.type == RouteType.AUTONOMOUS_AGENT:
@@ -944,8 +945,19 @@ async def process_capability_loop(
                 msg = route.consent_message or "I didn't understand. Please rephrase."
                 print(f"{Fore.YELLOW}{msg}{Style.RESET_ALL}\n")
 
+            elif route.type == RouteType.CHAT_RESPONSE:
+                try:
+                    response = await chat_brain.ask(user_text, mode="normal", max_tokens=1000)
+                    if response:
+                        print(f"{Fore.CYAN}{response}{Style.RESET_ALL}\n")
+                    else:
+                        print(f"{Fore.YELLOW}I'm not sure how to respond to that.{Style.RESET_ALL}\n")
+                except Exception as e:
+                    logger.exception(f"AI chat failed: {e}")
+                    print(f"{Fore.YELLOW}Sorry, I encountered an error processing your request.{Style.RESET_ALL}\n")
+
             else:
-                result = await system_agent.process_request(user_text)
+                result = await action_controller.process_request(user_text)
                 print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
 
             memory.remember_short(
@@ -981,7 +993,7 @@ async def main() -> None:
         # ── Core always-active components ──
         memory = MemoryManager()
         voice = VoiceManager(tts_provider=args.tts_provider)
-        system_agent = IntelligentSystemAgent(dry_run=args.dry_run)
+        action_controller = ActionController(dry_run=args.dry_run)
         intent_router = IntentRouter()
         
         # ── Capability Manager — register ALL capabilities with lazy factories ──
@@ -1044,7 +1056,7 @@ async def main() -> None:
             args=args,
             memory=memory,
             voice=voice,
-            system_agent=system_agent,
+            action_controller=action_controller,
             intent_router=intent_router,
             capability_manager=capability_manager,
             safety_consent_manager=safety_consent_manager,

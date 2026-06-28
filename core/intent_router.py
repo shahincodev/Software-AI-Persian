@@ -169,12 +169,44 @@ class IntentRouter:
         """
         verb = intent.verb.lower()
         target = intent.target.lower()
+        raw = intent.raw_request.lower() if intent.raw_request else ""
+
+        # تشخیص درخواست‌های گفتگومحور
+        # اگر verb مستقیماً به مکالمه اشاره دارد → همیشه CHAT_RESPONSE
+        converse_verbs = ["converse", "گفتگو"]
+        if verb in converse_verbs:
+            return Route(
+                type=RouteType.CHAT_RESPONSE,
+                requires_activation=[],
+                confidence=intent.confidence,
+                risk_level=RiskLevel.SAFE,
+                metadata={"response_type": "conversational"}
+            )
+
+        # اگر verb با اطمینان پایین از AI fallback گرفته شده (0.70)
+        # و target هم مشخص نیست → CHAT_RESPONSE به جای ریسک misrouting
+        if intent.confidence < 0.75:
+            # اگر درخواست شبیه سؤال یا گفتگوست نه دستور
+            question_markers = ["?", "what", "who", "why", "how", "which", "is there",
+                                "can you", "would you", "tell me", "do you",
+                                "چیست", "چیه", "کیه", "کجاست", "چرا", "چطور",
+                                "آیا", "میشه", "می‌تونی", "میتونی"]
+            if any(m in raw for m in question_markers):
+                return Route(
+                    type=RouteType.CHAT_RESPONSE,
+                    requires_activation=[],
+                    confidence=intent.confidence,
+                    risk_level=RiskLevel.SAFE,
+                    metadata={"response_type": "conversational"}
+                )
         
-        # الگوهای وب
+        # الگوهای وب — هم verb/target و هم متن خام را بررسی کن (برای مواقعی که AI در دسترس نیست)
         web_verbs = ["search", "browse", "check", "find", "look", "visit", "go"]
         web_targets = ["web", "website", "google", "browser", "internet", "online"]
+        web_patterns = ["search ", "browse ", "find ", "check ", "وب", "google", "internet"]
         
-        if any(v in verb for v in web_verbs) or any(t in target for t in web_targets):
+        if (any(v in verb for v in web_verbs) or any(t in target for t in web_targets)
+                or any(p in raw for p in web_patterns)):
             return Route(
                 type=RouteType.BROWSER_USE,
                 requires_activation=["browser_use"],
@@ -183,11 +215,15 @@ class IntentRouter:
                 metadata={"search_query": target, "action": verb}
             )
         
-        # الگوهای اتوماسیون دسکتاپ
+        # الگوهای اتوماسیون دسکتاپ — هم verb/target و هم متن خام را بررسی کن
         desktop_verbs = ["open", "create", "type", "click", "delete", "move", "copy"]
         desktop_targets = ["file", "folder", "notepad", "desktop", "window", "app"]
+        desktop_patterns = ["open ", "launch ", "start ", "run ", "create ", "type ", "click ",
+                            "delete ", "remove ", "باز ", "اجرا ", "ایجاد ", "ساخت ", "نوشتن ",
+                            "کلیک ", "نصب "]
         
-        if any(v in verb for v in desktop_verbs) or any(t in target for t in desktop_targets):
+        if (any(v in verb for v in desktop_verbs) or any(t in target for t in desktop_targets)
+                or any(p in raw for p in desktop_patterns)):
             return Route(
                 type=RouteType.DESKTOP_AUTOMATION,
                 requires_activation=["desktop_automation"],
@@ -207,10 +243,12 @@ class IntentRouter:
                 metadata={"goal": intent.raw_request}
             )
 
-        # الگوهای حالت تسک‌محور (Opt-in)
+        # الگوهای حالت تسک‌محور (Opt-in) — هم verb/target و هم متن خام را بررسی کن
         task_verbs = ["task", "tasks", "todo", "prioritize", "queue", "assign", "schedule", "project"]
         task_targets = ["task", "todo", "project", "backlog", "list"]
-        if any(v in verb for v in task_verbs) or any(t in target for t in task_targets):
+        task_patterns = ["task ", "tasks ", "todo ", "prioritize ", "queue ", "schedule "]
+        if (any(v in verb for v in task_verbs) or any(t in target for t in task_targets)
+                or any(p in raw for p in task_patterns)):
             tasks = self._extract_tasks(intent.raw_request)
             return Route(
                 type=RouteType.TASK_MODE,

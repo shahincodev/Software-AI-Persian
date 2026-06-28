@@ -185,22 +185,29 @@ class IntentAnalyzer:
         # Dictionary از فعل‌های شناخته شده
         self.known_verbs = {
             # انگلیسی
+            "converse": ["say", "tell", "ask", "answer", "reply", "respond", "greet",
+                         "hello", "hi", "hey", "what", "who", "why", "how", "which",
+                         "meaning", "define", "explain", "describe", "mean", "معنی",
+                         "question", "define", "introduce", "introduction"],
             "open": ["open", "launch", "start", "run"],
             "play": ["play", "start", "begin"],
             "create": ["create", "make", "new", "build"],
             "delete": ["delete", "remove", "erase", "clear"],
-            "search": ["search", "find", "look", "browse"],
+            "search": ["search", "find", "look", "browse", "check", "find out"],
             "type": ["type", "write", "enter"],
             "click": ["click", "tap", "press"],
             "install": ["install", "setup", "deploy"],
             # فارسی
-            "باز": ["باز", "اجرا", "شروع", "لانچ"],
+            "گفتگو": ["بگو", "پرسش", "سوال", "جواب", "پاسخ", "سلام", "درود",
+                       "معنی", "توضیح", "چیست", "چیه", "کیه", "کجاست", "یعنی",
+                       "منظور", "تعریف", "معرفی", "چطور", "چرا", "چه", "چی"],
+            "باز": ["باز", "اجرا", "شروع", "لانچ", "اجرا کن"],
             "بازی": ["بازی", "شروع", "آغاز"],
-            "ایجاد": ["ایجاد", "ساخت", "درست", "بساز"],
+            "ایجاد": ["ایجاد", "ساخت", "درست", "بساز", "ایجاد کن"],
             "حذف": ["حذف", "پاک", "حذفش کن"],
-            "جستجو": ["جستجو", "پیدا", "جستجو کن"],
+            "جستجو": ["جستجو", "پیدا", "جستجو کن", "نگاه کن", "ببین"],
             "نوشتن": ["نوشتن", "تایپ", "بنویس"],
-            "کلیک": ["کلیک", "ضربه", "فشار"],
+            "کلیک": ["کلیک", "ضربه", "فشار", "بزن"],
             "نصب": ["نصب", "راه‌اندازی", "استقرار"],
         }
         
@@ -326,13 +333,21 @@ class IntentAnalyzer:
         """
         request_lower = request.lower()
         
-        # جستجو در known_verbs
+        # جستجو در known_verbs — برای انگلیسی از word boundaries استفاده می‌شود
+        # تا false positive مانند "ask" در "task" رخ ندهد
         for canonical_verb, aliases in self.known_verbs.items():
             for alias in aliases:
-                if alias in request_lower:
-                    # یافت شد!
-                    confidence = 0.90  # اطمینان بالا برای کلمات شناخته شده
-                    return canonical_verb, confidence
+                # تشخیص اسکریپت: اگر alias انگلیسی است از word boundaries استفاده کن
+                is_english = all(c.isascii() and c.isalpha() for c in alias)
+                if is_english:
+                    if re.search(r'\b' + re.escape(alias) + r'\b', request_lower):
+                        confidence = 0.90
+                        return canonical_verb, confidence
+                else:
+                    # برای فارسی از simple containment (دقت بالا با false positive کمتر)
+                    if alias in request_lower:
+                        confidence = 0.90
+                        return canonical_verb, confidence
         
         # اگر یافت نشد، از AI استفاده کنید
         prompt = f"""درخواست کاربر را تحلیل کن و فعل اصلی را شناسایی کن.

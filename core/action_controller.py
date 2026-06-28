@@ -1482,6 +1482,8 @@ class ActionController:
                     result = await executor.execute_single(action)
                     if result and result.success:
                         output_lines.append(f"✅ {description}")
+                        if result.output:
+                            output_lines.append(f"   {result.output[:500]}")
                         succeeded += 1
                     else:
                         msg = f" ({result.error})" if result and result.error else ""

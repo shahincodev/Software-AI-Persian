@@ -1,327 +1,327 @@
-# Software-AI — AI-Powered Windows Automation System
+# Software-AI — سیستم خودکارسازی ویندوز با هوش مصنوعی
 
-**Version**: 0.1.0 (pre-release, active refactoring)  
-**Platform**: Windows 10/11 — Python 3.11+  
-**Languages**: Persian (primary), English  
-**License**: Proprietary (All Rights Reserved)
-
----
-
-## Project Overview
-
-Software-AI is an autonomous Windows automation system that accepts natural language commands (Persian/English) and routes them through intent analysis, capability-driven planning, and multi-stage execution.
-
-Unlike traditional automation tools that require scripting or explicit mode selection, Software-AI attempts to **understand the user's intent** first, then activates only the required capabilities to fulfill the request.
-
-This project is currently undergoing a **major architectural refactor** — transitioning from a mode-based design (where users selected `--enable-automation` or `--task-mode` flags) to a capability-driven design (where the system auto-detects requirements from natural language). Some legacy flags still exist as silent no-ops for backward compatibility.
+**نسخه**: 0.1.0 (پیش‌انتشار، در حال بازنویسی)  
+**پلتفرم**: ویندوز 10/11 — پایتون 3.11+  
+**زبان‌ها**: فارسی (اصلی)، انگلیسی  
+**مجوز**: اختصاصی (تمامی حقوق محفوظ است)
 
 ---
 
-## Current Features
+## نمای کلی پروژه
 
-### What Works Today
+Software-AI یک سیستم خودکارسازی مستقل ویندوز است که دستورات زبان طبیعی (فارسی/انگلیسی) را دریافت کرده و از طریق تحلیل هدف، برنامه‌ریزی مبتنی بر قابلیت و اجرای چندمرحله‌ای هدایت می‌کند.
 
-| Capability | Status | Notes |
-|-----------|--------|-------|
-| **Conversational entry** | ✅ Working | Single `python main.py` — no mode flags needed |
-| **Intent routing** | ✅ Working | `IntentRouter` classifies requests into 7 route types |
-| **Intent analysis** | ✅ Working | `IntentAnalyzer` extracts verb/target/confidence from NL |
-| **Plan generation** | ✅ Working | `PlanGenerator` creates multi-step execution plans (up to 50 steps) |
-| **Plan validation** | ✅ Working | `PlanValidator` scores safety, reliability, efficiency |
-| **Desktop vision** | ✅ Working | Screenshot capture, OCR (Tesseract), element detection (OpenCV) |
-| **Mouse control** | ✅ Working | Move, click, drag, scroll via Windows API |
-| **Keyboard control** | ✅ Working | Type text, press keys, hotkeys |
-| **Smart waiting** | ✅ Working | Wait for idle CPU, window, element appearance, screen change |
-| **Action controller** | ✅ Working | High-level desktop actions (click_on_text, fill_form, etc.) |
-| **Execution history** | ✅ Working | SQLite persistence for execution records |
-| **Memory system** | ✅ Working | Short-term (TTL-based) and long-term (SQLite) content memory |
-| **Multi-provider AI** | ✅ Working | Groq → Gemini → OpenRouter → Ollama failover chain |
-| **System actions** | ✅ Working | Launch app, install package, query hardware, terminate process |
-| **Safety & consent** | ✅ Working | Risk scoring (0-100), user consent gates for high-risk actions |
-| **Voice input/output** | ⚠️ Partial | Text-to-speech works; speech-to-text depends on provider |
-| **Browser automation** | ⚠️ Partial | Playwright integration exists, not fully integrated into routing |
-| **Autonomous agent** | ⚠️ Partial | Goal-driven execution with vision feedback, limited in practice |
-| **Realtime loop** | ⚠️ Partial | Monitoring loop exists, not widely used in current flow |
+برخلاف ابزارهای خودکارسازی سنتی که نیاز به اسکریپت‌نویسی یا انتخاب حالت صریح دارند، Software-AI ابتدا سعی در **درک هدف کاربر** دارد، سپس تنها قابلیت‌های لازم برای انجام درخواست را فعال می‌کند.
 
-### Limitations (Honest Assessment)
-
-- **Full end-to-end execution** from NL → analyzed → planned → executed is still being validated. The components exist but the pipeline has not been tested as a complete system.
-- **AI model reliability** depends on API key availability. Without valid keys for Groq/Gemini/OpenRouter, the system falls back to keyword matching, which is significantly less capable.
-- **OCR quality** depends on Tesseract installation and screen resolution. Mixed-language text (Persian + English) can produce unreliable results.
-- **Autonomous agent** vision-based execution is slow (~2-5 seconds per screenshot + LLM analysis) and prone to errors on complex UIs.
-- **No CI/CD pipeline** — tests must be run manually.
-- **Windows only** — no cross-platform support planned.
+این پروژه در حال گذراندن یک **بازنویسی معماری عمده** است — تغییر از طراحی مبتنی بر حالت (جایی که کاربران پرچم‌های `--enable-automation` یا `--task-mode` را انتخاب می‌کردند) به طراحی مبتنی بر قابلیت (جایی که سیستم الزامات را از زبان طبیعی تشخیص می‌دهد). برخی پرچم‌های قدیمی هنوز به عنوان no-op خاموش برای سازگاری معکوس وجود دارند.
 
 ---
 
-## Architecture Overview
+## قابلیت‌های فعلی
 
-### Five-Layer Stack
+### آنچه امروز کار می‌کند
+
+| قابلیت | وضعیت | توضیحات |
+|--------|--------|---------|
+| **ورودی مکالمه‌ای** | ✅ فعال | یک دستور `python main.py` — بدون نیاز به پرچم حالت |
+| **مسیریابی هدف** | ✅ فعال | `IntentRouter` درخواست‌ها را به ۷ نوع مسیر طبقه‌بندی می‌کند |
+| **تحلیل هدف** | ✅ فعال | `IntentAnalyzer` فعل/هدف/اطمینان را از زبان طبیعی استخراج می‌کند |
+| **تولید برنامه** | ✅ فعال | `PlanGenerator` برنامه‌های اجرایی چندمرحله‌ای (تا ۵۰ مرحله) می‌سازد |
+| **اعتبارسنجی برنامه** | ✅ فعال | `PlanValidator` امنیت، قابلیت اطمینان و کارایی را نمره‌دهی می‌کند |
+| **بینایی دسکتاپ** | ✅ فعال | عکس‌برداری از صفحه، OCR (Tesseract)، تشخیص عنصر (OpenCV) |
+| **کنترل ماوس** | ✅ فعال | حرکت، کلیک، کشیدن، اسکرول از طریق Windows API |
+| **کنترل صفحه‌کلید** | ✅ فعال | تایپ متن، فشردن کلیدها، کلیدهای میانبر |
+| **انتظار هوشمند** | ✅ فعال | انتظار برای CPU بیکار، پنجره، ظهور عنصر، تغییر صفحه |
+| **کنترلر عملیات** | ✅ فعال | اقدامات سطح بالای دسکتاپ (کلیک روی متن، پر کردن فرم و غیره) |
+| **تاریخچه اجرا** | ✅ فعال | ذخیره‌سازی SQLite برای رکوردهای اجرا |
+| **سیستم حافظه** | ✅ فعال | حافظه کوتاه‌مدت (مبتنی بر TTL) و بلندمدت (SQLite) محتوا |
+| **هوش مصنوعی چندارائه‌دهنده** | ✅ فعال | زنجیره failover Groq → Gemini → OpenRouter → Ollama |
+| **اقدامات سیستمی** | ✅ فعال | اجرای برنامه، نصب بسته، پرس‌وجوی سخت‌افزار، پایان فرآیند |
+| **امنیت و رضایت** | ✅ فعال | امتیازدهی ریسک (۱۰۰-۰)، دروازه‌های رضایت کاربر برای اقدامات پرخطر |
+| **ورودی/خروجی صوتی** | ⚠️ نسبی | تبدیل متن به گفتار کار می‌کند؛ گفتار به متن به ارائه‌دهنده بستگی دارد |
+| **خودکارسازی مرورگر** | ⚠️ نسبی | یکپارچه‌سازی Playwright وجود دارد، کاملاً در مسیریابی ادغام نشده |
+| **عامل مستقل** | ⚠️ نسبی | اجرای هدف‌محور با بازخورد تصویری، در عمل محدود است |
+| **حلقه بی‌درنگ** | ⚠️ نسبی | حلقه نظارت وجود دارد، در جریان فعلی پرکاربرد نیست |
+
+### محدودیت‌ها (ارزیابی صادقانه)
+
+- **اجرای کامل سرتاسری** از زبان طبیعی → تحلیل → برنامه‌ریزی → اجرا هنوز در حال اعتبارسنجی است. اجزا وجود دارند اما خط لوله به عنوان یک سیستم کامل آزمایش نشده است.
+- **قابلیت اطمینان مدل هوش مصنوعی** به در دسترس بودن کلید API بستگی دارد. بدون کلیدهای معتبر برای Groq/Gemini/OpenRouter، سیستم به تطبیق کلمات کلیدی بازمی‌گردد که به میزان قابل توجهی توانایی کمتری دارد.
+- **کیفیت OCR** به نصب Tesseract و وضوح صفحه بستگی دارد. متن ترکیبی (فارسی + انگلیسی) می‌تواند نتایج غیرقابل اعتمادی تولید کند.
+- **اجرای مبتنی بر بینایی عامل مستقل** کند است (~۲-۵ ثانیه به ازای هر عکس صفحه + تحلیل LLM) و در رابط‌های کاربری پیچیده مستعد خطا است.
+- **بدون خط لوله CI/CD** — تست‌ها باید دستی اجرا شوند.
+- **فقط ویندوز** — پشتیبانی بین‌پلتفرمی برنامه‌ریزی نشده است.
+
+---
+
+## نمای کلی معماری
+
+### پشته پنج‌لایه
 
 ```
-LAYER 5 [UI]             main.py — single conversational entry point
-LAYER 4 [ORCHESTRATION]  IntentRouter → CapabilityManager
-LAYER 3 [PLANNING]       IntentAnalyzer → PlanGenerator → PlanValidator → MemoryIntegrator
-LAYER 2 [EXECUTION]      ActionController → ExecutionManager
-LAYER 1 [CAPABILITIES]   DesktopVision, MouseControl, KeyboardControl, SmartWait,
+لایه ۵ [UI]             main.py — نقطه ورودی مکالمه‌ای واحد
+لایه ۴ [ORCHESTRATION]  IntentRouter → CapabilityManager
+لایه ۳ [PLANNING]       IntentAnalyzer → PlanGenerator → PlanValidator → MemoryIntegrator
+لایه ۲ [EXECUTION]      ActionController → ExecutionManager
+لایه ۱ [CAPABILITIES]   DesktopVision, MouseControl, KeyboardControl, SmartWait,
                          BrowserCore, VoiceIO, SystemTools
 ```
 
-### Execution Flow
+### جریان اجرا
 
 ```
-User Input (text/voice)
+ورودی کاربر (متن/صدا)
     ↓
 IntentRouter.route()
-    ├─ IntentAnalyzer.analyze() — extracts Intent{verb, target, params, confidence}
+    ├─ IntentAnalyzer.analyze() — استخراج Intent{verb, target, params, confidence}
     │
-    ├─ CapabilityManager.activate() — lazily creates required resources
-    │   └─ Resolves dependencies (prerequisites activated first)
+    ├─ CapabilityManager.activate() — ایجاد تنبلانه منابع مورد نیاز
+    │   └─ حل وابستگی‌ها (پیش‌نیازها ابتدا فعال می‌شوند)
     │
-    ├─ SafetyConsentManager — risk assessment + optional user consent
+    ├─ SafetyConsentManager — ارزیابی ریسک + رضایت اختیاری کاربر
     │
-    └─ RouteType dispatch:
-         ├─ CHAT_RESPONSE      → AIBrain.ask() → text response
+    └─ توزیع RouteType:
+         ├─ CHAT_RESPONSE      → AIBrain.ask() → پاسخ متنی
          ├─ BROWSER_USE        → BrowserCore (Playwright)
-         ├─ DESKTOP_AUTOMATION → ActionController (vision + mouse + keyboard)
-         ├─ AUTONOMOUS_AGENT   → AutonomousAgent (goal-driven)
-         ├─ TASK_MODE          → TaskEngine (queued batch execution)
-         ├─ CLARIFICATION_NEEDED → dialog with user
+         ├─ DESKTOP_AUTOMATION → ActionController (بینایی + ماوس + صفحه‌کلید)
+         ├─ AUTONOMOUS_AGENT   → AutonomousAgent (هدف‌محور)
+         ├─ TASK_MODE          → TaskEngine (اجرای دسته‌ای صف‌بندی شده)
+         ├─ CLARIFICATION_NEEDED → گفتگو با کاربر
          └─ (fallback)         → ActionController.process_request()
     ↓
-MemoryIntegrator.record_execution() — persist outcome
+MemoryIntegrator.record_execution() — ذخیره نتیجه
 ```
 
-### Key Design Decisions
+### تصمیمات کلیدی طراحی
 
-- **Capability-driven**: The system, not the user, decides which components to activate.
-- **Lazy initialization**: Expensive components (DesktopVision, BrowserCore) are created only when first requested.
-- **Consolidated modules**: Multiple legacy modules have been merged into their nearest logical relatives (DialogManager → IntentAnalyzer, MemorySystem → MemoryIntegrator, MasterController → IntentRouter, IntelligentSystemAgent → ActionController).
-- **Backward-compatible wrappers**: Deprecated modules still exist as re-export wrappers with `DeprecationWarning` to avoid breaking existing imports.
+- **مبتنی بر قابلیت**: سیستم تصمیم می‌گیرد کدام اجزا را فعال کند، نه کاربر.
+- **ایجاد تنبلانه**: اجزای پرهزینه (DesktopVision, BrowserCore) فقط در اولین درخواست ساخته می‌شوند.
+- **ماژول‌های تلفیق شده**: چندین ماژول قدیمی در نزدیکترین خویشاوند منطقی خود ادغام شده‌اند (DialogManager → IntentAnalyzer، MemorySystem → MemoryIntegrator، MasterController → IntentRouter، IntelligentSystemAgent → ActionController).
+- ** لفافه‌های سازگار معکوس**: ماژول‌های منسوخ شده هنوز به عنوان لفافه‌های صادرات مجدد با `DeprecationWarning` برای جلوگیری از شکستن ایمپورت‌های موجود وجود دارند.
 
 ---
 
-## Project Structure
+## ساختار پروژه
 
 ```
 Software-AI/
-├── main.py                 # Single entry point
+├── main.py                 # نقطه ورودی واحد
 ├── core/
-│   ├── ai_brain.py         # LLM communication (multi-provider)
-│   ├── action_controller.py # Desktop + system action execution (~1500 lines)
-│   ├── action_recovery.py  # Error handling and retry
-│   ├── action_safety.py    # Pre-execution safety checks
-│   ├── agent_core.py       # Core agent utilities
-│   ├── autonomous_agent.py # Goal-driven executor with vision feedback
-│   ├── browser_core.py     # Playwright-based web automation
-│   ├── capability_manager.py # Central registry, factories, lazy activation
-│   ├── context_aware_actions.py # Context-dependent behavior
-│   ├── desktop_actions.py  # High-level desktop action definitions
-│   ├── desktop_vision.py   # Screenshot, OCR, element detection
-│   ├── dialog_manager.py   # [DEPRECATED] Re-exports from intent_analyzer
-│   ├── execution_manager.py # System action executor (launch, install, etc.)
-│   ├── intelligent_agent.py # [DEPRECATED] Re-exports from intent_analyzer + action_controller
-│   ├── intent_analyzer.py  # Intent extraction + dialog + action parsing (~1400 lines)
-│   ├── intent_router.py    # Route classification, risk assessment
-│   ├── keyboard_control.py # Keyboard automation
-│   ├── logging_config.py   # Logging infrastructure
-│   ├── master_controller.py # [DEPRECATED] Re-exports from intent_router + system_tools
-│   ├── memory_integrator.py # Execution history + learned patterns + content memory
-│   ├── memory_system.py    # [DEPRECATED] Re-exports from memory_integrator
-│   ├── model_config.py     # Model parameters, context limits
-│   ├── model_orchestrator.py # Multi-provider fallback logic
-│   ├── monitoring_service.py # System health monitoring
-│   ├── mouse_control.py    # Mouse operations
-│   ├── multi_monitor.py    # Multi-display support
-│   ├── plan_generator.py   # Multi-step execution plan creation
-│   ├── plan_validator.py   # Plan safety/reliability scoring
-│   ├── realtime_interpreter.py # Execution state interpretation
-│   ├── realtime_loop.py    # Real-time execution with feedback
-│   ├── safety_consent_manager.py # Risk assessment + consent
-│   ├── safety_filter.py    # Content filtering
-│   ├── smart_wait.py       # Intelligent polling (CPU idle, window, etc.)
-│   ├── system_actions.py   # System action definitions
-│   ├── system_capabilities.py # System capability registry
-│   ├── system_tools.py     # OS-level operations
-│   ├── task_engine.py      # Task mode engine
-│   └── voice_io.py         # Speech-to-text, text-to-speech
-├── tests/                  # 35 test files
-├── docs/                   # Documentation (~30 files)
-├── data/                   # Runtime data (logs, SQLite DB, screenshots)
-├── AI_PROJECT_RULES.md     # Permanent engineering principles
-├── PROJECT_MIGRATION_CONTEXT.md  # Architectural evolution record
-├── AGENTS.md               # AI agent operational memory
-└── requirements.txt        # Python dependencies
+│   ├── ai_brain.py         # ارتباط با LLM (چندارائه‌دهنده)
+│   ├── action_controller.py # اجرای اقدامات دسکتاپ + سیستم (~۱۵۰۰ خط)
+│   ├── action_recovery.py  # مدیریت خطا و تلاش مجدد
+│   ├── action_safety.py    # بررسی‌های امنیتی پیش از اجرا
+│   ├── agent_core.py       # ابزارهای اصلی عامل
+│   ├── autonomous_agent.py # اجراگر هدف‌محور با بازخورد تصویری
+│   ├── browser_core.py     # خودکارسازی وب مبتنی بر Playwright
+│   ├── capability_manager.py # ثبت مرکزی، کارخانه‌ها، فعال‌سازی تنبلانه
+│   ├── context_aware_actions.py # رفتار وابسته به بافت
+│   ├── desktop_actions.py  # تعاریف اقدامات سطح بالای دسکتاپ
+│   ├── desktop_vision.py   # عکس صفحه، OCR، تشخیص عنصر
+│   ├── dialog_manager.py   # [منسوخ] صادرات مجدد از intent_analyzer
+│   ├── execution_manager.py # اجراگر اقدامات سیستمی (اجرا، نصب و غیره)
+│   ├── intelligent_agent.py # [منسوخ] صادرات مجدد از intent_analyzer + action_controller
+│   ├── intent_analyzer.py  # استخراج هدف + گفتگو + تحلیل اقدام (~۱۴۰۰ خط)
+│   ├── intent_router.py    # طبقه‌بندی مسیر، ارزیابی ریسک
+│   ├── keyboard_control.py # خودکارسازی صفحه‌کلید
+│   ├── logging_config.py   # زیرساخت ثبت رویداد
+│   ├── master_controller.py # [منسوخ] صادرات مجدد از intent_router + system_tools
+│   ├── memory_integrator.py # تاریخچه اجرا + الگوهای آموخته شده + حافظه محتوا
+│   ├── memory_system.py    # [منسوخ] صادرات مجدد از memory_integrator
+│   ├── model_config.py     # پارامترهای مدل، محدودیت‌های بافت
+│   ├── model_orchestrator.py # منطق failover چندارائه‌دهنده
+│   ├── monitoring_service.py # نظارت سلامت سیستم
+│   ├── mouse_control.py    # عملیات ماوس
+│   ├── multi_monitor.py    # پشتیبانی از چند نمایشگر
+│   ├── plan_generator.py   # ایجاد برنامه اجرایی چندمرحله‌ای
+│   ├── plan_validator.py   # نمره‌دهی امنیت/قابلیت اطمینان برنامه
+│   ├── realtime_interpreter.py # تفسیر وضعیت اجرا
+│   ├── realtime_loop.py    # اجرای بی‌درنگ با بازخورد
+│   ├── safety_consent_manager.py # ارزیابی ریسک + رضایت
+│   ├── safety_filter.py    # فیلتر محتوا
+│   ├── smart_wait.py       # polling هوشمند (CPU بیکار، پنجره و غیره)
+│   ├── system_actions.py   # تعاریف اقدامات سیستمی
+│   ├── system_capabilities.py # ثبت قابلیت‌های سیستم
+│   ├── system_tools.py     # عملیات سطح سیستم‌عامل
+│   ├── task_engine.py      # موتور حالت وظیفه
+│   └── voice_io.py         # گفتار به متن، متن به گفتار
+├── tests/                  # ۳۵ فایل تست
+├── docs/                   # مستندات (~۳۰ فایل)
+├── data/                   # داده‌های زمان اجرا (لاگ‌ها، دیتابیس SQLite، عکس‌های صفحه)
+├── AI_PROJECT_RULES.md     # اصول مهندسی دائمی
+├── PROJECT_MIGRATION_CONTEXT.md  # تاریخچه تحول معماری
+├── AGENTS.md               # حافظه عملیاتی عامل هوش مصنوعی
+└── requirements.txt        # وابستگی‌های پایتون
 ```
 
 ---
 
-## Installation
+## نصب
 
-### Prerequisites
+### پیش‌نیازها
 
-- **OS**: Windows 10 or 11
-- **Python**: 3.11 or later
-- **RAM**: 4 GB minimum
-- **Internet**: Required for AI model API access
+- **سیستم‌عامل**: ویندوز ۱۰ یا ۱۱
+- **پایتون**: ۳.۱۱ یا بالاتر
+- **RAM**: حداقل ۴ گیگابایت
+- **اینترنت**: برای دسترسی به API مدل هوش مصنوعی لازم است
 
-### Setup
+### راه‌اندازی
 
 ```powershell
-# 1. Clone
+# 1. کلون کردن
 git clone https://github.com/shahincodev/Software-AI-Persian.git
 cd Software-AI-Persian
 
-# 2. Create virtual environment
+# 2. ایجاد محیط مجازی
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 
-# 3. Install dependencies
+# 3. نصب وابستگی‌ها
 pip install -r requirements.txt
 
-# 4. Configure API keys
+# 4. تنظیم کلیدهای API
 Copy-Item .env.example .env
-# Edit .env with your API keys (see Configuration section)
+# فایل .env را با کلیدهای API خود ویرایش کنید (بخش تنظیمات را ببینید)
 
-# 5. Install Tesseract OCR (optional, needed for desktop vision)
-# Download from: https://github.com/UB-Mannheim/tesseract/wiki
+# 5. نصب Tesseract OCR (اختیاری، برای بینایی دسکتاپ لازم است)
+# دانلود از: https://github.com/UB-Mannheim/tesseract/wiki
 
-# 6. Run
+# 6. اجرا
 python main.py
 ```
 
 ---
 
-## Configuration
+## تنظیمات
 
-### `.env` File
+### فایل `.env`
 
 ```bash
-# API Keys — at least one required
+# کلیدهای API — حداقل یکی لازم است
 GEMINI_API_KEY=your_key_here
 GROQ_API_KEY=your_key_here
 OPENROUTER_API_KEY=your_key_here
 OPENAI_API_KEY=your_key_here
 
-# Tesseract OCR path (if not in PATH)
+# مسیر Tesseract OCR (اگر در PATH نیست)
 TESSERACT_PATH=C:\Program Files\Tesseract-OCR\tesseract.exe
 
-# Logging
+# ثبت رویداد
 LOGLEVEL=INFO
 ```
 
-The system tries providers in this order: **Groq → Gemini → OpenRouter → Ollama (local)**. If all fail, it falls back to keyword-based matching (limited capability).
+سیستم ارائه‌دهندگان را به این ترتیب امتحان می‌کند: **Groq → Gemini → OpenRouter → Ollama (محلی)**. اگر همه شکست بخورند، به تطبیق مبتنی بر کلمات کلیدی بازمی‌گردد (قابلیت محدود).
 
-### CLI Arguments
+### آرگومان‌های خط فرمان
 
 ```
 python main.py [options]
 
-  --input-mode {text,voice}     Input type (default: text)
+  --input-mode {text,voice}     نوع ورودی (پیش‌فرض: text)
   --tts-provider {gtts,google-cloud,elevenlabs}
-  --debug                       Enable debug logging
-  --dry-run                     Simulate actions without executing
-  --safety-mode {safe,power}    Safety profile (default: safe)
-  --risk-threshold INT          Risk threshold 0-100 (default: 70)
-  --allow-app APP               Allow specific app (repeatable)
-  --allow-path PATH             Allow specific path (repeatable)
-  --concurrency INT             Concurrent tasks for TaskEngine (default: 2)
-  --mode {browser,code}         [deprecated] Auto-detected
+  --debug                       فعال‌سازی ثبت رویداد اشکال‌زدایی
+  --dry-run                     شبیه‌سازی اقدامات بدون اجرا
+  --safety-mode {safe,power}    نمایه امنیتی (پیش‌فرض: safe)
+  --risk-threshold INT          آستانه ریسک ۱۰۰-۰ (پیش‌فرض: ۷۰)
+  --allow-app APP               اجازه برنامه خاص (قابل تکرار)
+  --allow-path PATH             اجازه مسیر خاص (قابل تکرار)
+  --concurrency INT             وظایف همزمان برای TaskEngine (پیش‌فرض: ۲)
+  --mode {browser,code}         [منسوخ] خودکار تشخیص داده می‌شود
 ```
 
-**Note**: Legacy mode flags (`--enable-automation`, `--enable-autonomous`, `--task-mode`, `--full`) are accepted as no-ops but have no effect. The system detects capability requirements automatically.
+**توجه**: پرچم‌های حالت قدیمی (`--enable-automation`، `--enable-autonomous`، `--task-mode`، `--full`) به عنوان no-op پذیرفته می‌شوند but اثری ندارند. سیستم الزامات قابلیت را به طور خودکار تشخیص می‌دهد.
 
 ---
 
-## Usage
+## نحوه استفاده
 
-### Basic Interaction
+### تعامل پایه
 
 ```powershell
 python main.py
 ```
 
-Type natural language requests. The system routes them automatically:
+درخواست‌های زبان طبیعی را تایپ کنید. سیستم آن‌ها را به طور خودکار مسیریابی می‌کند:
 
 ```
-> what is the weather in Tehran?
-(router determines: BROWSER_USE → web search)
+> هوای تهران چطوره؟
+(مسیریاب تشخیص می‌دهد: BROWSER_USE → جستجوی وب)
 
-> create a folder on my desktop called test
-(router determines: DESKTOP_AUTOMATION → action execution)
+> یک پوشه روی دسکتاپ من به اسم test بساز
+(مسیریاب تشخیص می‌دهد: DESKTOP_AUTOMATION → اجرای اقدام)
 
-> write a professional email requesting a meeting
-(router determines: CHAT_RESPONSE → LLM response)
+> یک ایمیل حرفه‌ای برای درخواست جلسه بنویس
+(مسیریاب تشخیص می‌دهد: CHAT_RESPONSE → پاسخ LLM)
 
-> open notepad and type hello
-(router determines: DESKTOP_AUTOMATION → system + desktop actions)
+> notepad رو باز کن و hello رو تایپ کن
+(مسیریاب تشخیص می‌دهد: DESKTOP_AUTOMATION → اقدامات سیستم + دسکتاپ)
 ```
 
-### Explicit Command Shortcuts (Backward Compat)
+### میانبرهای دستور صریح (سازگار معکوس)
 
-For power users, explicit prefixes bypass routing:
+برای کاربران حرفه‌ای، پیشوندهای صریح مسیریابی را دور می‌زنند:
 
 ```
-plan <request>          → Force intent analysis + plan generation
-smart <request>         → Force intent analysis + plan generation + execute
-goal <description>      → Force autonomous agent execution
-mouse <command>         → Direct mouse control
-type <text>             → Direct keyboard input
-wait <condition>        → Direct smart wait
-vision <command>        → Direct vision operations
+plan <درخواست>          → اجبار تحلیل هدف + تولید برنامه
+smart <درخواست>         → اجبار تحلیل هدف + تولید برنامه + اجرا
+goal <توضیحات>          → اجبار اجرای عامل مستقل
+mouse <دستور>           → کنترل مستقیم ماوس
+type <متن>              → ورودی مستقیم صفحه‌کلید
+wait <شرط>              → انتظار هوشمند مستقیم
+vision <دستور>          → عملیات بینایی مستقیم
 ```
 
-### Voice Input
+### ورودی صوتی
 
 ```powershell
 python main.py --input-mode voice
 ```
 
-### Safety Modes
+### حالت‌های امنیتی
 
-- **safe** (default): High-risk actions require explicit `y/n` confirmation. Threshold at 70.
-- **power**: Fewer consent prompts, higher tolerance for automated actions.
-
----
-
-## Current Limitations
-
-1. **Refactoring in progress**: 4 modules are deprecated wrappers awaiting removal. The codebase has some duplication and inconsistency during the transition.
-2. **Unified memory pending**: Two SQLite schemas (`memories` + `execution_history`) coexist in one file without a unified access layer.
-3. **Execution pipeline still split**: Desktop actions go through `ActionController`, system actions through `ExecutionManager`. A strategy-pattern unification is planned.
-4. **No CI/CD**: Tests must be run manually. No automated regression safety net.
-5. **pytest-asyncio required**: Async tests require `pytest-asyncio` to be installed separately.
-6. **Windows only**: Relies on Windows API (pywin32) for window management.
-7. **AI model dependency**: Without valid API keys, the system degrades to keyword matching, which handles only simple system commands.
+- **safe** (پیش‌فرض): اقدامات پرخطر نیاز به تأیید صریح `y/n` دارند. آستانه در ۷۰.
+- **power**: اعلان‌های رضایت کمتر، تحمل بیشتر برای اقدامات خودکار.
 
 ---
 
-## Roadmap (Ordered)
+## محدودیت‌های فعلی
 
-1. **Remove deprecated wrappers**: Delete `dialog_manager.py`, `memory_system.py`, `master_controller.py`, then `intelligent_agent.py` after import audit.
-2. **Update test files**: Point imports to consolidated modules, add missing test coverage.
-3. **Unify memory schema**: Merge content memory and execution history into a coherent access layer.
-4. **Strategy-pattern execution**: Unify `ActionController`, `AutonomousAgent`, and `BrowserCore` under a common execution strategy interface.
-5. **CI/CD setup**: Automated testing, linting, pre-commit hooks.
-6. **End-to-end validation**: Test the complete NL → route → execute → record pipeline.
-
----
-
-## Documentation
-
-| Document | Purpose |
-|----------|---------|
-| `AI_PROJECT_RULES.md` | Permanent engineering principles |
-| `PROJECT_MIGRATION_CONTEXT.md` | Full architectural history, ADRs, technical debt |
-| `AGENTS.md` | AI agent operational memory & context routing |
-| `docs/` | ~30 markdown files covering individual modules |
+۱. **بازنویسی در حال انجام**: ۴ ماژول لفافه‌های منسوخ هستند که منتظر حذفند. پایگاه کد در طول انتقال دارای مقداری تکرار و ناسازگاری است.
+۲. **حافظه یکپارچه در انتظار**: دو طرح SQLite (`memories` + `execution_history`) در یک فایل بدون لایه دسترسی یکپارچه همزیستی دارند.
+۳. **خط لوله اجرا هنوز تقسیم شده**: اقدامات دسکتاپ از طریق `ActionController`، اقدامات سیستمی از طریق `ExecutionManager` انجام می‌شوند. یکپارچه‌سازی با الگوی استراتژی برنامه‌ریزی شده است.
+۴. **بدون CI/CD**: تست‌ها باید دستی اجرا شوند. هیچ تور امنیتی بازگشت خودکار وجود ندارد.
+۵. **نیاز به pytest-asyncio**: تست‌های ناهمگام نیاز به نصب جداگانه `pytest-asyncio` دارند.
+۶. **فقط ویندوز**: متکی به Windows API (pywin32) برای مدیریت پنجره است.
+۷. **وابستگی به مدل هوش مصنوعی**: بدون کلیدهای API معتبر، سیستم به تطبیق کلمات کلیدی تنزل می‌یابد که تنها دستورات ساده سیستمی را مدیریت می‌کند.
 
 ---
 
-## License
+## نقشه راه (مرتب)
 
-**Proprietary — All Rights Reserved.**
+۱. **حذف لفافه‌های منسوخ**: حذف `dialog_manager.py`، `memory_system.py`، `master_controller.py`، سپس `intelligent_agent.py` پس از حسابرسی ایمپورت.
+۲. **به‌روزرسانی فایل‌های تست**: اشاره ایمپورت‌ها به ماژول‌های تلفیق شده، افزودن پوشش تست缺失.
+۳. **یکپارچه‌سازی طرح حافظه**: ادغام حافظه محتوا و تاریخچه اجرا در یک لایه دسترسی منسجم.
+۴. **اجرای الگوی استراتژی**: یکپارچه‌سازی `ActionController`، `AutonomousAgent` و `BrowserCore` تحت یک رابط استراتژی اجرای مشترک.
+۵. **راه‌اندازی CI/CD**: تست خودکار، linting، هوک‌های pre-commit.
+۶. **اعتبارسنجی سرتاسری**: آزمایش خط لوله کامل NL → مسیر → اجرا → ضبط.
 
-© 2025 Shahin (shahincodev)
+---
 
-This software is provided "AS IS" without warranty of any kind. See the [LICENSE](LICENSE) file for details. Contact `shahincodev@gmail.com` for licensing inquiries.
+## مستندات
+
+| سند | هدف |
+|-------|---------|
+| `AI_PROJECT_RULES.md` | اصول مهندسی دائمی |
+| `PROJECT_MIGRATION_CONTEXT.md` | تاریخچه کامل معماری، ADRها، بدهی فنی |
+| `AGENTS.md` | حافظه عملیاتی عامل هوش مصنوعی و مسیریابی بافت |
+| `docs/` | ~۳۰ فایل مارک‌داون پوشش‌دهنده ماژول‌های فردی |
+
+---
+
+## مجوز
+
+**اختصاصی — تمامی حقوق محفوظ است.**
+
+© ۲۰۲۵ شاهین (shahincodev)
+
+این نرم‌افزار "همانطور که هست" بدون هیچ گونه ضمانتی ارائه می‌شود. برای جزئیات به فایل [LICENSE](LICENSE) مراجعه کنید. برای سوالات مجوز با `shahincodev@gmail.com` تماس بگیرید.

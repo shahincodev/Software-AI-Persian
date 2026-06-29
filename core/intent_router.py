@@ -138,10 +138,6 @@ class IntentRouter:
             route = self._classify_intent(intent, safety_mode)
             route.intent = intent
             
-            # تنزل مسیریابی اگر قابلیت مورد نیاز فعال نیست
-            if current_capabilities is not None:
-                route = self._downgrade_if_unavailable(route, current_capabilities)
-            
             # تعیین سطح ریسک
             route.risk_level = self._assess_risk_level(intent, route)
             
@@ -161,37 +157,6 @@ class IntentRouter:
                 risk_level=RiskLevel.SAFE,
                 consent_message=f"خطایی رخ داد: {str(e)}"
             )
-    
-    def _downgrade_if_unavailable(
-        self,
-        route: Route,
-        current_capabilities: Dict[str, bool]
-    ) -> Route:
-        """اگر قابلیت مورد نیاز برای یک مسیر فعال نیست، مسیر را به
-        CHAT_RESPONSE تنزل بده تا بتوان از طریق chat LLM پاسخ داد.
-        """
-        if route.type == RouteType.CHAT_RESPONSE:
-            return route
-        
-        # بررسی دسترسی به قابلیت‌های مورد نیاز
-        if route.requires_activation:
-            for cap in route.requires_activation:
-                if cap not in current_capabilities or not current_capabilities[cap]:
-                    logger.warning(
-                        f"Downgrading route {route.type.value} → CHAT_RESPONSE "
-                        f"(capability '{cap}' not available)"
-                    )
-                    return Route(
-                        type=RouteType.CHAT_RESPONSE,
-                        intent=route.intent,
-                        requires_activation=[],
-                        confidence=route.confidence,
-                        risk_level=RiskLevel.SAFE,
-                        metadata={"response_type": "capability_unavailable",
-                                   "original_route": route.type.value,
-                                   "missing_capability": cap}
-                    )
-        return route
     
     def _decompose_multi_step(self, user_text: str) -> List[str]:
         """تشخیص و تجزیه درخواست‌های چندمرحله‌ای به مراحل مجزا.

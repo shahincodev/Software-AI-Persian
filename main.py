@@ -21,90 +21,44 @@ import asyncio
 import logging
 import shutil
 import sys
-import warnings
 from pathlib import Path
-from typing import Optional, Any, List, Dict
+from typing import Any, Dict, List, Optional
 from colorama import init as colorama_init, Fore, Style
 from datetime import datetime
 
-# Core foundation
-from core.task_engine import TaskEngine
-from core.voice_io import VoiceManager
 from dotenv import load_dotenv
-from core.logging_config import setup_logging, install_exception_hook
 
-# Capability-driven architecture
-from core.capability_manager import CapabilityManager, CapabilityType
-from core.intent_router import IntentRouter, RouteType
-from core.intent_analyzer import IntentAnalyzer
-from core.memory_integrator import MemoryIntegrator, MemoryManager, PlanStatus
+from core.action_controller import ActionController
 from core.ai_brain import AIBrain
-
-# Safety & Consent Manager
-from core.safety_consent_manager import SafetyConsentManager, RiskLevel
-
-# Capability factories (for lazy registration)
-from core.action_controller import ActionController
-from core.mouse_control import MouseController
-from core.keyboard_control import KeyboardController
-from core.smart_wait import SmartWaiter
-from core.desktop_vision import DesktopVision
-from core.action_controller import ActionController
 from core.autonomous_agent import AutonomousAgent
+from core.capability_manager import CapabilityManager
+from core.desktop_vision import DesktopVision
+from core.intent_analyzer import IntentAnalyzer
+from core.intent_router import IntentRouter, RouteType
+from core.keyboard_control import KeyboardController
+from core.logging_config import install_exception_hook, setup_logging
+from core.memory_integrator import MemoryIntegrator, MemoryManager, PlanStatus
+from core.mouse_control import MouseController
 from core.plan_generator import PlanGenerator
 from core.plan_validator import PlanValidator
 from core.realtime_loop import RealtimeLoop
+from core.safety_consent_manager import SafetyConsentManager
+from core.smart_wait import SmartWaiter
+from core.task_engine import TaskEngine
+from core.voice_io import VoiceManager
 
 colorama_init(autoreset=True)
 logger = logging.getLogger(__name__)
 
 
-async def _is_system_request(user_text: str, action_controller: ActionController) -> bool:
-    """تشخیص هوشمند درخواست‌های مرتبط با سیستم.
-    
-    Args:
-        user_text: متن درخواست کاربر
-        action_controller: نماینده سیستم برای دسترسی به AI
-    
-    Returns:
-        True اگر درخواست مرتبط با سیستم است
-    """
-    # کلیدواژه‌های سیستم (انگلیسی و فارسی)
-    system_keywords = [
-        # Actions - English
-        "open", "launch", "start", "run",
-        "install", "setup",
-        "close", "kill", "terminate", "stop",
-        "hardware", "cpu", "ram", "memory", "disk", "gpu",
-        # Actions - Persian
-        "باز", "اجرا", "شروع", "استارت",
-        "نصب", "راه‌اندازی",
-        "بستن", "بسته", "خاموش", "توقف",
-        "سخت‌افزار", "پردازنده", "رم", "حافظه", "هارد", "کارت گرافیک",
-        # Apps - English
-        "notepad", "calculator", "calc", "chrome", "firefox", "edge",
-        "photoshop", "word", "excel", "powerpoint",
-        "vscode", "visual studio", "app", "application",
-        # Apps - Persian
-        "نوت‌پد", "دفترچه", "ماشین‌حساب", "کروم", "فایرفاکس", "اج",
-        "فتوشاپ", "ورد", "اکسل", "پاورپوینت",
-        "برنامه", "اپلیکیشن",
-        # System operations - English
-        "process", "task manager", "system",
-        # System operations - Persian
-        "فرآیند", "تسک منیجر", "سیستم", "ویندوز",
-        # Common verbs - Persian
-        "بنویس", "تایپ", "کلیک", "ذخیره", "اجرا کن"
-    ]
-    
-    user_lower = user_text.lower()
-    
-    # بررسی سریع با کلیدواژه‌ها
-    for keyword in system_keywords:
-        if keyword in user_lower:
-            return True
-    
-    return False
+def _load_banner(path: str = "banner.txt") -> str:
+    try:
+        return Path(path).read_text(encoding="utf-8")
+    except (FileNotFoundError, OSError):
+        return "Software-AI"
+
+
+banner = _load_banner()
 
 
 def _summarize_for_voice(result_text: str) -> str:
@@ -386,12 +340,6 @@ async def handle_vision_command(
         logger.exception("Vision command failed")
 
 
-# بارگذاری بنر از فایل
-with open('banner.txt', 'r', encoding='utf-8') as file:
-    banner = file.read()
-
-logger = logging.getLogger(__name__)
-
 def setup_environment() -> None:
     """مقداردهی متغیرهای محیطی و ایجاد پوشه‌های مورد نیاز."""
     # بارگذاری متغیرهای محیطی از فایل .env
@@ -416,6 +364,13 @@ Examples:
         """
     )
     
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="Software-AI 0.1.0",
+        help="نمایش نسخه و خروج"
+    )
+
     parser.add_argument(
         "--input-mode",
         choices=["text", "voice"],
@@ -624,7 +579,6 @@ async def process_capability_loop(
     current_lang = "en"
     input_mode = args.input_mode
     task_engine = TaskEngine(concurrency=args.concurrency)
-    mode = args.mode
     chat_brain = AIBrain()
 
     print_banner(banner, color=Fore.CYAN)

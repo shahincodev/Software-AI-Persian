@@ -5,9 +5,12 @@ import asyncio
 import sys
 from pathlib import Path
 
+import pytest
+
 # Add core to path
 sys.path.insert(0, str(Path(__file__).parent))
 
+@pytest.mark.asyncio
 async def test_imports():
     """Test if all imports work correctly."""
     print("=" * 60)
@@ -49,6 +52,7 @@ async def test_imports():
         return False
 
 
+@pytest.mark.asyncio
 async def test_action_controller():
     """Test action controller with approval workflow."""
     print("\n" + "=" * 60)
@@ -84,6 +88,7 @@ async def test_action_controller():
         return False
 
 
+@pytest.mark.asyncio
 async def test_ai_brain():
     """Test AI brain message formatting."""
     print("\n" + "=" * 60)
@@ -107,6 +112,7 @@ async def test_ai_brain():
         return False
 
 
+@pytest.mark.asyncio
 async def test_window_detection():
     """Test window detection logic."""
     print("\n" + "=" * 60)

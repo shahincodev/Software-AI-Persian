@@ -20,7 +20,7 @@ from core.intent_analyzer import (
 
 
 @pytest.fixture
-async def analyzer():
+def analyzer():
     """Fixture برای IntentAnalyzer"""
     return IntentAnalyzer()
 
@@ -84,10 +84,15 @@ class TestTargetExtraction:
     @pytest.mark.asyncio
     async def test_common_applications(self, analyzer):
         """تست شناسایی برنامه‌های معروف"""
-        apps = ["steam", "chrome", "notepad"]
-        for app in apps:
+        apps = {
+            "steam": "steam",
+            "chrome": "browser",
+            "firefox": "browser",
+            "notepad": "notepad",
+        }
+        for app, expected_target in apps.items():
             result = await analyzer.analyze(f"open {app}")
-            assert result.intent.target == app.lower()
+            assert result.intent.target == expected_target
     
     @pytest.mark.asyncio
     async def test_missing_target(self, analyzer):

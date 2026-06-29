@@ -335,19 +335,22 @@ class IntentAnalyzer:
         
         # جستجو در known_verbs — برای انگلیسی از word boundaries استفاده می‌شود
         # تا false positive مانند "ask" در "task" رخ ندهد
+        candidates = []
+
         for canonical_verb, aliases in self.known_verbs.items():
             for alias in aliases:
-                # تشخیص اسکریپت: اگر alias انگلیسی است از word boundaries استفاده کن
                 is_english = all(c.isascii() and c.isalpha() for c in alias)
                 if is_english:
                     if re.search(r'\b' + re.escape(alias) + r'\b', request_lower):
-                        confidence = 0.90
-                        return canonical_verb, confidence
+                        return canonical_verb, 0.90
                 else:
-                    # برای فارسی از simple containment (دقت بالا با false positive کمتر)
-                    if alias in request_lower:
-                        confidence = 0.90
-                        return canonical_verb, confidence
+                    pos = request_lower.find(alias)
+                    if pos != -1:
+                        candidates.append((pos, len(alias), canonical_verb))
+
+        if candidates:
+            candidates.sort(key=lambda x: (x[0], -x[1]))
+            return candidates[0][2], 0.90
         
         # اگر یافت نشد، از AI استفاده کنید
         prompt = f"""درخواست کاربر را تحلیل کن و فعل اصلی را شناسایی کن.
@@ -386,7 +389,7 @@ class IntentAnalyzer:
             "game": ["game", "بازی", "گیم"],
             "folder": ["folder", "پوشه", "فولدر"],
             "file": ["file", "فایل", "فیل"],
-            "browser": ["browser", "مرورگر", "کروم", "فایرفاکس"],
+            "browser": ["browser", "chrome", "firefox", "edge", "مرورگر", "کروم", "فایرفاکس"],
         }
         
         request_lower = request.lower()
@@ -542,7 +545,10 @@ class IntentAnalyzer:
         missing = []
         
         # اگر فعل بازی است اما نوع بازی مشخص نیست
-        if intent.verb == "play" and "game" in intent.target.lower():
+        play_verbs = ["play", "بازی"]
+        if intent.verb in play_verbs and (
+            "game" in intent.target.lower() or intent.target == "unknown"
+        ):
             if "game_type" not in intent.parameters:
                 missing.append("game_type")  # کدام بازی؟
         

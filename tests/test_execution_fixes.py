@@ -14,6 +14,8 @@ import asyncio
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.intelligent_agent import IntelligentSystemAgent
@@ -25,6 +27,7 @@ from core.safety_filter import SafetyFilter, UserConsentManager
 from core.system_tools import SystemToolAdapter
 
 
+@pytest.mark.asyncio
 async def test_execution_order():
     """
     Bug #1 test: sequential dependency cascade.
@@ -87,6 +90,7 @@ async def test_execution_order():
     return True
 
 
+@pytest.mark.asyncio
 async def test_stdin_isolation_order():
     """
     Bug #2 test: Desktop action cannot execute before preceding
@@ -175,6 +179,7 @@ async def test_stdin_isolation_order():
     return True
 
 
+@pytest.mark.asyncio
 async def test_display_accuracy():
     """
     Bug #3 test: per-action symbols match actual outcomes.

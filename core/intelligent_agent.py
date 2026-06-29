@@ -20,7 +20,7 @@ from typing import Optional
 
 from core.action_controller import ActionController
 from core.execution_manager import ExecutionManager
-from core.intent_analyzer import SystemActionParser
+from core.system_action_parser import SystemActionParser
 from core.system_capabilities import SystemCapabilityRegistry
 
 logger = logging.getLogger(__name__)

@@ -32,66 +32,28 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 import logging
 import time
-from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum
 from pathlib import Path
-from typing import Optional, List, Dict, Any, Tuple, Union
+from typing import Optional, List, Dict, Any, Tuple
 
-# Import core components
 from core.mouse_control import MouseController, MouseButton
 from core.keyboard_control import KeyboardController
 from core.desktop_vision import DesktopVision, ImageMatch
 from core.smart_wait import SmartWaiter
-from core.system_actions import SystemAction, RiskLevel, ActionStatus
-from core.system_actions import (
-    InstallPackageAction, LaunchAppAction,
-    QueryHardwareAction, TerminateProcessAction, ExecuteCommandAction
-)
+from core.system_actions import SystemAction, RiskLevel
 from core.desktop_actions import (
     ClickAction, TypeAction, WaitAction,
     DragDropAction, HotkeyAction, ScrollAction
 )
-from core.execution_manager import ExecutionManager, ExecutionPriority
-from core.intent_analyzer import SystemActionParser
+from core.execution_manager import ExecutionManager
+from core.system_action_parser import SystemActionParser
 from core.system_capabilities import SystemCapabilityRegistry
+from core.action_types import ActionResult, ActionState, ActionOutcome
+from core.action_factory import create_action_from_data
 
 logger = logging.getLogger(__name__)
-
-
-class ActionResult(Enum):
-    """نتیجه اجرای یک اکشن."""
-    SUCCESS = "success"
-    FAILED = "failed"
-    BLOCKED = "blocked"
-    TIMEOUT = "timeout"
-    NOT_FOUND = "not_found"
-    VERIFICATION_FAILED = "verification_failed"
-
-
-@dataclass
-class ActionState:
-    """وضعیت صفحه در یک لحظه خاص - برای State Management."""
-    timestamp: datetime
-    screenshot_path: Optional[str] = None
-    mouse_position: Optional[Tuple[int, int]] = None
-    active_window: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
-
-
-@dataclass
-class ActionOutcome:
-    """نتیجه یک اکشن با جزئیات کامل."""
-    result: ActionResult
-    message: str
-    duration: float
-    position: Optional[Tuple[int, int]] = None
-    screenshot_before: Optional[str] = None
-    screenshot_after: Optional[str] = None
-    error: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
 
 
 class ActionController:
@@ -1338,105 +1300,7 @@ class ActionController:
             pass
 
     def create_action(self, action_data: dict[str, Any]) -> Optional[Any]:
-        action_type = action_data.get("type")
-        params = action_data.get("params", {})
-
-        try:
-            if action_type == "DesktopClick":
-                return ClickAction(
-                    target=params.get("target", ""),
-                    button=params.get("button", "left"),
-                    clicks=params.get("clicks", 1),
-                    verify=params.get("verify", True),
-                    confidence=params.get("confidence", 0.8),
-                    timeout=params.get("timeout", 10),
-                )
-            elif action_type == "DesktopType":
-                return TypeAction(
-                    text=params.get("text", ""),
-                    target=params.get("target"),
-                    clear_first=params.get("clear_first", False),
-                    interval=params.get("interval", 0.05),
-                    verify=params.get("verify", True),
-                    use_clipboard=params.get("use_clipboard", False),
-                )
-            elif action_type == "DesktopWait":
-                return WaitAction(
-                    wait_type=params.get("wait_type", "time"),
-                    target=params.get("target"),
-                    timeout=params.get("timeout", 30),
-                    check_interval=params.get("check_interval", 0.5),
-                    inverse=params.get("inverse", False),
-                )
-            elif action_type == "DesktopDragDrop":
-                return DragDropAction(
-                    source=params.get("source", ""),
-                    target=params.get("target", ""),
-                    duration=params.get("duration", 0.5),
-                    verify=params.get("verify", True),
-                    button=params.get("button", "left"),
-                )
-            elif action_type == "DesktopHotkey":
-                return HotkeyAction(
-                    keys=params.get("keys", []),
-                    interval=params.get("interval", 0.1),
-                    hold_duration=params.get("hold_duration", 0.0),
-                )
-            elif action_type == "DesktopScroll":
-                return ScrollAction(
-                    direction=params.get("direction", "down"),
-                    clicks=params.get("clicks", 3),
-                    target=params.get("target"),
-                    smooth=params.get("smooth", False),
-                )
-            elif action_type == "LaunchApp":
-                return LaunchAppAction(
-                    app_name=params.get("app_name", ""),
-                    app_path=params.get("app_path"),
-                    arguments=params.get("arguments", []),
-                    working_directory=params.get("working_directory"),
-                    dry_run=self.dry_run,
-                    require_consent=params.get("require_consent", True),
-                )
-            elif action_type == "InstallPackage":
-                return InstallPackageAction(
-                    package_name=params.get("package_name", ""),
-                    package_manager=params.get("package_manager", "winget"),
-                    version=params.get("version"),
-                    silent=params.get("silent", True),
-                    dry_run=self.dry_run,
-                    require_consent=params.get("require_consent", True),
-                )
-            elif action_type == "QueryHardware":
-                return QueryHardwareAction(
-                    query_type=params.get("query_type", "all"),
-                    dry_run=self.dry_run,
-                    require_consent=params.get("require_consent", True),
-                )
-            elif action_type == "TerminateProcess":
-                return TerminateProcessAction(
-                    process_name=params.get("process_name"),
-                    process_id=params.get("process_id"),
-                    force=params.get("force", False),
-                    dry_run=self.dry_run,
-                    require_consent=params.get("require_consent", True),
-                )
-            elif action_type == "ExecuteCommand":
-                return ExecuteCommandAction(
-                    command=params.get("command", ""),
-                    shell=params.get("shell", "cmd"),
-                    working_directory=params.get("working_directory"),
-                    timeout=params.get("timeout", 30),
-                    dry_run=self.dry_run,
-                    require_consent=params.get("require_consent", True),
-                )
-            else:
-                logger.warning("Unknown action type: %s", action_type)
-                return None
-
-        except Exception as e:
-            logger.exception("Error creating action %s: %s", action_type, e)
-            return None
+        return create_action_from_data(action_data, dry_run=self.dry_run)
 
     async def process_request(self, user_request: str) -> str:
         logger.info("Processing request: %s", user_request)
@@ -1522,7 +1386,8 @@ class ActionController:
         return response
 
 
-# ==================== EXPORTS ====================
+# ==================== RE-EXPORTS ====================
+# Backward compatibility: allow importing types from this module
 
 __all__ = [
     "ActionController",

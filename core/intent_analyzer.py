@@ -64,32 +64,39 @@ class IntentAnalyzer:
         self._session_counter = 0
         
         # Dictionary از فعل‌های شناخته شده
+        # IMPORTANT: order matters — first-match-wins for English aliases.
+        # Action verbs must come BEFORE converse/greeting verbs so that
+        # imperative requests (e.g. "create folder", "write Hello World")
+        # are not misclassified when the request content happens to contain
+        # words like "hello", "how", "what" etc.
         self.known_verbs = {
-            # انگلیسی
-            "converse": ["say", "tell", "ask", "answer", "reply", "respond", "greet",
-                         "hello", "hi", "hey", "what", "who", "why", "how", "which",
-                         "meaning", "define", "explain", "describe", "mean", "معنی",
-                         "question", "define", "introduce", "introduction"],
-            "open": ["open", "launch", "start", "run"],
-            "play": ["play", "start", "begin"],
-            "create": ["create", "make", "new", "build"],
-            "delete": ["delete", "remove", "erase", "clear"],
-            "search": ["search", "find", "look", "browse", "check", "find out"],
-            "type": ["type", "write", "enter"],
-            "click": ["click", "tap", "press"],
-            "install": ["install", "setup", "deploy"],
-            # فارسی
-            "گفتگو": ["بگو", "پرسش", "سوال", "جواب", "پاسخ", "سلام", "درود",
-                       "معنی", "توضیح", "چیست", "چیه", "کیه", "کجاست", "یعنی",
-                       "منظور", "تعریف", "معرفی", "چطور", "چرا", "چه", "چی"],
-            "باز": ["باز", "اجرا", "شروع", "لانچ", "اجرا کن"],
-            "بازی": ["بازی", "شروع", "آغاز"],
-            "ایجاد": ["ایجاد", "ساخت", "درست", "بساز", "ایجاد کن"],
-            "حذف": ["حذف", "پاک", "حذفش کن"],
-            "جستجو": ["جستجو", "پیدا", "جستجو کن", "نگاه کن", "ببین"],
-            "نوشتن": ["نوشتن", "تایپ", "بنویس"],
-            "کلیک": ["کلیک", "ضربه", "فشار", "بزن"],
-            "نصب": ["نصب", "راه‌اندازی", "استقرار"],
+            # === English action verbs (checked first) ===
+            "create":     ["create", "make", "new", "build"],
+            "open":       ["open", "launch", "start", "run"],
+            "delete":     ["delete", "remove", "erase", "clear"],
+            "type":       ["type", "write", "enter"],
+            "search":     ["search", "find", "look", "browse", "check", "find out"],
+            "click":      ["click", "tap", "press"],
+            "install":    ["install", "setup", "deploy"],
+            "play":       ["play", "begin"],
+            # === English converse/greeting (last — prevents false positives) ===
+            "converse":   ["say", "tell", "ask", "answer", "reply", "respond",
+                           "greet", "hi", "hey",
+                           "meaning", "define", "explain", "describe", "mean",
+                           "question", "introduce", "introduction"],
+            # === Persian action verbs (checked first) ===
+            "ایجاد":      ["ایجاد", "ساخت", "درست", "بساز", "ایجاد کن"],
+            "باز":        ["باز", "اجرا", "شروع", "لانچ", "اجرا کن"],
+            "حذف":        ["حذف", "پاک", "حذفش کن"],
+            "نوشتن":      ["نوشتن", "تایپ", "بنویس"],
+            "جستجو":      ["جستجو", "پیدا", "جستجو کن", "نگاه کن", "ببین"],
+            "کلیک":       ["کلیک", "ضربه", "فشار", "بزن"],
+            "نصب":        ["نصب", "راه‌اندازی", "استقرار"],
+            "بازی":       ["بازی", "آغاز"],
+            # === Persian converse/greeting (last) ===
+            "گفتگو":      ["بگو", "پرسش", "سوال", "جواب", "پاسخ", "سلام", "درود",
+                           "معنی", "توضیح", "چیست", "چیه", "کیه", "کجاست", "یعنی",
+                           "منظور", "تعریف", "معرفی", "چطور", "چرا", "چه", "چی"],
         }
         
         self.logger.info("✅ IntentAnalyzer initialized")
@@ -159,6 +166,14 @@ class IntentAnalyzer:
                 raw_request=request,
                 language=language
             )
+            
+            # مرحله ۶.۵: بازبینی verb — اگر verb "converse" باشد ولی متن حاوی
+            # کلمات کلیدی اکشن باشد، verb را اصلاح کن
+            action_override = self._check_verb_override(request, verb, language)
+            if action_override:
+                intent.verb = action_override
+                intent.confidence = min(intent.confidence + 0.05, 1.0)
+                self.logger.debug(f"🔄 Verb overridden from '{verb}' to '{action_override}'")
             
             # مرحله ۷: شناسایی موارد نامشخص
             missing_fields = await self._identify_missing_fields(
@@ -378,6 +393,45 @@ class IntentAnalyzer:
             constraints.append("isolated")
         
         return constraints
+    
+    def _check_verb_override(
+        self,
+        request: str,
+        current_verb: str,
+        language: str
+    ) -> Optional[str]:
+        """بازبینی verb — اگر verb "converse" باشد ولی متن حاوی کلمات کلیدی
+        اکشن (create, open, write, ...) باشد، verb مناسب را برمی‌گرداند.
+        
+        این تابع از اینکه "Please do my requests..." به converse برود جلوگیری می‌کند
+        وقتی که متن واقعاً درخواست عملیات سیستمی دارد.
+        """
+        # فقط وقتی که verb فعلی converse است و زبان انگلیسی است بررسی کن
+        if current_verb != "converse" and current_verb not in ("گفتگو",):
+            return None
+        
+        request_lower = request.lower()
+        
+        # مپ کردن کلمات کلیدی به verb‌های مناسب
+        action_signals = {
+            "create":  ["create", "make", "new folder", "new file", "build", "mkdir"],
+            "open":    ["open", "launch", "start", "run"],
+            "delete":  ["delete", "remove", "erase", "clear"],
+            "write":   ["write", "type", "enter text"],
+            "search":  ["search", "find", "look for", "browse", "check"],
+            "click":   ["click", "tap", "press"],
+            "install": ["install", "setup", "deploy"],
+        }
+        
+        for action_verb, keywords in action_signals.items():
+            if any(kw in request_lower for kw in keywords):
+                self.logger.debug(
+                    f"🔍 Verb override: '{current_verb}' → '{action_verb}' "
+                    f"(signal: {[k for k in keywords if k in request_lower]})"
+                )
+                return action_verb
+        
+        return None
     
     def _calculate_confidence(
         self,

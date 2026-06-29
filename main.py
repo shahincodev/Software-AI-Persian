@@ -841,79 +841,74 @@ async def process_capability_loop(
 
             # ── Smart Routing via IntentRouter ──
             log_telemetry("routing_start", text=user_text)
-            caps = {name: True for name in capability_manager.get_enabled()}
-            route = await intent_router.route(
-                user_text,
-                safety_mode=session_control.safety_mode,
-                current_capabilities=caps,
-            )
-            log_telemetry("routing_result", route=route.type.value, risk=route.risk_level.value)
-
-            # Consent check
-            if route.requires_consent and safety_consent_manager:
-                prompt = route.consent_message or "Continue? (y/n): "
-                allowed = input(f"{Fore.YELLOW}{prompt}{Style.RESET_ALL} ").strip().lower() in ["y", "yes"]
-                safety_consent_manager.record_decision(
-                    route.intent.raw_request if route.intent else user_text,
-                    route.risk_level,
-                    allowed,
+            
+            # تجزیه درخواست‌های چندمرحله‌ای به مراحل مستقل
+            steps = intent_router._decompose_multi_step(user_text)
+            if len(steps) > 1:
+                print(f"{Fore.MAGENTA}🔀 Detected {len(steps)} steps, processing sequentially...{Style.RESET_ALL}")
+            
+            for step_idx, step_text in enumerate(steps):
+                if len(steps) > 1:
+                    print(f"\n{Fore.CYAN}─── Step {step_idx + 1}/{len(steps)}: {step_text[:60]}... ───{Style.RESET_ALL}")
+                
+                caps = {name: True for name in capability_manager.get_enabled()}
+                route = await intent_router.route(
+                    step_text,
+                    safety_mode=session_control.safety_mode,
+                    current_capabilities=caps,
                 )
-                if not allowed:
-                    print(f"{Fore.YELLOW}Cancelled.{Style.RESET_ALL}\n")
-                    log_telemetry("consent_rejected", risk=route.risk_level.value)
-                    continue
+                log_telemetry("routing_result", route=route.type.value, risk=route.risk_level.value)
+                
+                # Activate required capabilities
+                for cap in route.requires_activation:
+                    await capability_manager.activate(cap)
 
-            # Activate required capabilities
-            for cap in route.requires_activation:
-                await capability_manager.activate(cap)
+                # Execute based on route type
+                if route.type == RouteType.TASK_MODE:
+                    await ensure_task_mode_enabled()
+                    tasks = route.metadata.get("tasks") or extract_tasks_from_text(step_text)
+                    for t in (tasks or [step_text]):
+                        task_engine.add_task(t, mode="browser")
+                    print(f"{Fore.GREEN}✓ Added {len(tasks or [step_text])} task(s) to queue.{Style.RESET_ALL}\n")
 
-            # Execute based on route type
-            if route.type == RouteType.TASK_MODE:
-                await ensure_task_mode_enabled()
-                tasks = route.metadata.get("tasks") or extract_tasks_from_text(user_text)
-                for t in (tasks or [user_text]):
-                    task_engine.add_task(t, mode="browser")
-                print(f"{Fore.GREEN}✓ Added {len(tasks or [user_text])} task(s) to queue.{Style.RESET_ALL}\n")
+                elif route.type in (RouteType.BROWSER_USE, RouteType.DESKTOP_AUTOMATION):
+                    result = await action_controller.process_request(step_text)
+                    print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
 
-            elif route.type == RouteType.BROWSER_USE:
-                result = await action_controller.process_request(user_text)
-                print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
-
-            elif route.type == RouteType.DESKTOP_AUTOMATION:
-                result = await action_controller.process_request(user_text)
-                print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
-
-            elif route.type == RouteType.AUTONOMOUS_AGENT:
-                agent = capability_manager.get("autonomous_agent")
-                goal = route.metadata.get("goal", user_text)
-                if agent:
-                    result = await agent.execute_goal(goal)
-                    if result.get("success"):
-                        print(f"{Fore.GREEN}✓ Goal completed!{Style.RESET_ALL}\n")
+                elif route.type == RouteType.AUTONOMOUS_AGENT:
+                    agent = capability_manager.get("autonomous_agent")
+                    goal = route.metadata.get("goal", step_text)
+                    if agent:
+                        result = await agent.execute_goal(goal)
+                        if result.get("success"):
+                            print(f"{Fore.GREEN}✓ Goal completed!{Style.RESET_ALL}\n")
+                        else:
+                            print(f"{Fore.RED}❌ Failed: {result.get('error', 'Unknown')}{Style.RESET_ALL}\n")
                     else:
-                        print(f"{Fore.RED}❌ Failed: {result.get('error', 'Unknown')}{Style.RESET_ALL}\n")
+                        print(f"{Fore.YELLOW}⚠ Autonomous agent not available.{Style.RESET_ALL}\n")
+
+                elif route.type == RouteType.CLARIFICATION_NEEDED:
+                    msg = route.consent_message or "I didn't understand. Please rephrase."
+                    print(f"{Fore.YELLOW}{msg}{Style.RESET_ALL}\n")
+
+                elif route.type == RouteType.CHAT_RESPONSE:
+                    response = await chat_brain.ask_with_fallback(step_text, mode="system", max_tokens=1000)
+                    if response:
+                        print(f"{Fore.CYAN}{response}{Style.RESET_ALL}\n")
+                    else:
+                        print(f"{Fore.RED}All AI models failed. Check your API keys in .env{Style.RESET_ALL}\n")
+
                 else:
-                    print(f"{Fore.YELLOW}⚠ Autonomous agent not available.{Style.RESET_ALL}\n")
+                    result = await action_controller.process_request(step_text)
+                    print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
 
-            elif route.type == RouteType.CLARIFICATION_NEEDED:
-                msg = route.consent_message or "I didn't understand. Please rephrase."
-                print(f"{Fore.YELLOW}{msg}{Style.RESET_ALL}\n")
+                memory.remember_short(
+                    content=step_text, ttl=3600,
+                    metadata={"type": "user_request", "route": route.type.value}
+                )
 
-            elif route.type == RouteType.CHAT_RESPONSE:
-                response = await chat_brain.ask_with_fallback(user_text, mode="system", max_tokens=1000)
-                if response:
-                    print(f"{Fore.CYAN}{response}{Style.RESET_ALL}\n")
-                else:
-                    print(f"{Fore.RED}All AI models failed. Check your API keys in .env{Style.RESET_ALL}\n")
-
-            else:
-                result = await action_controller.process_request(user_text)
-                print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
-
-            memory.remember_short(
-                content=user_text, ttl=3600,
-                metadata={"type": "user_request", "route": route.type.value}
-            )
+            if len(steps) > 1:
+                print(f"{Fore.GREEN}✅ All {len(steps)} steps completed.{Style.RESET_ALL}\n")
 
     except KeyboardInterrupt:
         print(f"\n{Fore.YELLOW}🛑 Shutting down...{Style.RESET_ALL}")

@@ -19,6 +19,7 @@ Intent Router - مسیریابی هوشمند درخواست‌های کاربر
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional, List, Dict, Any
@@ -137,6 +138,10 @@ class IntentRouter:
             route = self._classify_intent(intent, safety_mode)
             route.intent = intent
             
+            # تنزل مسیریابی اگر قابلیت مورد نیاز فعال نیست
+            if current_capabilities is not None:
+                route = self._downgrade_if_unavailable(route, current_capabilities)
+            
             # تعیین سطح ریسک
             route.risk_level = self._assess_risk_level(intent, route)
             
@@ -157,6 +162,74 @@ class IntentRouter:
                 consent_message=f"خطایی رخ داد: {str(e)}"
             )
     
+    def _downgrade_if_unavailable(
+        self,
+        route: Route,
+        current_capabilities: Dict[str, bool]
+    ) -> Route:
+        """اگر قابلیت مورد نیاز برای یک مسیر فعال نیست، مسیر را به
+        CHAT_RESPONSE تنزل بده تا بتوان از طریق chat LLM پاسخ داد.
+        """
+        if route.type == RouteType.CHAT_RESPONSE:
+            return route
+        
+        # بررسی دسترسی به قابلیت‌های مورد نیاز
+        if route.requires_activation:
+            for cap in route.requires_activation:
+                if cap not in current_capabilities or not current_capabilities[cap]:
+                    logger.warning(
+                        f"Downgrading route {route.type.value} → CHAT_RESPONSE "
+                        f"(capability '{cap}' not available)"
+                    )
+                    return Route(
+                        type=RouteType.CHAT_RESPONSE,
+                        intent=route.intent,
+                        requires_activation=[],
+                        confidence=route.confidence,
+                        risk_level=RiskLevel.SAFE,
+                        metadata={"response_type": "capability_unavailable",
+                                   "original_route": route.type.value,
+                                   "missing_capability": cap}
+                    )
+        return route
+    
+    def _decompose_multi_step(self, user_text: str) -> List[str]:
+        """تشخیص و تجزیه درخواست‌های چندمرحله‌ای به مراحل مجزا.
+        
+        درخواست‌هایی مانند:
+            "create folder X, then create file Y, then write Z"
+        به مراحل جدا تبدیل می‌شوند.
+        
+        Returns:
+            لیست مراحل (هر مرحله یک رشته مستقل)
+        """
+        text = user_text.strip()
+        
+        # جداکننده‌های رایج چندمرحله‌ای
+        step_separators = [
+            r'\s*\.\s*Then\s+',   # ". Then" (case-insensitive)
+            r'\s*\.\s*then\s+',
+            r'\s*\.\s*Next[,\.]?\s*',
+            r'\s*\.\s*next[,\.]?\s*',
+            r'\s*[;]\s*',          # semicolon
+            r'\s*[,]\s*(?:and|then|after that)\s+',
+            r'\s*سپس\s+',          # Persian "then"
+            r'\s*بعد\s+(?:از\s+)?آن\s+',  # Persian "after that"
+            r'\s*مرحله\s+(?:بعد|بعدی)\s*[:\-]?\s*',  # Persian "next step"
+            r'\s*اول[\s,:]+\s*',   # "first" as separator
+        ]
+        
+        # بررسی وجود جداکننده
+        for sep in step_separators:
+            parts = re.split(sep, text, maxsplit=0, flags=re.IGNORECASE)
+            if len(parts) > 1:
+                parts = [p.strip().rstrip('.') for p in parts if p.strip()]
+                if len(parts) > 1:
+                    logger.info(f"Decomposed into {len(parts)} steps")
+                    return parts
+        
+        return [text]
+    
     def _classify_intent(self, intent: Intent, safety_mode: str) -> Route:
         """تصنیف Intent به نوع مسیریابی
         
@@ -170,18 +243,6 @@ class IntentRouter:
         verb = intent.verb.lower()
         target = intent.target.lower()
         raw = intent.raw_request.lower() if intent.raw_request else ""
-
-        # تشخیص درخواست‌های گفتگومحور
-        # اگر verb مستقیماً به مکالمه اشاره دارد → همیشه CHAT_RESPONSE
-        converse_verbs = ["converse", "گفتگو"]
-        if verb in converse_verbs:
-            return Route(
-                type=RouteType.CHAT_RESPONSE,
-                requires_activation=[],
-                confidence=intent.confidence,
-                risk_level=RiskLevel.SAFE,
-                metadata={"response_type": "conversational"}
-            )
 
         # اگر verb با اطمینان پایین از AI fallback گرفته شده (0.70)
         # و target هم مشخص نیست → CHAT_RESPONSE به جای ریسک misrouting
@@ -216,14 +277,21 @@ class IntentRouter:
             )
         
         # الگوهای اتوماسیون دسکتاپ — هم verb/target و هم متن خام را بررسی کن
-        desktop_verbs = ["open", "create", "type", "click", "delete", "move", "copy"]
-        desktop_targets = ["file", "folder", "notepad", "desktop", "window", "app"]
+        desktop_verbs = ["open", "create", "type", "click", "delete", "move", "copy", "write", "do", "make", "new", "build"]
+        desktop_targets = ["file", "folder", "notepad", "desktop", "window", "app", "directory", "document", "drive"]
         desktop_patterns = ["open ", "launch ", "start ", "run ", "create ", "type ", "click ",
-                            "delete ", "remove ", "باز ", "اجرا ", "ایجاد ", "ساخت ", "نوشتن ",
-                            "کلیک ", "نصب "]
+                            "delete ", "remove ", "write ", "make ", "new ", "do ",
+                            "باز ", "اجرا ", "ایجاد ", "ساخت ", "نوشتن ",
+                            "کلیک ", "نصب ", "drive", "folder", "file ", "desktop",
+                            "شروع ", "بساز ", "بنویس "]
+        # Strong filesystem/desktop signals in raw text — catch cases where verb is misclassified
+        fs_signals = ["folder", "file", "desktop", "directory", "drive", "notepad",
+                      "helloword", "hello world", "txt extension", "text file",
+                      "پوشه", "فایل", "دسکتاپ", "دایرکتوری", "درایو"]
         
         if (any(v in verb for v in desktop_verbs) or any(t in target for t in desktop_targets)
-                or any(p in raw for p in desktop_patterns)):
+                or any(p in raw for p in desktop_patterns)
+                or any(s in raw for s in fs_signals)):
             return Route(
                 type=RouteType.DESKTOP_AUTOMATION,
                 requires_activation=["desktop_automation"],

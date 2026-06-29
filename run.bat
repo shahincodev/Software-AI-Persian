@@ -28,16 +28,34 @@ if not exist "%SCRIPT_DIR%.env" (
     )
 )
 
+REM Check for placeholder API keys in .env
+if exist "%SCRIPT_DIR%.env" (
+    findstr /C:"sk-your" "%SCRIPT_DIR%.env" >NUL 2>&1
+    if not errorlevel 1 (
+        echo [WARNING] Placeholder API keys detected in .env
+        echo [WARNING] Edit .env and replace placeholder keys with real ones.
+        echo [WARNING] See .env.example for instructions.
+    )
+    findstr /C:"YOUR_" "%SCRIPT_DIR%.env" >NUL 2>&1
+    if not errorlevel 1 (
+        echo [WARNING] Placeholder API keys detected in .env
+        echo [WARNING] Edit .env and replace placeholder keys with real ones.
+    )
+)
+
 mkdir "%SCRIPT_DIR%data\logs\cache" 2>NUL
 
 echo Launching Software-AI...
 python "%SCRIPT_DIR%main.py" %*
+set "EXIT_CODE=%ERRORLEVEL%"
 
-if errorlevel 1 (
+if %EXIT_CODE% neq 0 (
     echo.
-    echo Re-running with debug flags...
-    python "%SCRIPT_DIR%main.py" --debug %*
+    echo [HINT] If you see authentication errors, check your API keys in .env
+    echo [HINT] Run: python main.py --debug to see detailed logs
 )
+
+exit /B %EXIT_CODE%
 
 if defined VIRTUAL_ENV (
     deactivate 2>NUL

@@ -900,15 +900,11 @@ async def process_capability_loop(
                 print(f"{Fore.YELLOW}{msg}{Style.RESET_ALL}\n")
 
             elif route.type == RouteType.CHAT_RESPONSE:
-                try:
-                    response = await chat_brain.ask(user_text, mode="normal", max_tokens=1000)
-                    if response:
-                        print(f"{Fore.CYAN}{response}{Style.RESET_ALL}\n")
-                    else:
-                        print(f"{Fore.YELLOW}I'm not sure how to respond to that.{Style.RESET_ALL}\n")
-                except Exception as e:
-                    logger.exception(f"AI chat failed: {e}")
-                    print(f"{Fore.YELLOW}Sorry, I encountered an error processing your request.{Style.RESET_ALL}\n")
+                response = await chat_brain.ask_with_fallback(user_text, mode="system", max_tokens=1000)
+                if response:
+                    print(f"{Fore.CYAN}{response}{Style.RESET_ALL}\n")
+                else:
+                    print(f"{Fore.RED}All AI models failed. Check your API keys in .env{Style.RESET_ALL}\n")
 
             else:
                 result = await action_controller.process_request(user_text)

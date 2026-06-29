@@ -249,14 +249,22 @@ class AIBrain:
         elif name == "normal":
             from browser_use.llm.openai.chat import ChatOpenAI
 
-            model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "openai/gpt-4o-mini"),
-                                temperature=float(os.getenv("MODEL_TEMPERATURE", "0")))
+            model = ChatOpenAI(
+                model=os.getenv("OPENAI_MODEL", "openai/gpt-4o-mini"),
+                temperature=float(os.getenv("MODEL_TEMPERATURE", "0")),
+                api_key=os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY"),
+                base_url="https://openrouter.ai/api/v1",
+            )
         else:
             logger.warning("Invalid model name: %s - use default model", name)
             from browser_use.llm.openai.chat import ChatOpenAI
 
-            model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "openai/gpt-4o-mini"),
-                                temperature=float(os.getenv("MODEL_TEMPERATURE", "0")))
+            model = ChatOpenAI(
+                model=os.getenv("OPENAI_MODEL", "openai/gpt-4o-mini"),
+                temperature=float(os.getenv("MODEL_TEMPERATURE", "0")),
+                api_key=os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY"),
+                base_url="https://openrouter.ai/api/v1",
+            )
         logger.info("Artificial intelligence model opened (legacy): %s", name)
         return model
 
@@ -320,20 +328,8 @@ class AIBrain:
             logger.info("📋 Available models: %s", json.dumps(registry.export_config(), indent=2))
             return ""
         
-        # لاگ مدل‌های دردسترس
-        logger.info(f"🤖 Available models ({len(available_models)}):")
-        for m in available_models[:5]:  # فقط 5 تای اول
-            logger.info(f"   - {m.name} (priority: {m.priority})")
-        if len(available_models) > 5:
-            logger.info(f"   ... and {len(available_models) - 5} more")
-        
-        # لیست مدل‌های قدیمی برای compatibility
-        legacy_fallback_order = {
-            "system": ["system", "normal", "fast", "reasoning"],
-            "normal": ["normal", "fast", "system", "reasoning"],
-            "fast": ["fast", "normal", "system", "reasoning"],
-            "reasoning": ["reasoning", "system", "normal", "fast"]
-        }
+        # لاگ مدل‌های دردسترس (DEBUG level to reduce noise on every request)
+        logger.debug(f"Available models ({len(available_models)}): {', '.join(m.name for m in available_models[:3])}...")
         
         # سعی اول: از registry استفاده کن
         for i, model_config in enumerate(available_models):
@@ -356,10 +352,9 @@ class AIBrain:
                     
             except Exception as e:
                 logger.warning(f"❌ Model {model_config.name} failed: {e}")
-                if i == len(available_models) - 1:
-                    logger.error("💥 All available models failed!")
                 continue
         
+        logger.error("💥 All %d available models failed. Check your API keys in .env", len(available_models))
         return ""
     
     

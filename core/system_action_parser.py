@@ -104,26 +104,19 @@ class SystemActionParser:
                 })
 
         if any(kw in user_lower for kw in ['create', 'make', 'new', 'build', 'ایجاد', 'ساخت', 'جدید']):
-            folder_keywords = ['folder', 'directory', 'پوشه', 'دایرکتوری']
-            file_keywords = ['file', 'document', 'text', 'فایل', 'متن']
+            # ── Resolve target location via _detect_location ───────────
+            location = self._detect_location(user_request)
+            if not location:
+                location = str(Path.home() / "Desktop")
 
+            # ── Create folder ──────────────────────────────────────────
+            folder_keywords = ['folder', 'directory', 'پوشه', 'دایرکتوری']
             if any(kw in user_lower for kw in folder_keywords):
                 folder_name = self._extract_name_after_keyword(
                     user_request, ['folder', 'directory', 'پوشه', 'دایرکتوری called', 'named', 'نام'])
                 if not folder_name:
                     folder_name = "New Folder"
-
-                location = "desktop"
-                if 'desktop' in user_lower or 'میز' in user_lower or 'دسکتاپ' in user_lower:
-                    desktop = str(Path.home() / "Desktop")
-                    folder_path = str(Path(desktop) / folder_name)
-                else:
-                    location_path = self._extract_path(user_request)
-                    if location_path:
-                        folder_path = str(Path(location_path) / folder_name)
-                    else:
-                        folder_path = str(Path.home() / "Desktop" / folder_name)
-
+                folder_path = str(Path(location) / folder_name)
                 actions.append({
                     "type": "ExecuteCommand",
                     "params": {
@@ -132,24 +125,17 @@ class SystemActionParser:
                         "timeout": 10
                     },
                     "priority": "normal",
-                    "description": f"Create folder '{folder_name}' on {location}"
+                    "description": f"Create folder '{folder_name}' ({location})"
                 })
 
+            # ── Create file ────────────────────────────────────────────
+            file_keywords = ['file', 'document', 'text', 'فایل', 'متن']
             if any(kw in user_lower for kw in file_keywords):
                 file_name = self._extract_name_after_keyword(
                     user_request, ['file', 'document', 'فایل', 'document called', 'named', 'نام'])
                 if not file_name:
                     file_name = "new_file.txt"
-
-                if 'desktop' in user_lower or 'میز' in user_lower or 'دسکتاپ' in user_lower:
-                    file_path = str(Path.home() / "Desktop" / file_name)
-                else:
-                    location_path = self._extract_path(user_request)
-                    if location_path:
-                        file_path = str(Path(location_path) / file_name)
-                    else:
-                        file_path = str(Path.home() / "Desktop" / file_name)
-
+                file_path = str(Path(location) / file_name)
                 actions.append({
                     "type": "ExecuteCommand",
                     "params": {
@@ -158,7 +144,7 @@ class SystemActionParser:
                         "timeout": 10
                     },
                     "priority": "normal",
-                    "description": f"Create file '{file_name}' on desktop"
+                    "description": f"Create file '{file_name}' ({location})"
                 })
 
         if any(kw in user_lower for kw in ['hardware', 'سخت‌افزار', 'cpu', 'ram', 'memory', 'info']):
@@ -447,16 +433,68 @@ Return ONLY the package name:"""
                         return name
         return None
 
-    def _extract_path(self, request: str) -> Optional[str]:
-        path_patterns = [
-            r'(?:in|on|at|to|into|در|روی|به|توی)\s+["\']?(?:[A-Za-z]:\\[^\s"\']+)["\']?',
-            r'(?:in|on|at|to|into|در|روی|به|توی)\s+["\']?(?:\\\\[^\s"\']+)["\']?',
+    def _detect_location(self, request: str) -> Optional[str]:
+        """Detect a filesystem location from natural language.
+
+        Understands:
+          "drive D", "D drive", "D:"          → D:\\
+          "Desktop"                            → C:\\Users\\<user>\\Desktop
+          "Downloads"                          → C:\\Users\\<user>\\Downloads
+          "Documents"                          → C:\\Users\\<user>\\Documents
+          "C:\\path\\to\\folder"              → C:\\path\\to\\folder
+          Persian equivalents of the above
+        """
+        req_lower = request.lower()
+        home = Path.home()
+
+        # ── Drive-letter patterns ──────────────────────────────────────
+        # "drive D", "D drive", "D:", "in D:"
+        drive_pats = [
+            r'drive\s+([A-Za-z])\b',
+            r'\b([A-Za-z])\s+drive\b',
+            r'\b([A-Za-z]):(?=\s|\\|/|$|\.)',
         ]
-        for pattern in path_patterns:
-            match = re.search(pattern, request, re.IGNORECASE)
-            if match:
-                path = re.sub(r'^(?:in|on|at|to|into|در|روی|به|توی)\s+["\']?', '', match.group(0))
-                path = path.strip().strip('"\'')
-                if Path(path).exists():
-                    return path
+        for pat in drive_pats:
+            m = re.search(pat, request, re.IGNORECASE)
+            if m:
+                letter = m.group(1).upper()
+                if 'A' <= letter <= 'Z':
+                    return f"{letter}:\\"
+
+        # ── Known shell folders (English + Persian) ────────────────────
+        known = {
+            'desktop':   home / 'Desktop',
+            'میز':       home / 'Desktop',
+            'دسکتاپ':    home / 'Desktop',
+            'downloads': home / 'Downloads',
+            'دانلود':    home / 'Downloads',
+            'documents': home / 'Documents',
+            'اسناد':     home / 'Documents',
+            'مدارک':     home / 'Documents',
+        }
+        for keyword, resolved in known.items():
+            if keyword in req_lower:
+                return str(resolved)
+
+        # ── Explicit absolute Windows paths ────────────────────────────
+        abs_pats = [
+            r'(?:in|on|at|to|into|در|روی|به|توی)\s+["\']?([A-Za-z]:\\[^\s"\']+)["\']?',
+            r'(?:in|on|at|to|into|در|روی|به|توی)\s+["\']?(\\\\[^\s"\']+)["\']?',
+            r'([A-Za-z]:\\[^\s"\']+)',
+        ]
+        for pat in abs_pats:
+            m = re.search(pat, request, re.IGNORECASE)
+            if m:
+                raw = m.group(1).strip().strip('"\'')
+                try:
+                    p = Path(raw)
+                    if not any(ch in raw for ch in '*?<>|'):
+                        return str(p)
+                except Exception:
+                    pass
+
         return None
+
+    def _extract_path(self, request: str) -> Optional[str]:
+        """Legacy wrapper -- delegates to _detect_location."""
+        return self._detect_location(request)

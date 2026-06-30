@@ -58,6 +58,97 @@ class TestIntentRouting:
         # این ممکن است نیاز به تایید داشته باشد
         assert route.type in [RouteType.DESKTOP_AUTOMATION, RouteType.REQUIRES_CONSENT]
 
+    # ===== Gap 1 regression tests: conversational questions → CHAT_RESPONSE =====
+
+    @pytest.mark.asyncio
+    async def test_conversational_what_is_a_folder(self, router):
+        """Regression: 'What is a folder?' should not route to desktop automation"""
+        route = await router.route("What is a folder?")
+        assert route.type == RouteType.CHAT_RESPONSE
+
+    @pytest.mark.asyncio
+    async def test_conversational_what_is_the_desktop(self, router):
+        """Regression: 'What is the desktop?' should not route to desktop automation"""
+        route = await router.route("What is the desktop?")
+        assert route.type == RouteType.CHAT_RESPONSE
+
+    @pytest.mark.asyncio
+    async def test_conversational_how_do_i_use_notepad(self, router):
+        """Regression: 'How do I use Notepad?' should not route to desktop automation"""
+        route = await router.route("How do I use Notepad?")
+        assert route.type == RouteType.CHAT_RESPONSE
+
+    @pytest.mark.asyncio
+    async def test_conversational_can_you_tell_me_what_a_file_is(self, router):
+        """Regression: 'Can you tell me what a file is?' should not route to desktop automation"""
+        route = await router.route("Can you tell me what a file is?")
+        assert route.type == RouteType.CHAT_RESPONSE
+
+    @pytest.mark.asyncio
+    async def test_conversational_what_is_a_directory(self, router):
+        """Regression: 'What is a directory?' should not route to desktop automation"""
+        route = await router.route("What is a directory?")
+        assert route.type == RouteType.CHAT_RESPONSE
+
+    @pytest.mark.asyncio
+    async def test_desktop_create_file_on_drive(self, router):
+        """Regression: 'Create a file on drive D' must route to desktop automation"""
+        route = await router.route("Create a file on drive D")
+        assert route.type == RouteType.DESKTOP_AUTOMATION
+
+    @pytest.mark.asyncio
+    async def test_desktop_open_notepad(self, router):
+        """Regression: 'open notepad' must route to desktop automation"""
+        route = await router.route("open notepad")
+        assert route.type == RouteType.DESKTOP_AUTOMATION
+
+    @pytest.mark.asyncio
+    async def test_desktop_delete_file(self, router):
+        """Regression: 'delete the file report.txt' must route to desktop automation"""
+        route = await router.route("delete the file report.txt")
+        assert route.type == RouteType.DESKTOP_AUTOMATION
+
+    @pytest.mark.asyncio
+    async def test_desktop_click_on_start(self, router):
+        """Regression: 'Click on start' must route to desktop automation"""
+        route = await router.route("Click on start")
+        assert route.type == RouteType.DESKTOP_AUTOMATION
+
+    # ===== Verb override regression: informational "how to" questions =====
+
+    @pytest.mark.asyncio
+    async def test_conversational_tell_me_how_to_create_a_folder(self, router):
+        """Regression: 'Tell me how to create a folder' → CHAT_RESPONSE, not DESKTOP_AUTOMATION.
+        The verb override in _check_verb_override must NOT rewrite 'converse'→'create'
+        for informational how-to questions."""
+        route = await router.route("Tell me how to create a folder")
+        assert route.type == RouteType.CHAT_RESPONSE, (
+            f"Expected CHAT_RESPONSE, got {route.type.name}. "
+            f"Verb override may have misfired."
+        )
+
+    @pytest.mark.asyncio
+    async def test_conversational_how_can_i_create_a_backup(self, router):
+        """Regression: 'How can I create a backup?' → CHAT_RESPONSE"""
+        route = await router.route("How can I create a backup?")
+        assert route.type == RouteType.CHAT_RESPONSE
+
+    @pytest.mark.asyncio
+    async def test_conversational_how_do_i_delete_a_file(self, router):
+        """Regression: 'How do I delete a file?' → CHAT_RESPONSE"""
+        route = await router.route("How do I delete a file?")
+        assert route.type == RouteType.CHAT_RESPONSE
+
+    @pytest.mark.asyncio
+    async def test_automation_can_you_create_a_folder(self, router):
+        """Verification: 'Can you create a folder?' must still route to DESKTOP_AUTOMATION
+        (polite command, not informational question — no 'how' pattern)."""
+        route = await router.route("Can you create a folder?")
+        assert route.type == RouteType.DESKTOP_AUTOMATION, (
+            f"Polite command incorrectly routed to {route.type.name}. "
+            f"Fix must not suppress legitimate action requests."
+        )
+
 
 class TestRouteObject:
     """تست ساختار داده Route"""

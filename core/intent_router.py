@@ -209,23 +209,6 @@ class IntentRouter:
         target = intent.target.lower()
         raw = intent.raw_request.lower() if intent.raw_request else ""
 
-        # اگر verb با اطمینان پایین از AI fallback گرفته شده (0.70)
-        # و target هم مشخص نیست → CHAT_RESPONSE به جای ریسک misrouting
-        if intent.confidence < 0.75:
-            # اگر درخواست شبیه سؤال یا گفتگوست نه دستور
-            question_markers = ["?", "what", "who", "why", "how", "which", "is there",
-                                "can you", "would you", "tell me", "do you",
-                                "چیست", "چیه", "کیه", "کجاست", "چرا", "چطور",
-                                "آیا", "میشه", "می‌تونی", "میتونی"]
-            if any(m in raw for m in question_markers):
-                return Route(
-                    type=RouteType.CHAT_RESPONSE,
-                    requires_activation=[],
-                    confidence=intent.confidence,
-                    risk_level=RiskLevel.SAFE,
-                    metadata={"response_type": "conversational"}
-                )
-        
         # الگوهای وب — هم verb/target و هم متن خام را بررسی کن (برای مواقعی که AI در دسترس نیست)
         web_verbs = ["search", "browse", "check", "find", "look", "visit", "go"]
         web_targets = ["web", "website", "google", "browser", "internet", "online"]
@@ -245,7 +228,8 @@ class IntentRouter:
         desktop_verbs = ["open", "create", "type", "click", "delete", "move", "copy", "write", "do", "make", "new", "build"]
         desktop_targets = ["file", "folder", "notepad", "desktop", "window", "app", "directory", "document", "drive"]
         desktop_patterns = ["open ", "launch ", "start ", "run ", "create ", "type ", "click ",
-                            "delete ", "remove ", "write ", "make ", "new ", "do ",
+                            "delete ", "remove ", "write ", "make ", "new ",
+                            "empty ", "clean ", "rename ", "recycle", "close ",
                             "باز ", "اجرا ", "ایجاد ", "ساخت ", "نوشتن ",
                             "کلیک ", "نصب ", "drive", "folder", "file ", "desktop",
                             "شروع ", "بساز ", "بنویس "]
@@ -254,9 +238,33 @@ class IntentRouter:
                       "helloword", "hello world", "txt extension", "text file",
                       "پوشه", "فایل", "دسکتاپ", "دایرکتوری", "درایو"]
         
-        if (any(v in verb for v in desktop_verbs) or any(t in target for t in desktop_targets)
-                or any(p in raw for p in desktop_patterns)
-                or any(s in raw for s in fs_signals)):
+        # Strong signals: desktop verb or action keyword in raw text (alone sufficient)
+        _verb_ok = any(v in verb for v in desktop_verbs)
+        _action_ok = any(p in raw for p in ["open ", "launch ", "start ", "run ", "create ",
+                       "type ", "click ", "delete ", "remove ", "write ", "make ", "new ",
+                       "empty ", "clean ", "rename ", "recycle", "close ",
+                       "باز ", "اجرا ", "ایجاد ", "ساخت ", "نوشتن ",
+                       "کلیک ", "نصب ", "شروع ", "بساز ", "بنویس "])
+        # Weak signals: target/fs-signal/descriptive patterns — need reinforcement.
+        # Suppressed when: converse verb, OR question text without action pattern.
+        _is_conv = verb in ("converse", "گفتگو")
+        _is_question = any(m in raw for m in ["how", "what", "why", "who", "which", "when",
+                           "can you", "could you", "would you", "tell me",
+                           "do you", "does ", "is there", "are there",
+                           "explain", "describe", "i need help", "help me",
+                           "آیا", "چگونه", "چیست", "چه", "چرا"])
+        _weak_ok = ((any(t in target for t in desktop_targets)
+                     or any(s in raw for s in fs_signals)
+                     or "file " in raw or "folder" in raw or "desktop" in raw)
+                    and not _is_conv
+                    and not (_is_question and not _action_ok))
+        # Suppress DESKTOP_AUTOMATION entirely for how-to information questions
+        # when the verb is "converse" (reverted by _check_verb_override for how-to
+        # patterns like "how to/do/can/could"). Examples: "How do I create a file?",
+        # "Tell me how to create a folder".
+        _how_to_question = bool(re.search(r'\bhow\s+(to|do|can|could)\b', raw))
+        
+        if (_verb_ok or _action_ok or _weak_ok) and not (_how_to_question and _is_conv):
             return Route(
                 type=RouteType.DESKTOP_AUTOMATION,
                 requires_activation=["desktop_automation"],
@@ -290,6 +298,22 @@ class IntentRouter:
                 risk_level=RiskLevel.SAFE,
                 metadata={"tasks": tasks, "tasks_count": len(tasks)}
             )
+        
+        # اگر هیچ الگوی اکشنی match نشد،
+        # و AI اطمینان پایین دارد + درخواست شبیه سؤال است → چت (جلوگیری از misrouting)
+        if intent.confidence < 0.75:
+            question_markers = ["?", "what", "who", "why", "how", "which", "is there",
+                                "can you", "would you", "tell me", "do you",
+                                "چیست", "چیه", "کیه", "کجاست", "چرا", "چطور",
+                                "آیا", "میشه", "می‌تونی", "میتونی"]
+            if any(m in raw for m in question_markers):
+                return Route(
+                    type=RouteType.CHAT_RESPONSE,
+                    requires_activation=[],
+                    confidence=intent.confidence,
+                    risk_level=RiskLevel.SAFE,
+                    metadata={"response_type": "conversational"}
+                )
         
         # پیش‌فرض: پاسخ چت ساده
         return Route(

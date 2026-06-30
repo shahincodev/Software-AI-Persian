@@ -405,12 +405,34 @@ class IntentAnalyzer:
         
         این تابع از اینکه "Please do my requests..." به converse برود جلوگیری می‌کند
         وقتی که متن واقعاً درخواست عملیات سیستمی دارد.
+        
+        همچنین حالت معکوس: اگر verb اکشن باشد ولی متن سوال "how to/do/can/could"
+        باشد (اطلاعاتی، نه دستوری)، به "converse" برمی‌گرداند.
+        مثال: "Tell me how to create a folder" → known_verbs مستقیماً "create"
+        را پیدا می‌کند، ولی قصد کاربر اطلاعاتی است، نه دستور اجرا.
         """
-        # فقط وقتی که verb فعلی converse است و زبان انگلیسی است بررسی کن
+        request_lower = request.lower()
+        how_to_match = re.search(r'\bhow\s+(to|do|can|could)\b', request_lower)
+        
+        # حالت ۱: verb اکشن است ولی متن سوال how-to است ← بازگشت به converse
+        if current_verb in ("create", "open", "delete", "write", "search",
+                           "click", "install", "type", "play") and how_to_match:
+            self.logger.debug(
+                f"🔍 Verb override: '{current_verb}' → 'converse' "
+                f"(informational how-to question)"
+            )
+            return "converse"
+        
+        # حالت ۲ (قبلی): verb converse است — فقط در این صورت ادامه بده
         if current_verb != "converse" and current_verb not in ("گفتگو",):
             return None
         
-        request_lower = request.lower()
+        # اگر سوال how-to است، converse→action را لغو کن
+        if how_to_match:
+            self.logger.debug(
+                f"🔍 Skipping verb override for informational question: '{request[:50]}'"
+            )
+            return None
         
         # مپ کردن کلمات کلیدی به verb‌های مناسب
         action_signals = {

@@ -550,11 +550,21 @@ JSON Array:"""
             import re
             
             # استخراج JSON از پاسخ
-            json_match = re.search(r'\[.*\]', response, re.DOTALL)
+            json_match = re.search(r'(\[.*?\])', response, re.DOTALL)
             if json_match:
-                json_str = json_match.group(0)
+                json_str = json_match.group(1)
                 logger.debug(f"📋 Extracted JSON: {json_str[:200]}")
-                actions = json.loads(json_str)
+                try:
+                    actions = json.loads(json_str)
+                except json.JSONDecodeError as je:
+                    # اگر JSON parsing شکست بخورد، تلاش کنیم response رو حذف کنیم و دوباره امتحان کنیم
+                    # بعضی مواقع AI inside از استخراج JSON در جریان درخواست استفاده می‌کنه
+                    cleaned_response = re.sub(r'```json|```|json', '', json_str)
+                    cleaned_response = cleaned_response.strip()
+                    if cleaned_response:
+                        actions = json.loads(cleaned_response)
+                    else:
+                        raise je
                 
                 if isinstance(actions, list):
                     logger.info("✅ AI parsed %d actions successfully", len(actions))

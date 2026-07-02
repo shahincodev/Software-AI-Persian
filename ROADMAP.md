@@ -190,3 +190,4 @@ It should be capable of:
 * Update this roadmap whenever a phase is completed or significantly changed.
 * Keep the implementation modular and maintainable.
 * Favor structured tool execution over free-form AI responses whenever possible.
+ 

@@ -36,7 +36,7 @@ from datetime import datetime
 import logging
 import time
 from pathlib import Path
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Optional, List, Dict, Any, Tuple, Union
 
 from core.mouse_control import MouseController, MouseButton
 from core.keyboard_control import KeyboardController

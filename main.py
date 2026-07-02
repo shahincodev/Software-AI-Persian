@@ -588,7 +588,7 @@ async def process_capability_loop(
         voice.speak(welcome_message, lang=current_lang, block=True)
 
     print(f"\n{Fore.GREEN}{welcome_message}{Style.RESET_ALL}")
-    print(f"{Fore.YELLOW}Version 1.0.0 | Powered by AI | Persian & English Support{Style.RESET_ALL}\n")
+    print(f"{Fore.YELLOW}Software-AI 0.1.0{Style.RESET_ALL}\n")
     print(f"{Fore.MAGENTA}Safety mode: {session_control.safety_mode.upper()} | Risk threshold: {session_control.risk_threshold}{Style.RESET_ALL}")
     if session_control.allowed_apps:
         print(f"{Fore.MAGENTA}Allowed apps : {', '.join(session_control.allowed_apps)}{Style.RESET_ALL}")

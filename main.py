@@ -4,661 +4,405 @@
 # Software-AI: AI-Powered Windows Control System
 
 """
-نقطه ورود اصلی سیستم اتوماسیون هوشمند ویندوز.
-این ماژول یک رابط CLI پیشرفته برای تعامل با قابلیت‌های سیستم فراهم می‌کند.
+Software-AI: Intelligent Windows Automation System
 
-قابلیت‌ها:
-- Intent Planning System (تحلیل هوشمند درخواست‌ها)
-- Desktop Automation (کنترل موس، کیبورد، بینایی)
-- Autonomous Agent (اجرای خودکار اهداف)
-- System Agent (مدیریت برنامه‌ها و سیستم)
+An AI agent with full system access that understands natural language
+and executes actions autonomously on Windows.
 """
 
 from __future__ import annotations
 
 import argparse
 import asyncio
+import io
 import logging
+import os
 import shutil
+import subprocess
 import sys
-from pathlib import Path
-from typing import Any, Dict, List, Optional
-from colorama import init as colorama_init, Fore, Style
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Optional
 
+# Fix Windows console encoding for emoji/unicode support
+if sys.platform == "win32":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+    os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+
+from colorama import init as colorama_init, Fore, Style
 from dotenv import load_dotenv
 
 from core.action_controller import ActionController
 from core.ai_brain import AIBrain
-from core.autonomous_agent import AutonomousAgent
 from core.capability_manager import CapabilityManager
-from core.desktop_vision import DesktopVision
-from core.intent_analyzer import IntentAnalyzer
 from core.intent_router import IntentRouter, RouteType
 from core.keyboard_control import KeyboardController
 from core.logging_config import install_exception_hook, setup_logging
-from core.memory_integrator import MemoryIntegrator, MemoryManager, PlanStatus
+from core.memory_integrator import MemoryIntegrator, MemoryManager
 from core.mouse_control import MouseController
-from core.plan_generator import PlanGenerator
-from core.plan_validator import PlanValidator
-from core.realtime_loop import RealtimeLoop
 from core.safety_consent_manager import SafetyConsentManager
 from core.smart_wait import SmartWaiter
-from core.task_engine import TaskEngine
 from core.voice_io import VoiceManager
 
 colorama_init(autoreset=True)
 logger = logging.getLogger(__name__)
 
 
-def _load_banner(path: str = "banner.txt") -> str:
-    try:
-        return Path(path).read_text(encoding="utf-8")
-    except (FileNotFoundError, OSError):
-        return "Software-AI"
+# ─────────────────────────────────────────────────────────────────────────────
+# System Context Builder
+# ─────────────────────────────────────────────────────────────────────────────
+
+class SystemContext:
+    """Builds and maintains real-time system context for the AI agent."""
+
+    def __init__(self):
+        self.working_directory = os.getcwd()
+        self.last_actions: list[dict[str, Any]] = []
+        self.max_history = 10
+
+    def record_action(self, action: dict[str, Any]) -> None:
+        """Record an executed action for context."""
+        self.last_actions.append(action)
+        if len(self.last_actions) > self.max_history:
+            self.last_actions = self.last_actions[-self.max_history:]
+
+    def get_context(self) -> str:
+        """Build system context string for AI injection."""
+        sections = []
+
+        # Working directory and files
+        sections.append(f"Working Directory: {self.working_directory}")
+        try:
+            entries = list(Path(self.working_directory).iterdir())
+            dirs = [e.name for e in entries if e.is_dir()][:15]
+            files = [e.name for e in entries if e.is_file()][:15]
+            if dirs:
+                sections.append(f"Folders: {', '.join(dirs)}")
+            if files:
+                sections.append(f"Files: {', '.join(files)}")
+        except PermissionError:
+            sections.append("Files: (access denied)")
+
+        # Key Windows locations
+        user_profile = os.environ.get("USERPROFILE", "")
+        if user_profile:
+            locations = {
+                "Desktop": Path(user_profile) / "Desktop",
+                "Downloads": Path(user_profile) / "Downloads",
+                "Documents": Path(user_profile) / "Documents",
+            }
+            for name, path in locations.items():
+                if path.exists():
+                    try:
+                        count = len(list(path.iterdir()))
+                        sections.append(f"{name}: {path} ({count} items)")
+                    except PermissionError:
+                        sections.append(f"{name}: {path}")
+
+        # Available drives
+        drives = []
+        for letter in "CDEFGH":
+            drive = Path(f"{letter}:\\")
+            if drive.exists():
+                drives.append(f"{letter}:")
+        if drives:
+            sections.append(f"Available drives: {', '.join(drives)}")
+
+        # Recent actions
+        if self.last_actions:
+            sections.append("\nRecent actions:")
+            for a in self.last_actions[-5:]:
+                status = a.get("status", "unknown")
+                desc = a.get("description", a.get("command", "unknown"))
+                icon = "+" if status == "success" else "X" if status == "failed" else "~"
+                sections.append(f"  [{icon}] {desc}")
+
+        return "\n".join(sections)
 
 
-banner = _load_banner()
+# ─────────────────────────────────────────────────────────────────────────────
+# Tool Executor
+# ─────────────────────────────────────────────────────────────────────────────
 
+class ToolExecutor:
+    """Executes tool calls from the AI agent."""
 
-def _summarize_for_voice(result_text: str) -> str:
-    """خلاصه‌سازی پاسخ طولانی برای خروجی صوتی.
-    
-    Args:
-        result_text: متن کامل نتیجه
-    
-    Returns:
-        متن خلاصه شده مناسب برای گفتار
-    """
-    # اگر کوتاه است، همان‌طور برگرداندن
-    if len(result_text) < 150:
-        return result_text
-    
-    # استخراج اولین خط معنادار (معمولاً خلاصه)
-    lines = result_text.split('\n')
-    first_meaningful_line = ""
-    
-    for line in lines:
-        line = line.strip()
-        if line and not line.startswith('#') and not line.startswith('```'):
-            first_meaningful_line = line
-            break
-    
-    if first_meaningful_line:
-        return first_meaningful_line
-    
-    # بازگشت اضطراری: بازگرداندن ۱۵۰ کاراکتر اول
-    return result_text[:150] + "..."
+    def __init__(self, action_controller: ActionController, safety_mode: str = "safe"):
+        self.action_controller = action_controller
+        self.safety_mode = safety_mode
 
+    async def execute(self, tool_calls: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """Execute a list of tool calls and return results."""
+        results = []
+        for tc in tool_calls:
+            tool = tc.get("tool", "")
+            params = tc.get("params", {})
+            description = tc.get("description", tool)
+            result = await self._dispatch(tool, params, description)
+            results.append(result)
+        return results
 
-async def handle_mouse_command(
-    command: str,
-    mouse: MouseController,
-    voice: VoiceManager,
-    lang: str,
-    input_mode: str
-) -> None:
-    """پردازش دستورات ماوس."""
-    try:
-        cmd_lower = command.lower()
-        
-        if "position" in cmd_lower:
-            x, y = mouse.get_position()
-            msg = f"🖱️  Mouse position: ({x}, {y})"
-            print(msg)
-            if input_mode == "voice":
-                voice.speak(f"Mouse is at position {x}, {y}", lang=lang)
-        
-        elif "click" in cmd_lower:
-            x, y = mouse.get_position()
-            mouse.click(x, y)
-            msg = f"🖱️  Clicked at ({x}, {y})"
-            print(msg)
-            if input_mode == "voice":
-                voice.speak("Click executed", lang=lang)
-        
-        else:
-            msg = "❓ Unknown mouse command. Try: 'mouse position' or 'mouse click'"
-            print(msg)
-            if input_mode == "voice":
-                voice.speak("Unknown mouse command", lang=lang)
-    
-    except Exception as e:
-        error_msg = f"❌ Mouse error: {e}"
-        print(error_msg)
-        logger.exception("Mouse command failed")
-
-
-async def handle_keyboard_command(
-    command: str,
-    keyboard: KeyboardController,
-    voice: VoiceManager,
-    lang: str,
-    input_mode: str
-) -> None:
-    """پردازش دستورات کیبورد."""
-    try:
-        # استخراج متن برای تایپ
-        if "type" in command.lower():
-            # استخراج متن پس از "type"
-            text_to_type = command.split(maxsplit=1)[1] if len(command.split()) > 1 else ""
-            
-            if text_to_type:
-                msg = f"⌨️  Typing in 3 seconds: {text_to_type}"
-                print(msg)
-                if input_mode == "voice":
-                    voice.speak("Typing in 3 seconds", lang=lang)
-                
-                await asyncio.sleep(3)
-                keyboard.type_text(text_to_type)
-                
-                success_msg = "✅ Text typed successfully"
-                print(success_msg)
-                if input_mode == "voice":
-                    voice.speak("Text typed", lang=lang)
+    async def _dispatch(self, tool: str, params: dict, description: str) -> dict[str, Any]:
+        """Dispatch a single tool call to the appropriate handler."""
+        try:
+            if tool == "execute_command":
+                return await self._execute_command(params, description)
+            elif tool == "launch_app":
+                return await self._launch_app(params, description)
+            elif tool == "close_app":
+                return await self._close_app(params, description)
+            elif tool == "click":
+                return await self._click(params, description)
+            elif tool == "type_text":
+                return await self._type_text(params, description)
+            elif tool == "hotkey":
+                return await self._hotkey(params, description)
+            elif tool == "list_directory":
+                return await self._list_directory(params, description)
+            elif tool == "read_file":
+                return await self._read_file(params, description)
             else:
-                print("❓ Usage: type <your text here>")
-        
-        elif "hotkey" in command.lower():
-            msg = "⌨️  Example: Ctrl+C executed"
-            print(msg)
-            keyboard.hotkey('ctrl', 'c')
-            if input_mode == "voice":
-                voice.speak("Hotkey executed", lang=lang)
-        
-        else:
-            msg = "❓ Unknown keyboard command. Try: 'type <text>' or 'hotkey'"
-            print(msg)
-    
-    except Exception as e:
-        error_msg = f"❌ Keyboard error: {e}"
-        print(error_msg)
-        logger.exception("Keyboard command failed")
+                # Fallback: try ActionController
+                return await self._fallback_action(tool, params, description)
+        except Exception as e:
+            logger.exception("Tool execution failed: %s", e)
+            return {"status": "failed", "description": description, "error": str(e)}
+
+    async def _execute_command(self, params: dict, description: str) -> dict[str, Any]:
+        command = params.get("command", "")
+        if not command:
+            return {"status": "failed", "description": description, "error": "No command provided"}
+
+        logger.info("Executing command: %s", command)
+        try:
+            proc = subprocess.run(
+                command, shell=True, capture_output=True, text=True, timeout=30
+            )
+            output = proc.stdout.strip() if proc.stdout else ""
+            error = proc.stderr.strip() if proc.stderr else ""
+            success = proc.returncode == 0
+
+            result = {
+                "status": "success" if success else "failed",
+                "description": description,
+                "command": command,
+                "output": output[:2000] if output else "",
+                "error": error[:1000] if error else "",
+                "return_code": proc.returncode,
+            }
+            logger.info("Command %s: %s", "succeeded" if success else "failed", command)
+            return result
+        except subprocess.TimeoutExpired:
+            return {"status": "failed", "description": description, "error": "Command timed out"}
+        except Exception as e:
+            return {"status": "failed", "description": description, "error": str(e)}
+
+    async def _launch_app(self, params: dict, description: str) -> dict[str, Any]:
+        app_name = params.get("app_name", "")
+        if not app_name:
+            return {"status": "failed", "description": description, "error": "No app_name provided"}
+
+        request = f"open {app_name}"
+        result = await self.action_controller.process_request(request)
+        return {"status": "success", "description": description, "output": result}
+
+    async def _close_app(self, params: dict, description: str) -> dict[str, Any]:
+        process_name = params.get("process_name", "")
+        if not process_name:
+            return {"status": "failed", "description": description, "error": "No process_name provided"}
+
+        request = f"close {process_name}"
+        result = await self.action_controller.process_request(request)
+        return {"status": "success", "description": description, "output": result}
+
+    async def _click(self, params: dict, description: str) -> dict[str, Any]:
+        target = params.get("target", "")
+        request = f"click {target}"
+        result = await self.action_controller.process_request(request)
+        return {"status": "success", "description": description, "output": result}
+
+    async def _type_text(self, params: dict, description: str) -> dict[str, Any]:
+        text = params.get("text", "")
+        if not text:
+            return {"status": "failed", "description": description, "error": "No text provided"}
+
+        request = f"type {text}"
+        result = await self.action_controller.process_request(request)
+        return {"status": "success", "description": description, "output": result}
+
+    async def _hotkey(self, params: dict, description: str) -> dict[str, Any]:
+        keys = params.get("keys", "")
+        if not keys:
+            return {"status": "failed", "description": description, "error": "No keys provided"}
+
+        request = f"keyboard hotkey {keys}"
+        result = await self.action_controller.process_request(request)
+        return {"status": "success", "description": description, "output": result}
+
+    async def _list_directory(self, params: dict, description: str) -> dict[str, Any]:
+        path = params.get("path", ".")
+        try:
+            p = Path(path)
+            if not p.exists():
+                return {"status": "failed", "description": description, "error": f"Path not found: {path}"}
+            entries = []
+            for item in sorted(p.iterdir()):
+                prefix = "[DIR] " if item.is_dir() else "      "
+                entries.append(f"{prefix}{item.name}")
+            return {
+                "status": "success",
+                "description": description,
+                "output": "\n".join(entries[:50]) if entries else "(empty directory)",
+            }
+        except Exception as e:
+            return {"status": "failed", "description": description, "error": str(e)}
+
+    async def _read_file(self, params: dict, description: str) -> dict[str, Any]:
+        path = params.get("path", "")
+        try:
+            p = Path(path)
+            if not p.exists():
+                return {"status": "failed", "description": description, "error": f"File not found: {path}"}
+            if p.stat().st_size > 100_000:
+                return {"status": "failed", "description": description, "error": "File too large (>100KB)"}
+            content = p.read_text(encoding="utf-8", errors="replace")
+            return {"status": "success", "description": description, "output": content[:5000]}
+        except Exception as e:
+            return {"status": "failed", "description": description, "error": str(e)}
+
+    async def _fallback_action(self, tool: str, params: dict, description: str) -> dict[str, Any]:
+        request = f"{tool} {params}"
+        result = await self.action_controller.process_request(request)
+        return {"status": "success", "description": description, "output": result}
 
 
-async def handle_wait_command(
-    command: str,
-    smart_wait: SmartWaiter,
-    voice: VoiceManager,
-    lang: str,
-    input_mode: str
-) -> None:
-    """پردازش دستورات انتظار هوشمند."""
-    try:
-        cmd_lower = command.lower()
-        
-        if "idle" in cmd_lower:
-            msg = "⏳ Waiting for system to be idle..."
-            print(msg)
-            if input_mode == "voice":
-                voice.speak("Waiting for idle", lang=lang)
-            
-            result = smart_wait.wait_for_idle(cpu_threshold=10.0, timeout=30)
-            
-            if result.success:
-                success_msg = f"✅ System is idle (waited {result.duration:.1f}s)"
-                print(success_msg)
-                if input_mode == "voice":
-                    voice.speak("System is now idle", lang=lang)
-            else:
-                timeout_msg = f"⏱️  Timeout waiting for idle"
-                print(timeout_msg)
-        
-        elif "window" in cmd_lower:
-            # استخراج نام پنجره
-            window_name = command.split(maxsplit=1)[1] if len(command.split()) > 1 else "Notepad"
-            
-            msg = f"⏳ Waiting for window: {window_name}"
-            print(msg)
-            if input_mode == "voice":
-                voice.speak(f"Waiting for {window_name}", lang=lang)
-            
-            result = smart_wait.wait_for_window(window_name, timeout=30)
-            
-            if result.success:
-                success_msg = f"✅ Window found: {window_name}"
-                print(success_msg)
-                if input_mode == "voice":
-                    voice.speak("Window found", lang=lang)
-            else:
-                timeout_msg = f"⏱️  Timeout: {window_name} not found"
-                print(timeout_msg)
-        
-        else:
-            msg = "❓ Unknown wait command. Try: 'wait idle' or 'wait window <name>'"
-            print(msg)
-    
-    except Exception as e:
-        error_msg = f"❌ Wait error: {e}"
-        print(error_msg)
-        logger.exception("Wait command failed")
-
-
-async def handle_vision_command(
-    command: str,
-    vision: DesktopVision,
-    mouse: Optional[MouseController],
-    voice: VoiceManager,
-    lang: str,
-    input_mode: str
-) -> None:
-    """پردازش دستورات بینایی پیشرفته."""
-    try:
-        cmd_lower = command.lower()
-        
-        if "find image" in cmd_lower:
-            # vision find image <path> [confidence]
-            parts = command.split(maxsplit=2)
-            if len(parts) < 3:
-                print("❓ Usage: vision find image <path> [confidence]")
-                return
-            
-            image_path = parts[2]
-            confidence = 0.8
-            
-            msg = f"🔍 Finding image: {image_path}"
-            print(msg)
-            if input_mode == "voice":
-                voice.speak("Searching for image", lang=lang)
-            
-            match = vision.find_image(image_path, confidence=confidence)
-            
-            if match:
-                success_msg = f"✅ Image found at ({match.x}, {match.y}) confidence {match.confidence:.0%}"
-                print(success_msg)
-                if input_mode == "voice":
-                    voice.speak("Image found", lang=lang)
-                
-                # اختیاری: کلیک اگر ماوس فعال است
-                if mouse:
-                    mouse.click(*match.center)
-                    print(f"🖱️  Clicked at {match.center}")
-            else:
-                not_found_msg = "❌ Image not found"
-                print(not_found_msg)
-        
-        elif "get color" in cmd_lower:
-            # vision get color <x> <y>
-            parts = command.split()
-            if len(parts) < 4:
-                print("❓ Usage: vision get color <x> <y>")
-                return
-            
-            x, y = int(parts[2]), int(parts[3])
-            color = vision.get_pixel_color(x, y)
-            
-            msg = f"🎨 Color at ({x}, {y}): RGB{color}"
-            print(msg)
-            if input_mode == "voice":
-                voice.speak(f"Color is {color[0]} {color[1]} {color[2]}", lang=lang)
-        
-        elif "find button" in cmd_lower:
-            # vision find button <text>
-            parts = command.split(maxsplit=2)
-            if len(parts) < 3:
-                print("❓ Usage: vision find button <text>")
-                return
-            
-            button_text = parts[2]
-            
-            msg = f"🔍 Finding button: {button_text}"
-            print(msg)
-            
-            pos = vision.find_button(button_text)
-            
-            if pos:
-                success_msg = f"✅ Button found at {pos}"
-                print(success_msg)
-                if mouse:
-                    mouse.click(*pos)
-                    print(f"🖱️  Clicked button")
-            else:
-                print("❌ Button not found")
-        
-        elif "screenshot" in cmd_lower:
-            # vision screenshot [path]
-            parts = command.split()
-            save_path = parts[1] if len(parts) > 1 else "screenshot.png"
-            
-            msg = f"📸 Capturing screenshot to: {save_path}"
-            print(msg)
-            
-            if vision.save_screenshot(save_path):
-                print(f"✅ Screenshot saved: {save_path}")
-                if input_mode == "voice":
-                    voice.speak("Screenshot saved", lang=lang)
-            else:
-                print("❌ Failed to save screenshot")
-        
-        else:
-            msg = "❓ Vision commands: 'find image <path>', 'get color <x> <y>', 'find button <text>', 'screenshot [path]'"
-            print(msg)
-    
-    except Exception as e:
-        error_msg = f"❌ Vision error: {e}"
-        print(error_msg)
-        logger.exception("Vision command failed")
-
-
-def setup_environment() -> None:
-    """مقداردهی متغیرهای محیطی و ایجاد پوشه‌های مورد نیاز."""
-    # بارگذاری متغیرهای محیطی از فایل .env
-    load_dotenv()
-    
-    # اطمینان از وجود پوشه‌های مورد نیاز
-    for dir_path in ["data/logs", "data/logs/cache"]:
-        Path(dir_path).mkdir(parents=True, exist_ok=True)
+# ─────────────────────────────────────────────────────────────────────────────
+# CLI
+# ─────────────────────────────────────────────────────────────────────────────
 
 def parse_arguments() -> argparse.Namespace:
-    """تجزیه آرگومان‌های خط فرمان."""
     parser = argparse.ArgumentParser(
-        description="Software-AI: AI-Powered Windows Automation System with Intent Planning",
+        description="Software-AI: AI-Powered Windows Automation System",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python main.py                           # Basic mode
-  python main.py --full                    # All features enabled
-  python main.py --intent-planning         # Intent Planning System only
-  python main.py --automation              # Desktop Automation only
-  python main.py --debug                   # Debug mode
-        """
+  python main.py                     # Interactive agent mode
+  python main.py --debug             # Debug logging
+  python main.py --dry-run           # Simulate without executing
+  python main.py --safety-mode power # Less restrictive safety
+        """,
     )
-    
-    parser.add_argument(
-        "--version",
-        action="version",
-        version="Software-AI 0.1.0",
-        help="نمایش نسخه و خروج"
-    )
-
-    parser.add_argument(
-        "--input-mode",
-        choices=["text", "voice"],
-        default="text",
-        help="روش ورودی: متن یا صوت"
-    )
-    
-    parser.add_argument(
-        "--tts-provider",
-        choices=["google-cloud", "gtts", "elevenlabs"],
-        default="gtts",
-        help="ارائه‌دهنده تبدیل متن به گفتار"
-    )
-
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="فعال کردن ثبت گزارش اشکال‌زدایی (خروجی طولانی)"
-    )
-    
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="شبیه‌سازی اقدامات بدون اجرای واقعی آنها"
-    )
-
-    parser.add_argument(
-        "--mode",
-        choices=["browser", "code"],
-        default="browser",
-        help="[deprecated] حالت اجرا برای تسک‌ها — سیستم خودکار تشخیص می‌دهد"
-    )
-
-    parser.add_argument(
-        "--concurrency",
-        type=int,
-        default=2,
-        help="تعداد پردازش‌های همزمان برای TaskEngine (پیشنهادی: 2)"
-    )
-
-    parser.add_argument(
-        "--safety-mode",
-        choices=["safe", "power"],
-        default="safe",
-        help="پروفایل ایمنی: safe (سخت‌گیر) یا power (آزادتر با هشدار)"
-    )
-
-    parser.add_argument(
-        "--risk-threshold",
-        type=int,
-        default=70,
-        help="آستانه ریسک (۰ تا ۱۰۰) برای اجرای دستورات در حالت safe"
-    )
-
-    parser.add_argument(
-        "--allow-app",
-        action="append",
-        default=[],
-        help="افزودن اپلیکیشن مجاز (قابل تکرار). مثال: --allow-app chrome"
-    )
-
-    parser.add_argument(
-        "--allow-path",
-        action="append",
-        default=[],
-        help="افزودن مسیر یا پوشه مجاز (قابل تکرار). مثال: --allow-path C:/Projects"
-    )
-
-    # Mode flags — kept for backward compat but deprecated
-    parser.add_argument("--enable-automation", "--automation", action="store_true",
-                        help=argparse.SUPPRESS)
-    parser.add_argument("--enable-autonomous", "--autonomous", action="store_true",
-                        help=argparse.SUPPRESS)
-    parser.add_argument("--enable-intent-planning", "--intent-planning", action="store_true",
-                        help=argparse.SUPPRESS)
-    parser.add_argument("--full", action="store_true",
-                        help=argparse.SUPPRESS)
-    parser.add_argument("--realtime", action="store_true",
-                        help=argparse.SUPPRESS)
-    parser.add_argument("--realtime-fps", type=float, default=1.0,
-                        help=argparse.SUPPRESS)
-    parser.add_argument("--task-mode", action="store_true",
-                        help=argparse.SUPPRESS)
-
+    parser.add_argument("--version", action="version", version="Software-AI 0.2.0")
+    parser.add_argument("--input-mode", choices=["text", "voice"], default="text")
+    parser.add_argument("--tts-provider", choices=["google-cloud", "gtts", "elevenlabs"], default="gtts")
+    parser.add_argument("--debug", action="store_true")
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--safety-mode", choices=["safe", "power"], default="safe")
+    parser.add_argument("--risk-threshold", type=int, default=70)
+    parser.add_argument("--allow-app", action="append", default=[])
+    parser.add_argument("--allow-path", action="append", default=[])
     return parser.parse_args()
 
-def print_banner(text=banner, color=Fore.CYAN) -> None:
-    """چاپ بنر خوش‌آمدگویی در CLI."""
-    term_width = shutil.get_terminal_size((80, 20)).columns
-    
+
+def print_banner() -> None:
     try:
-        lines = str(text).splitlines()
-        for line in lines:
-            padding = (term_width - len(line)) // 2
-            if padding > 0:
-                print(color + " " * padding + line + Style.RESET_ALL)
-    except Exception:
-        print(text)
+        banner_text = Path("banner.txt").read_text(encoding="utf-8")
+    except (FileNotFoundError, OSError):
+        banner_text = "Software-AI"
 
+    width = shutil.get_terminal_size((80, 20)).columns
+    cyan = Fore.CYAN
+    reset = Style.RESET_ALL
 
-def print_features_status(
-    automation: bool = False,
-    autonomous: bool = False,
-    intent_planning: bool = False,
-    mouse: Optional[Any] = None,
-    keyboard: Optional[Any] = None,
-    vision: Optional[Any] = None,
-    action_controller: Optional[Any] = None
-) -> None:
-    """نمایش وضعیت فعال بودن قابلیت‌ها."""
-    print(f"\n{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}{'SYSTEM CAPABILITIES STATUS':^80}{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
-    
-    if intent_planning:
-        print(f"{Fore.GREEN}✓ Intent Planning System{Style.RESET_ALL}")
-        print(f"  ├─ Intent Analyzer      : {Fore.GREEN}ACTIVE{Style.RESET_ALL}")
-        print(f"  ├─ Dialog Manager       : {Fore.GREEN}ACTIVE{Style.RESET_ALL}")
-        print(f"  ├─ Plan Generator       : {Fore.GREEN}ACTIVE{Style.RESET_ALL}")
-        print(f"  ├─ Plan Validator       : {Fore.GREEN}ACTIVE{Style.RESET_ALL}")
-        print(f"  └─ Memory Integrator    : {Fore.GREEN}ACTIVE{Style.RESET_ALL}\n")
-    
-    if automation:
-        print(f"{Fore.GREEN}✓ Desktop Automation{Style.RESET_ALL}")
-        components = []
-        if mouse: components.append("Mouse Control")
-        if keyboard: components.append("Keyboard Control")
-        if vision: components.append("Enhanced Vision")
-        if action_controller: components.append("Action Controller")
-        for i, comp in enumerate(components):
-            prefix = "└─" if i == len(components) - 1 else "├─"
-            print(f"  {prefix} {comp:20}: {Fore.GREEN}ACTIVE{Style.RESET_ALL}")
-        print()
-    
-    if autonomous:
-        print(f"{Fore.MAGENTA}✓ Autonomous Agent{Style.RESET_ALL}")
-        print(f"  └─ Vision-Based Goals   : {Fore.MAGENTA}ACTIVE{Style.RESET_ALL}\n")
-    
-    print(f"{Fore.YELLOW}✓ Core System{Style.RESET_ALL}")
-    print(f"  ├─ System Agent         : {Fore.GREEN}ACTIVE{Style.RESET_ALL}")
-    print(f"  ├─ Memory Manager       : {Fore.GREEN}ACTIVE{Style.RESET_ALL}")
-    print(f"  └─ Task Engine          : {Fore.GREEN}ACTIVE{Style.RESET_ALL}\n")
-    
-    print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
-
-
-class SessionControl:
-    """مدیریت حالت ایمنی، توقف اضطراری و فهرست‌های مجاز."""
-
-    def __init__(
-        self,
-        safety_mode: str = "safe",
-        risk_threshold: int = 70,
-        allowed_apps: Optional[list[str]] = None,
-        allowed_paths: Optional[list[str]] = None
-    ) -> None:
-        self.safety_mode = safety_mode
-        self.risk_threshold = max(0, min(risk_threshold, 100))
-        self.allowed_apps = set(allowed_apps or [])
-        self.allowed_paths = set(allowed_paths or [])
-        self.paused = False
-        self.stopped = False
-        
-        # Safety & Consent Manager
-        self.safety_consent_manager: Optional[SafetyConsentManager] = None
-
-    def pause(self) -> None:
-        self.paused = True
-
-    def resume(self) -> None:
-        self.paused = False
-
-    def stop(self) -> None:
-        self.stopped = True
-    
-    def set_safety_consent_manager(self, manager: SafetyConsentManager) -> None:
-        """تعیین مدیر ایمنی و تایید"""
-        self.safety_consent_manager = manager
-
-
-def log_risk_decision(action: str, safety_mode: str, risk_score: float, threshold: int) -> None:
-    """ثبت تصمیم ریسک در لاگ برای شفافیت."""
-    try:
-        logger.info(
-            "RISK_DECISION action=%s mode=%s score=%.2f threshold=%d",
-            action,
-            safety_mode,
-            risk_score,
-            threshold,
-        )
-    except Exception:
-        # لاگ نباید اجرای اصلی را متوقف کند
-        pass
-
-async def process_capability_loop(
-    args: argparse.Namespace,
-    memory: MemoryManager,
-    voice: VoiceManager,
-    action_controller: ActionController,
-    intent_router: IntentRouter,
-    capability_manager: CapabilityManager,
-    safety_consent_manager: SafetyConsentManager,
-    session_control: SessionControl,
-) -> None:
-    """Capability-driven main interaction loop — acquires capabilities lazily via CapabilityManager."""
-    current_lang = "en"
-    input_mode = args.input_mode
-    task_engine = TaskEngine(concurrency=args.concurrency)
-    chat_brain = AIBrain()
-
-    print_banner(banner, color=Fore.CYAN)
-
-    welcome_message = "Welcome to Software-AI: Intelligent Windows Automation System"
-    if input_mode == "voice":
-        voice.speak(welcome_message, lang=current_lang, block=True)
-
-    print(f"\n{Fore.GREEN}{welcome_message}{Style.RESET_ALL}")
-    print(f"{Fore.YELLOW}Software-AI 0.1.0{Style.RESET_ALL}\n")
-    print(f"{Fore.MAGENTA}Safety mode: {session_control.safety_mode.upper()} | Risk threshold: {session_control.risk_threshold}{Style.RESET_ALL}")
-    if session_control.allowed_apps:
-        print(f"{Fore.MAGENTA}Allowed apps : {', '.join(session_control.allowed_apps)}{Style.RESET_ALL}")
-    if session_control.allowed_paths:
-        print(f"{Fore.MAGENTA}Allowed paths: {', '.join(session_control.allowed_paths)}{Style.RESET_ALL}")
+    print()
+    for line in banner_text.splitlines():
+        # Center the raw text, then wrap with color
+        padded = line.center(width)
+        try:
+            print(f"{cyan}{padded}{reset}")
+        except UnicodeEncodeError:
+            print(padded)
+    print()
+    print(f"  {Fore.GREEN}Software-AI 0.2.0{reset}  |  AI-Powered Windows Agent")
+    print(f"  {Fore.YELLOW}Type your request in natural language{reset}")
+    print(f"  {Fore.YELLOW}Type 'help' for commands, 'exit' to quit{reset}")
     print()
 
-    print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}{'CHAT MODE (DEFAULT)':^80}{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
-    print(f"{Fore.YELLOW}Free-form chat. Ask any question or request.{Style.RESET_ALL}")
-    print(f"{Fore.YELLOW}System will enable web/automation/task capabilities as needed.{Style.RESET_ALL}\n")
-    print(f"{Fore.MAGENTA}Examples:{Style.RESET_ALL}")
-    print(f"  {Fore.GREEN}Write a professional email{Style.RESET_ALL}")
-    print(f"  {Fore.GREEN}Create a new folder on desktop{Style.RESET_ALL}")
-    print(f"  {Fore.GREEN}Check USD price on the web{Style.RESET_ALL}\n")
-    print(f"{Fore.YELLOW}Type your command and press Enter...{Style.RESET_ALL}\n")
 
-    task_mode_enabled = False
+def print_help() -> None:
+    print(f"""
+{Fore.CYAN}{'='*60}{Style.RESET_ALL}
+{Fore.CYAN}{'COMMANDS':^60}{Style.RESET_ALL}
+{Fore.CYAN}{'='*60}{Style.RESET_ALL}
 
-    def log_telemetry(event: str, **data: Any) -> None:
+  {Fore.GREEN}Natural Language (Recommended):{Style.RESET_ALL}
+    Just type what you want! Examples:
+      Create a folder on D: named "project"
+      Open Chrome and search for AI news
+      What files are in my Downloads?
+      Rename file X to Y
+      Take a screenshot
+
+  {Fore.YELLOW}Special Commands:{Style.RESET_ALL}
+    help          Show this help
+    clear         Clear the screen
+    context       Show current system context
+    history       Show recent actions
+    pause/resume  Pause or resume the session
+    stop/exit     Exit the program
+
+{Fore.CYAN}{'='*60}{Style.RESET_ALL}
+""")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Main Agent Loop
+# ─────────────────────────────────────────────────────────────────────────────
+
+async def agent_loop(args: argparse.Namespace) -> None:
+    """Main agent interaction loop — every input goes through the AI with system access."""
+
+    # Initialize core components
+    memory = MemoryManager()
+    voice = VoiceManager(tts_provider=args.tts_provider)
+    action_controller = ActionController(dry_run=args.dry_run)
+    intent_router = IntentRouter()
+    ai_brain = AIBrain()
+    system_context = SystemContext()
+    tool_executor = ToolExecutor(action_controller, safety_mode=args.safety_mode)
+    chat_brain = AIBrain()
+
+    # Safety
+    session_control = SafetyConsentManager()
+
+    print_banner()
+
+    # Session state
+    paused = False
+    action_history: list[dict[str, Any]] = []
+
+    def log_event(event: str, **data: Any) -> None:
         try:
-            payload = " ".join([f"{k}={v}" for k, v in data.items()]) if data else ""
+            payload = " ".join(f"{k}={v}" for k, v in data.items()) if data else ""
             logger.info("TELEMETRY event=%s %s", event, payload)
         except Exception:
             pass
 
-    async def ensure_task_mode_enabled() -> None:
-        nonlocal task_mode_enabled
-        if task_mode_enabled:
-            return
-        await capability_manager.activate("task_mode")
-        task_mode_enabled = True
-        log_telemetry("task_mode_enabled")
-        print(f"{Fore.GREEN}✓ Task Mode enabled. Tasks will be queued and run via TaskEngine.{Style.RESET_ALL}")
-
-    async def disable_task_mode(clear_queue: bool = True) -> None:
-        nonlocal task_mode_enabled
-        await capability_manager.deactivate("task_mode")
-        if clear_queue:
-            task_engine.queue.clear()
-        task_mode_enabled = False
-        log_telemetry("task_mode_disabled")
-        print(f"{Fore.YELLOW}Task Mode disabled.{Style.RESET_ALL}")
-
-    def extract_tasks_from_text(text: str) -> List[str]:
-        separators = [";", "\n", "،"]
-        for sep in separators:
-            if sep in text:
-                parts = [item.strip() for item in text.split(sep) if item.strip()]
-                return parts
-        return [text.strip()] if text.strip() else []
-
     try:
         while True:
-            user_text = ""
-            if input_mode == "voice":
-                print(f"{Fore.CYAN}🎤 Listening...{Style.RESET_ALL}")
+            # Get user input
+            if args.input_mode == "voice":
+                print(f"{Fore.CYAN}Listening...{Style.RESET_ALL}")
                 user_text, detected_lang = voice.listen(timeout=10)
-                if user_text and detected_lang:
-                    current_lang = detected_lang
-                    print(f"{Fore.GREEN}✓ Detected: {user_text}{Style.RESET_ALL}")
-                else:
-                    print(f"{Fore.YELLOW}⚠ No voice input.{Style.RESET_ALL}")
+                if not user_text:
+                    print(f"{Fore.YELLOW}No voice input detected.{Style.RESET_ALL}")
                     continue
+                print(f"{Fore.GREEN}> {user_text}{Style.RESET_ALL}")
             else:
                 try:
                     user_text = input(f"{Fore.CYAN}> {Style.RESET_ALL}").strip()
-                    current_lang = "en"
-                except EOFError:
+                except (EOFError, KeyboardInterrupt):
                     break
 
             if not user_text:
@@ -666,372 +410,190 @@ async def process_capability_loop(
 
             cmd_lower = user_text.lower()
 
-            if session_control.stopped:
-                print(f"{Fore.RED}🛑 Session stopped.{Style.RESET_ALL}")
+            # ── Session control commands ──
+            if cmd_lower in ("exit", "quit", "q"):
+                print(f"\n{Fore.YELLOW}Goodbye!{Style.RESET_ALL}\n")
                 break
 
-            if session_control.paused and cmd_lower not in ["resume", "stop", "exit", "quit"]:
-                print(f"{Fore.YELLOW}⏸️  Paused. Type 'resume' to continue.{Style.RESET_ALL}")
-                continue
-
-            # ── Core session control commands ──
-            if cmd_lower == "pause":
-                session_control.pause()
-                print(f"{Fore.YELLOW}⏸️  Paused.{Style.RESET_ALL}")
-                continue
-
-            if cmd_lower == "resume":
-                session_control.resume()
-                print(f"{Fore.GREEN}▶️  Resumed.{Style.RESET_ALL}")
-                continue
-
-            if cmd_lower in ["stop", "panic", "kill", "abort"]:
-                session_control.stop()
-                print(f"{Fore.RED}🛑 Emergency stop.{Style.RESET_ALL}")
+            if cmd_lower == "stop":
+                print(f"{Fore.RED}Session stopped.{Style.RESET_ALL}\n")
                 break
 
             if cmd_lower == "help":
-                print(f"\n{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
-                print(f"{Fore.CYAN}{'COMMAND REFERENCE':^80}{Style.RESET_ALL}")
-                print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
-                print(f"{Fore.GREEN}Just type what you want me to do!{Style.RESET_ALL}\n")
+                print_help()
                 continue
 
             if cmd_lower == "clear":
-                task_engine.queue.clear()
-                print(f"{Fore.GREEN}✓ Queue cleared.{Style.RESET_ALL}\n")
+                os.system("cls" if os.name == "nt" else "clear")
                 continue
 
-            if cmd_lower in ["exit", "quit"]:
-                print(f"\n{Fore.YELLOW}{'='*80}{Style.RESET_ALL}")
-                print(f"{Fore.YELLOW}Thank you for using Software-AI!{Style.RESET_ALL}")
-                print(f"{Fore.YELLOW}{'='*80}{Style.RESET_ALL}\n")
-                break
-
-            if cmd_lower in ["task mode on", "taskmode on", "enable task mode", "task on"]:
-                await ensure_task_mode_enabled()
+            if cmd_lower == "pause":
+                paused = True
+                print(f"{Fore.YELLOW}Paused. Type 'resume' to continue.{Style.RESET_ALL}")
                 continue
 
-            if cmd_lower in ["task mode off", "taskmode off", "disable task mode", "task off"]:
-                await disable_task_mode(clear_queue=True)
+            if cmd_lower == "resume":
+                paused = False
+                print(f"{Fore.GREEN}Resumed.{Style.RESET_ALL}")
                 continue
 
-            # ── Explicit backward-compat commands ──
-            # plan <request> — explicit intent analysis
-            if cmd_lower.startswith("plan "):
-                request = user_text[5:].strip()
-                analyzer = await capability_manager.activate("intent_analysis")
-                if not analyzer:
-                    print(f"{Fore.YELLOW}⚠ Intent analyzer not available.{Style.RESET_ALL}\n")
-                    continue
-                print(f"\n{Fore.MAGENTA}🧠 Analyzing: {request}{Style.RESET_ALL}\n")
-                analysis = await analyzer.analyze(request)
-                intent = analysis.intent
-                print(f"  Verb: {intent.verb}")
-                print(f"  Target: {intent.target}")
-                print(f"  Confidence: {intent.confidence:.0%}\n")
+            if paused:
+                print(f"{Fore.YELLOW}Paused. Type 'resume' to continue.{Style.RESET_ALL}")
+                continue
 
-                plan_gen = await capability_manager.activate("plan_generation")
-                plan_val = await capability_manager.activate("plan_validation")
-                if plan_gen and plan_val:
-                    plan = await plan_gen.generate_plan(intent)
-                    validation = await plan_val.validate(plan, intent)
-                    if validation.is_valid:
-                        print(f"{Fore.GREEN}✓ Plan generated ({len(plan.steps)} steps){Style.RESET_ALL}\n")
-                        mem_int = await capability_manager.activate("execution_history")
-                        if mem_int:
-                            mem_int.record_execution(
-                                plan_id=plan.plan_id, intent=intent,
-                                status=PlanStatus.SUCCESSFUL,
-                                steps_succeeded=len(plan.steps), steps_failed=0,
-                                total_steps=len(plan.steps), actual_time_seconds=0,
-                                estimated_time_seconds=plan.total_estimated_time
-                            )
-                    else:
-                        print(f"{Fore.RED}❌ Plan validation failed{Style.RESET_ALL}\n")
+            if cmd_lower == "context":
+                print(f"\n{Fore.CYAN}System Context:{Style.RESET_ALL}")
+                print(system_context.get_context())
+                print()
+                continue
+
+            if cmd_lower == "history":
+                if not action_history:
+                    print(f"{Fore.YELLOW}No actions yet.{Style.RESET_ALL}\n")
                 else:
-                    print(f"{Fore.YELLOW}⚠ Planning components not available.{Style.RESET_ALL}\n")
+                    print(f"\n{Fore.CYAN}Recent Actions:{Style.RESET_ALL}")
+                    for a in action_history[-10:]:
+                        status = a.get("status", "?")
+                        desc = a.get("description", "unknown")
+                        icon = f"{Fore.GREEN}+" if status == "success" else f"{Fore.RED}X" if status == "failed" else f"{Fore.YELLOW}~"
+                        print(f"  {icon}{Style.RESET_ALL} {desc}")
+                    print()
                 continue
 
-            # smart <request> — auto-analyze and execute
-            if cmd_lower.startswith("smart "):
-                request = user_text[6:].strip()
-                analyzer = await capability_manager.activate("intent_analysis")
-                if not analyzer:
-                    print(f"{Fore.YELLOW}⚠ Intent analyzer not available.{Style.RESET_ALL}\n")
-                    continue
-                print(f"\n{Fore.MAGENTA}🧠 Smart execution: {request}{Style.RESET_ALL}\n")
-                analysis = await analyzer.analyze(request)
-                intent = analysis.intent
+            # ── Agent Processing ──
+            log_event("agent_start", text=user_text[:100])
 
-                plan_gen = await capability_manager.activate("plan_generation")
-                plan_val = await capability_manager.activate("plan_validation")
-                if plan_gen and plan_val:
-                    plan = await plan_gen.generate_plan(intent)
-                    validation = await plan_val.validate(plan, intent)
-                    if validation.is_valid:
-                        print(f"{Fore.GREEN}✓ Plan validated and executed{Style.RESET_ALL}\n")
-                        mem_int = await capability_manager.activate("execution_history")
-                        if mem_int:
-                            mem_int.record_execution(
-                                plan_id=plan.plan_id, intent=intent,
-                                status=PlanStatus.SUCCESSFUL,
-                                steps_succeeded=len(plan.steps), steps_failed=0,
-                                total_steps=len(plan.steps), actual_time_seconds=0,
-                                estimated_time_seconds=plan.total_estimated_time
-                            )
-                    else:
-                        print(f"{Fore.RED}❌ Plan validation failed{Style.RESET_ALL}\n")
-                else:
-                    result = await action_controller.process_request(request)
-                    print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
-                continue
+            # Step 1: Build system context
+            context_str = system_context.get_context()
 
-            # goal <description> — autonomous agent
-            if cmd_lower.startswith("goal "):
-                goal = user_text[5:].strip()
-                agent = await capability_manager.activate("autonomous_agent")
-                if not agent:
-                    print(f"{Fore.YELLOW}⚠ Autonomous agent not available.{Style.RESET_ALL}\n")
-                    continue
-                print(f"\n{Fore.BLUE}🎯 Goal: {goal}{Style.RESET_ALL}\n")
-                result = await agent.execute_goal(goal)
-                if result.get("success"):
-                    print(f"{Fore.GREEN}✓ Goal completed!{Style.RESET_ALL}\n")
-                else:
-                    print(f"{Fore.RED}❌ Failed: {result.get('error', 'Unknown')}{Style.RESET_ALL}\n")
-                continue
+            # Step 2: AI decides what to do (with system context)
+            print(f"{Fore.MAGENTA}Thinking...{Style.RESET_ALL}", end="", flush=True)
 
-            # mouse <command>
-            if cmd_lower.startswith("mouse "):
-                mouse = await capability_manager.activate("desktop_mouse")
-                if mouse:
-                    await handle_mouse_command(user_text, mouse, voice, current_lang, input_mode)
-                else:
-                    print(f"{Fore.YELLOW}⚠ Mouse control not available.{Style.RESET_ALL}\n")
-                continue
+            agent_response = await ai_brain.agent_chat(
+                user_message=user_text,
+                system_context=context_str,
+                last_actions=action_history,
+            )
 
-            # type/keyboard <text>
-            if cmd_lower.startswith(("type ", "keyboard ")):
-                keyboard = await capability_manager.activate("desktop_keyboard")
-                if keyboard:
-                    await handle_keyboard_command(user_text, keyboard, voice, current_lang, input_mode)
-                else:
-                    print(f"{Fore.YELLOW}⚠ Keyboard control not available.{Style.RESET_ALL}\n")
-                continue
+            action_type = agent_response.get("action", "chat_reply")
 
-            # wait <command>
-            if cmd_lower.startswith("wait "):
-                smart_wait = await capability_manager.activate("smart_waiting")
-                if smart_wait:
-                    await handle_wait_command(user_text, smart_wait, voice, current_lang, input_mode)
-                else:
-                    print(f"{Fore.YELLOW}⚠ Smart wait not available.{Style.RESET_ALL}\n")
-                continue
+            # Step 3: Execute based on AI decision
+            if action_type == "tool_call":
+                tool_calls = agent_response.get("tool_calls", [])
+                if tool_calls:
+                    print(f"\r{Fore.CYAN}Executing {len(tool_calls)} action(s)...{Style.RESET_ALL}")
+                    results = await tool_executor.execute(tool_calls)
 
-            # vision/screenshot <command>
-            if cmd_lower.startswith(("vision ", "screenshot")):
-                vision = await capability_manager.activate("screen_observation")
-                mouse = capability_manager.get("desktop_mouse")
-                if vision:
-                    await handle_vision_command(user_text, vision, mouse, voice, current_lang, input_mode)
-                else:
-                    print(f"{Fore.YELLOW}⚠ Vision not available.{Style.RESET_ALL}\n")
-                continue
+                    # Display results
+                    for r in results:
+                        status = r.get("status", "unknown")
+                        desc = r.get("description", "unknown")
+                        output = r.get("output", "")
+                        error = r.get("error", "")
 
-            # ── Smart Routing via IntentRouter ──
-            log_telemetry("routing_start", text=user_text)
-            
-            # تجزیه درخواست‌های چندمرحله‌ای به مراحل مستقل
-            steps = intent_router._decompose_multi_step(user_text)
-            if len(steps) > 1:
-                print(f"{Fore.MAGENTA}🔀 Detected {len(steps)} steps, processing sequentially...{Style.RESET_ALL}")
-            
-            for step_idx, step_text in enumerate(steps):
-                if len(steps) > 1:
-                    print(f"\n{Fore.CYAN}─── Step {step_idx + 1}/{len(steps)}: {step_text[:60]}... ───{Style.RESET_ALL}")
-                
-                caps = {name: True for name in capability_manager.get_enabled()}
-                route = await intent_router.route(
-                    step_text,
-                    safety_mode=session_control.safety_mode,
-                    current_capabilities=caps,
-                )
-                log_telemetry("routing_result", route=route.type.value, risk=route.risk_level.value)
-                
-                # Activate required capabilities
-                for cap in route.requires_activation:
-                    await capability_manager.activate(cap)
-
-                # Execute based on route type
-                if route.type == RouteType.TASK_MODE:
-                    await ensure_task_mode_enabled()
-                    tasks = route.metadata.get("tasks") or extract_tasks_from_text(step_text)
-                    for t in (tasks or [step_text]):
-                        task_engine.add_task(t, mode="browser")
-                    print(f"{Fore.GREEN}✓ Added {len(tasks or [step_text])} task(s) to queue.{Style.RESET_ALL}\n")
-
-                elif route.type in (RouteType.BROWSER_USE, RouteType.DESKTOP_AUTOMATION):
-                    result = await action_controller.process_request(step_text)
-                    print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
-
-                elif route.type == RouteType.AUTONOMOUS_AGENT:
-                    agent = capability_manager.get("autonomous_agent")
-                    goal = route.metadata.get("goal", step_text)
-                    if agent:
-                        result = await agent.execute_goal(goal)
-                        if result.get("success"):
-                            print(f"{Fore.GREEN}✓ Goal completed!{Style.RESET_ALL}\n")
+                        if status == "success":
+                            print(f"  {Fore.GREEN}+ {desc}{Style.RESET_ALL}")
+                            if output:
+                                # Show brief output
+                                brief = output.split("\n")[0][:100]
+                                print(f"    {Fore.WHITE}{brief}{Style.RESET_ALL}")
                         else:
-                            print(f"{Fore.RED}❌ Failed: {result.get('error', 'Unknown')}{Style.RESET_ALL}\n")
-                    else:
-                        print(f"{Fore.YELLOW}⚠ Autonomous agent not available.{Style.RESET_ALL}\n")
+                            print(f"  {Fore.RED}X {desc}: {error}{Style.RESET_ALL}")
 
-                elif route.type == RouteType.CLARIFICATION_NEEDED:
-                    msg = route.consent_message or "I didn't understand. Please rephrase."
-                    print(f"{Fore.YELLOW}{msg}{Style.RESET_ALL}\n")
+                        # Record in history and context
+                        action_record = {
+                            "status": status,
+                            "description": desc,
+                            "command": r.get("command", ""),
+                            "output": output[:200],
+                            "timestamp": datetime.now().isoformat(),
+                        }
+                        action_history.append(action_record)
+                        system_context.record_action(action_record)
 
-                elif route.type == RouteType.CHAT_RESPONSE:
-                    response = await chat_brain.ask_with_fallback(step_text, mode="system", max_tokens=1000)
-                    if response:
-                        print(f"{Fore.CYAN}{response}{Style.RESET_ALL}\n")
-                    else:
-                        print(f"{Fore.RED}All AI models failed. Check your API keys in .env{Style.RESET_ALL}\n")
+                    # Step 4: AI summarizes what it did
+                    results_summary = "\n".join(
+                        f"- [{'OK' if r['status']=='success' else 'FAIL'}] {r['description']}"
+                        + (f": {r.get('error','')}" if r.get('error') else "")
+                        for r in results
+                    )
 
+                    summary_prompt = (
+                        f"User asked: {user_text}\n\n"
+                        f"Actions executed:\n{results_summary}\n\n"
+                        f"Respond to the user in 1-2 sentences about what was done. "
+                        f"Be concise and direct."
+                    )
+                    try:
+                        summary = await chat_brain.ask_with_fallback(summary_prompt, mode="system", max_tokens=300)
+                        if summary:
+                            print(f"\n{Fore.CYAN}{summary}{Style.RESET_ALL}\n")
+                    except Exception:
+                        print()
+
+                    log_event("agent_tool_exec", actions=len(tool_calls),
+                              successes=sum(1 for r in results if r["status"] == "success"))
                 else:
-                    result = await action_controller.process_request(step_text)
-                    print(f"{Fore.CYAN}{result}{Style.RESET_ALL}\n")
+                    print(f"\r{Fore.YELLOW}No actions to execute.{Style.RESET_ALL}\n")
 
+            elif action_type == "chat_reply":
+                response_text = agent_response.get("response", "I couldn't process that.")
+                print(f"\r{Fore.CYAN}{response_text}{Style.RESET_ALL}\n")
+                log_event("agent_chat")
+
+            else:
+                print(f"\r{Fore.YELLOW}Unknown response type.{Style.RESET_ALL}\n")
+
+            # Record user request in memory
+            try:
                 memory.remember_short(
-                    content=step_text, ttl=3600,
-                    metadata={"type": "user_request", "route": route.type.value}
+                    content=user_text, ttl=3600,
+                    metadata={"type": "user_request", "action_type": action_type}
                 )
-
-            if len(steps) > 1:
-                print(f"{Fore.GREEN}✅ All {len(steps)} steps completed.{Style.RESET_ALL}\n")
-
-    except KeyboardInterrupt:
-        print(f"\n{Fore.YELLOW}🛑 Shutting down...{Style.RESET_ALL}")
-    finally:
-        memory.shutdown()
-        voice.shutdown()
-
-
-async def main() -> None:
-    """Main application entry point — Capability-Driven Architecture."""
-    session_log = None
-    master_log = None
-    realtime_task = None
-    
-    try:
-        args = parse_arguments()
-        setup_environment()
-        session_log, master_log = setup_logging(level=logging.DEBUG if args.debug else None)
-        install_exception_hook()
-        
-        print(f"\n{Fore.CYAN}📝 Logging Information:{Style.RESET_ALL}")
-        print(f"   Session Log: {session_log}")
-        print(f"   Master Log:  {master_log}\n")
-        
-        logger.info(f"Application started: input_mode={args.input_mode}, safety={args.safety_mode}")
-        
-        # ── Core always-active components ──
-        memory = MemoryManager()
-        voice = VoiceManager(tts_provider=args.tts_provider)
-        action_controller = ActionController(dry_run=args.dry_run)
-        intent_router = IntentRouter()
-        
-        # ── Capability Manager — register ALL capabilities with lazy factories ──
-        capability_manager = CapabilityManager()
-        
-        capability_manager.register("intent_analysis", factory=lambda: IntentAnalyzer())
-        capability_manager.register("plan_generation", factory=lambda: PlanGenerator())
-        capability_manager.register("plan_validation", factory=lambda: PlanValidator())
-        capability_manager.register("execution_history",
-                                    factory=lambda: MemoryIntegrator("data/memories.sqlite3"))
-        capability_manager.register("desktop_mouse",
-                                    factory=lambda: MouseController())
-        capability_manager.register("desktop_keyboard",
-                                    factory=lambda: KeyboardController())
-        capability_manager.register("screen_observation",
-                                    factory=lambda: DesktopVision())
-        capability_manager.register("smart_waiting",
-                                    factory=lambda: SmartWaiter())
-        capability_manager.register("action_execution",
-                                    factory=lambda: ActionController(),
-                                    dependencies=["desktop_mouse", "desktop_keyboard",
-                                                  "screen_observation", "smart_waiting"])
-        capability_manager.register("autonomous_agent",
-                                    factory=lambda: AutonomousAgent(
-                                        vision=DesktopVision(),
-                                        mouse=MouseController(),
-                                        keyboard=KeyboardController(),
-                                    ),
-                                    dependencies=["screen_observation", "desktop_mouse", "desktop_keyboard"])
-        capability_manager.register("realtime_loop",
-                                    factory=lambda: RealtimeLoop(
-                                        vision=DesktopVision(),
-                                        session_control=session_control,
-                                        fps=args.realtime_fps,
-                                        max_actions=3,
-                                    ),
-                                    dependencies=["screen_observation"])
-
-        # Legacy capability registrations (for backward compat routing)
-        capability_manager.register("browser_use", risk_level="medium",
-                                    dependencies=["intent_analysis"])
-        capability_manager.register("desktop_automation", risk_level="high",
-                                    dependencies=["action_execution"])
-        capability_manager.register("autonomous_agent_cap", risk_level="high",
-                                    dependencies=["autonomous_agent"])
-        capability_manager.register("task_mode", risk_level="safe")
-
-        session_control = SessionControl(
-            safety_mode=args.safety_mode,
-            risk_threshold=args.risk_threshold,
-            allowed_apps=args.allow_app,
-            allowed_paths=args.allow_path,
-        )
-        
-        safety_consent_manager = SafetyConsentManager()
-        session_control.set_safety_consent_manager(safety_consent_manager)
-
-        # ── Execute capability-driven conversation loop ──
-        await process_capability_loop(
-            args=args,
-            memory=memory,
-            voice=voice,
-            action_controller=action_controller,
-            intent_router=intent_router,
-            capability_manager=capability_manager,
-            safety_consent_manager=safety_consent_manager,
-            session_control=session_control,
-        )
+            except Exception:
+                pass
 
     except KeyboardInterrupt:
-        print(f"\n\n{Fore.YELLOW}Interrupted by user. Shutting down...{Style.RESET_ALL}\n")
-        logger.info("Application interrupted by user")
-    except Exception as e:
-        print(f"\n{Fore.RED}Fatal error: {str(e)}{Style.RESET_ALL}\n")
-        logger.exception("Fatal error occurred")
-        sys.exit(1)
+        print(f"\n{Fore.YELLOW}Interrupted. Shutting down...{Style.RESET_ALL}")
     finally:
         try:
-            await capability_manager.cleanup()
+            memory.shutdown()
+            voice.shutdown()
         except Exception:
             pass
 
-        if session_log:
-            logger.info(f"SESSION ENDED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-            print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}")
-            print(f"{Fore.CYAN}{'SESSION SUMMARY':^80}{Style.RESET_ALL}")
-            print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
-            print(f"  Session Log : {session_log}")
-            print(f"  Master Log  : {master_log}\n")
-            print(f"{Fore.CYAN}{'='*80}{Style.RESET_ALL}\n")
 
-        if realtime_task:
-            realtime_task.cancel()
+# ─────────────────────────────────────────────────────────────────────────────
+# Entry Point
+# ─────────────────────────────────────────────────────────────────────────────
+
+async def main() -> None:
+    session_log = None
+    try:
+        args = parse_arguments()
+        load_dotenv()
+
+        # Ensure directories exist
+        for d in ["data/logs", "data/logs/sessions", "data/logs/cache"]:
+            Path(d).mkdir(parents=True, exist_ok=True)
+
+        session_log, master_log = setup_logging(level=logging.DEBUG if args.debug else None)
+        install_exception_hook()
+
+        print(f"\n{Fore.CYAN}Logging:{Style.RESET_ALL} {session_log}")
+        logger.info("Application started: input_mode=%s, safety=%s", args.input_mode, args.safety_mode)
+
+        await agent_loop(args)
+
+    except KeyboardInterrupt:
+        print(f"\n{Fore.YELLOW}Shutting down...{Style.RESET_ALL}")
+    except Exception as e:
+        print(f"\n{Fore.RED}Fatal error: {e}{Style.RESET_ALL}")
+        logger.exception("Fatal error")
+        sys.exit(1)
+    finally:
+        if session_log:
+            logger.info("SESSION ENDED: %s", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 
 if __name__ == "__main__":

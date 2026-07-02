@@ -99,7 +99,7 @@ class IntentAnalyzer:
                            "منظور", "تعریف", "معرفی", "چطور", "چرا", "چه", "چی"],
         }
         
-        self.logger.info("✅ IntentAnalyzer initialized")
+        self.logger.info("IntentAnalyzer initialized")
     
     async def analyze(
         self,

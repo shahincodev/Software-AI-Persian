@@ -488,7 +488,6 @@ class AIBrain:
         Returns:
             لیست اقدامات در قالب JSON
         """
-        # پاکسازی ورودی کاربر
         user_request = self._sanitize_ai_response(user_request)
         
         prompt = f"""You are a Windows automation system. Convert the user's natural language request into structured actions.
@@ -539,40 +538,208 @@ Return ONLY a valid JSON array of actions, nothing else. Example:
 JSON Array:"""
 
         try:
-            # استفاده از fallback برای اطمینان از دریافت پاسخ
             response = await self.ask_with_fallback(prompt, mode="system", max_tokens=500)
+            logger.debug("Raw AI response: %s", response[:500])
             
-            # Log the raw response for debugging
-            logger.debug(f"📋 Raw AI response: {response[:500]}")
+            actions = self._extract_json_actions(response)
+            if actions:
+                logger.info("AI parsed %d actions successfully", len(actions))
+                return actions
             
-            # تلاش برای parse کردن JSON
-            import json
-            import re
-            
-            # استخراج JSON از پاسخ
-            json_match = re.search(r'(\[.*?\])', response, re.DOTALL)
-            if json_match:
-                json_str = json_match.group(1)
-                logger.debug(f"📋 Extracted JSON: {json_str[:200]}")
-                try:
-                    actions = json.loads(json_str)
-                except json.JSONDecodeError as je:
-                    # اگر JSON parsing شکست بخورد، تلاش کنیم response رو حذف کنیم و دوباره امتحان کنیم
-                    # بعضی مواقع AI inside از استخراج JSON در جریان درخواست استفاده می‌کنه
-                    cleaned_response = re.sub(r'```json|```|json', '', json_str)
-                    cleaned_response = cleaned_response.strip()
-                    if cleaned_response:
-                        actions = json.loads(cleaned_response)
-                    else:
-                        raise je
-                
-                if isinstance(actions, list):
-                    logger.info("✅ AI parsed %d actions successfully", len(actions))
-                    return actions
-            
-            logger.warning("⚠️ AI response is not valid JSON: %s", response[:200])
+            logger.warning("AI response is not valid JSON: %s", response[:200])
             return []
         
         except Exception as e:
-            logger.exception("❌ AI interpretation failed: %s", e)
+            logger.exception("AI interpretation failed: %s", e)
             return []
+
+    def _extract_json_actions(self, response: str) -> list[dict[str, Any]]:
+        """Extract JSON actions from AI response with multiple fallback strategies."""
+        import json as _json
+        import re as _re
+        
+        if not response or not response.strip():
+            return []
+        
+        # Strategy 1: Find JSON array in the response
+        json_match = _re.search(r'\[[\s\S]*?\]', response)
+        if json_match:
+            json_str = json_match.group(0)
+            for attempt in [json_str, _re.sub(r'```json|```|json', '', json_str).strip()]:
+                if attempt:
+                    try:
+                        result = _json.loads(attempt)
+                        if isinstance(result, list):
+                            return result
+                    except _json.JSONDecodeError:
+                        continue
+        
+        # Strategy 2: Try to find individual JSON objects and combine
+        obj_matches = _re.findall(r'\{[^{}]*\}', response)
+        if obj_matches:
+            items = []
+            for obj_str in obj_matches:
+                try:
+                    obj = _json.loads(obj_str)
+                    if isinstance(obj, dict) and ("type" in obj or "tool" in obj):
+                        items.append(obj)
+                except _json.JSONDecodeError:
+                    continue
+            if items:
+                return items
+        
+        # Strategy 3: Fix common JSON issues
+        cleaned = response.strip()
+        # Remove markdown code blocks
+        cleaned = _re.sub(r'^```(?:json)?\s*', '', cleaned)
+        cleaned = _re.sub(r'\s*```$', '', cleaned)
+        # Fix trailing commas
+        cleaned = _re.sub(r',\s*([}\]])', r'\1', cleaned)
+        # Fix single quotes to double quotes
+        cleaned = cleaned.replace("'", '"')
+        
+        try:
+            result = _json.loads(cleaned)
+            if isinstance(result, list):
+                return result
+            if isinstance(result, dict):
+                return [result]
+        except _json.JSONDecodeError:
+            pass
+        
+        return []
+
+    async def agent_chat(self, user_message: str, system_context: str = "",
+                         last_actions: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+        """Agent-mode chat: AI with full system access decides what to do.
+        
+        Returns dict with:
+            - "action": "tool_call" | "chat_reply" | "none"
+            - "tool_calls": list of tool call dicts (if action == "tool_call")
+            - "response": text response (if action == "chat_reply")
+        """
+        context_block = ""
+        if system_context:
+            context_block = f"\n## Current System Context:\n{system_context}\n"
+        
+        actions_block = ""
+        if last_actions:
+            actions_block = "\n## Recent Actions Taken:\n"
+            for a in last_actions[-5:]:
+                status = a.get("status", "unknown")
+                desc = a.get("description", a.get("command", "unknown"))
+                actions_block += f"- [{status}] {desc}\n"
+        
+        prompt = f"""You are Software-AI, an intelligent Windows desktop agent with FULL system access.
+
+You can:
+- Execute shell commands (mkdir, ren, copy, move, del, dir, type, etc.)
+- Open/close applications
+- Type text, press keys, click UI elements
+- Read file/folder listings from the system context
+- Browse the web
+- Manage files and folders
+
+{context_block}
+{actions_block}
+
+## User Request:
+{user_message}
+
+## Your Task:
+Decide what to do. You have TWO options:
+
+### Option A: Execute system actions (tool calls)
+If the user wants you to DO something on the system, return JSON tool calls:
+```json
+{{
+  "action": "tool_call",
+  "tool_calls": [
+    {{
+      "tool": "execute_command",
+      "params": {{"command": "the shell command to run"}},
+      "description": "human-readable description"
+    }}
+  ]
+}}
+```
+
+Available tools:
+- execute_command: Run any shell/cmd command. params: {{"command": "..."}}
+- launch_app: Open an application. params: {{"app_name": "..."}}
+- close_app: Close an application. params: {{"process_name": "..."}}
+- click: Click on screen. params: {{"target": "text to click"}}
+- type_text: Type text. params: {{"text": "..."}}
+- hotkey: Press keyboard shortcut. params: {{"keys": "ctrl+c"}}
+- read_file: Read a file's content. params: {{"path": "..."}}
+- list_directory: List directory contents. params: {{"path": "..."}}
+
+### Option B: Chat reply
+If the user is asking a question or wants information, respond naturally:
+```json
+{{
+  "action": "chat_reply",
+  "response": "your helpful response here"
+}}
+```
+
+## Rules:
+1. ALWAYS return valid JSON - no extra text before or after
+2. For file operations, use FULL paths (e.g., D:\\folder\\file.txt)
+3. For mkdir/ren/copy/move, use the command directly
+4. Respond in the same language as the user
+5. If you see files/folders in the system context, reference them in your response
+
+Return ONLY the JSON:"""
+
+        try:
+            response = await self.ask_with_fallback(prompt, mode="system", max_tokens=800)
+            logger.debug("Agent chat raw response: %s", response[:500])
+            
+            # Try to parse as structured action
+            parsed = self._parse_agent_response(response)
+            if parsed:
+                return parsed
+            
+            # If parsing fails, return as chat reply
+            return {"action": "chat_reply", "response": response or "I couldn't process that request."}
+        
+        except Exception as e:
+            logger.exception("Agent chat failed: %s", e)
+            return {"action": "chat_reply", "response": f"Error: {str(e)}"}
+
+    def _parse_agent_response(self, response: str) -> dict[str, Any] | None:
+        """Parse agent response as JSON action."""
+        import json as _json
+        import re as _re
+        
+        if not response or not response.strip():
+            return None
+        
+        # Try to extract JSON object
+        json_match = _re.search(r'\{[\s\S]*\}', response)
+        if json_match:
+            json_str = json_match.group(0)
+            for attempt in [json_str, _re.sub(r'```json|```|json', '', json_str).strip()]:
+                if attempt:
+                    try:
+                        result = _json.loads(attempt)
+                        if isinstance(result, dict) and "action" in result:
+                            return result
+                    except _json.JSONDecodeError:
+                        continue
+        
+        # Try cleaning common issues
+        cleaned = response.strip()
+        cleaned = _re.sub(r'^```(?:json)?\s*', '', cleaned)
+        cleaned = _re.sub(r'\s*```$', '', cleaned)
+        cleaned = _re.sub(r',\s*([}\]])', r'\1', cleaned)
+        
+        try:
+            result = _json.loads(cleaned)
+            if isinstance(result, dict) and "action" in result:
+                return result
+        except _json.JSONDecodeError:
+            pass
+        
+        return None

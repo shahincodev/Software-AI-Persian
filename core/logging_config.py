@@ -167,9 +167,9 @@ def setup_logging(log_file: Optional[str] = None, level: Optional[int] = None, s
         
         # نوشتن header برای session log
         root.info("="*80)
-        root.info(f"🚀 NEW SESSION STARTED: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        root.info(f"📝 Session Log: {session_log_file}")
-        root.info(f"📊 Master Log: {MASTER_LOG_FILE}")
+        root.info("NEW SESSION STARTED: %s", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        root.info("Session Log: %s", session_log_file)
+        root.info("Master Log: %s", MASTER_LOG_FILE)
         root.info("="*80)
     
     return session_log_file or log_path, MASTER_LOG_FILE

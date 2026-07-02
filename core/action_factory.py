@@ -16,6 +16,25 @@ from core.system_actions import (
 
 logger = logging.getLogger(__name__)
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Tool Name -> Action Type Alias Map
+# Maps unified tool names (from tool_schema.py) to action_factory types
+# ─────────────────────────────────────────────────────────────────────────────
+
+TOOL_NAME_TO_ACTION_TYPE: dict[str, str] = {
+    "launch_app": "LaunchApp",
+    "close_app": "TerminateProcess",
+    "install_package": "InstallPackage",
+    "query_hardware": "QueryHardware",
+    "click": "DesktopClick",
+    "type_text": "DesktopType",
+    "hotkey": "DesktopHotkey",
+    "scroll": "DesktopScroll",
+    "wait": "DesktopWait",
+    "drag_drop": "DesktopDragDrop",
+    "execute_command": "ExecuteCommand",
+}
+
 
 def create_action_from_data(
     action_data: dict[str, Any],

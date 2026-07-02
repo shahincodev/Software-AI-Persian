@@ -20,8 +20,13 @@ import re
 from typing import Any
 
 from core.model_config import get_model_registry, ModelConfig
+from core.tool_schema import (
+    TOOLS, validate_tool_call, get_tool_prompt_block, get_all_tool_names
+)
 
 logger = logging.getLogger(__name__)
+
+MAX_SCHEMA_RETRIES = 2
 
 
 class AIBrain:
@@ -612,7 +617,9 @@ JSON Array:"""
     async def agent_chat(self, user_message: str, system_context: str = "",
                          last_actions: list[dict[str, Any]] | None = None) -> dict[str, Any]:
         """Agent-mode chat: AI with full system access decides what to do.
-        
+
+        Uses unified tool schema with validation and auto-retry.
+
         Returns dict with:
             - "action": "tool_call" | "chat_reply" | "none"
             - "tool_calls": list of tool call dicts (if action == "tool_call")
@@ -621,7 +628,7 @@ JSON Array:"""
         context_block = ""
         if system_context:
             context_block = f"\n## Current System Context:\n{system_context}\n"
-        
+
         actions_block = ""
         if last_actions:
             actions_block = "\n## Recent Actions Taken:\n"
@@ -629,53 +636,37 @@ JSON Array:"""
                 status = a.get("status", "unknown")
                 desc = a.get("description", a.get("command", "unknown"))
                 actions_block += f"- [{status}] {desc}\n"
-        
+
+        tools_block = get_tool_prompt_block()
+        tool_names = ", ".join(get_all_tool_names())
+
         prompt = f"""You are Software-AI, an intelligent Windows desktop agent with FULL system access.
 
-You can:
-- Execute shell commands (mkdir, ren, copy, move, del, dir, type, etc.)
-- Open/close applications
-- Type text, press keys, click UI elements
-- Read file/folder listings from the system context
-- Browse the web
-- Manage files and folders
+Your job is to convert natural language requests into structured tool calls or chat replies.
 
 {context_block}
 {actions_block}
 
+## Available Tools:
+{tools_block}
+
 ## User Request:
 {user_message}
 
-## Your Task:
-Decide what to do. You have TWO options:
+## Response Format:
+You MUST respond with ONE of the following JSON formats:
 
-### Option A: Execute system actions (tool calls)
-If the user wants you to DO something on the system, return JSON tool calls:
+### Option A: Tool calls (for actions on the system)
 ```json
 {{
   "action": "tool_call",
   "tool_calls": [
-    {{
-      "tool": "execute_command",
-      "params": {{"command": "the shell command to run"}},
-      "description": "human-readable description"
-    }}
+    {{"tool": "tool_name", "params": {{"param1": "value1"}}, "description": "what this does"}}
   ]
 }}
 ```
 
-Available tools:
-- execute_command: Run any shell/cmd command. params: {{"command": "..."}}
-- launch_app: Open an application. params: {{"app_name": "..."}}
-- close_app: Close an application. params: {{"process_name": "..."}}
-- click: Click on screen. params: {{"target": "text to click"}}
-- type_text: Type text. params: {{"text": "..."}}
-- hotkey: Press keyboard shortcut. params: {{"keys": "ctrl+c"}}
-- read_file: Read a file's content. params: {{"path": "..."}}
-- list_directory: List directory contents. params: {{"path": "..."}}
-
-### Option B: Chat reply
-If the user is asking a question or wants information, respond naturally:
+### Option B: Chat reply (for questions/information)
 ```json
 {{
   "action": "chat_reply",
@@ -685,28 +676,74 @@ If the user is asking a question or wants information, respond naturally:
 
 ## Rules:
 1. ALWAYS return valid JSON - no extra text before or after
-2. For file operations, use FULL paths (e.g., D:\\folder\\file.txt)
-3. For mkdir/ren/copy/move, use the command directly
-4. Respond in the same language as the user
-5. If you see files/folders in the system context, reference them in your response
+2. Tool names MUST be one of: {tool_names}
+3. Every required parameter MUST be included
+4. For file operations, use FULL paths (e.g., D:\\\\folder\\\\file.txt)
+5. Respond in the same language as the user
+6. Multiple tool_calls execute in sequence
 
 Return ONLY the JSON:"""
 
-        try:
-            response = await self.ask_with_fallback(prompt, mode="system", max_tokens=800)
-            logger.debug("Agent chat raw response: %s", response[:500])
-            
-            # Try to parse as structured action
-            parsed = self._parse_agent_response(response)
-            if parsed:
-                return parsed
-            
-            # If parsing fails, return as chat reply
-            return {"action": "chat_reply", "response": response or "I couldn't process that request."}
-        
-        except Exception as e:
-            logger.exception("Agent chat failed: %s", e)
-            return {"action": "chat_reply", "response": f"Error: {str(e)}"}
+        # Retry loop with schema validation
+        last_error = None
+        for attempt in range(MAX_SCHEMA_RETRIES + 1):
+            try:
+                # Build prompt with error context if retrying
+                current_prompt = prompt
+                if last_error:
+                    current_prompt += f"\n\n## PREVIOUS ERROR (attempt {attempt + 1}):\n{last_error}\nPlease fix and return valid JSON."
+
+                response = await self.ask_with_fallback(current_prompt, mode="system", max_tokens=800)
+                logger.debug("Agent chat raw response (attempt %d): %s", attempt + 1, response[:500])
+
+                parsed = self._parse_agent_response(response)
+                if not parsed:
+                    last_error = "Response is not valid JSON. Return a JSON object with 'action' field."
+                    logger.warning("Attempt %d: Failed to parse JSON", attempt + 1)
+                    continue
+
+                # If it's a chat reply, return immediately (no validation needed)
+                if parsed.get("action") == "chat_reply":
+                    return parsed
+
+                # If it's a tool_call, validate each tool call against schema
+                if parsed.get("action") == "tool_call":
+                    tool_calls = parsed.get("tool_calls", [])
+                    if not tool_calls:
+                        last_error = "tool_calls array is empty. Provide at least one tool call."
+                        logger.warning("Attempt %d: Empty tool_calls", attempt + 1)
+                        continue
+
+                    all_valid = True
+                    errors = []
+                    for i, tc in enumerate(tool_calls):
+                        is_valid, msg = validate_tool_call(tc)
+                        if not is_valid:
+                            all_valid = False
+                            errors.append(f"Tool call {i+1}: {msg}")
+
+                    if all_valid:
+                        logger.info("Agent parsed %d valid tool calls", len(tool_calls))
+                        return parsed
+                    else:
+                        last_error = "Invalid tool calls:\n" + "\n".join(errors)
+                        logger.warning("Attempt %d: Schema validation failed: %s", attempt + 1, last_error)
+                        continue
+
+                # Unknown action type
+                last_error = f"Unknown action type: {parsed.get('action')}. Use 'tool_call' or 'chat_reply'."
+                logger.warning("Attempt %d: Unknown action type", attempt + 1)
+
+            except Exception as e:
+                logger.exception("Agent chat attempt %d failed: %s", attempt + 1, e)
+                last_error = f"Exception: {str(e)}"
+
+        # All retries exhausted - return error as chat reply
+        logger.error("All %d attempts exhausted for agent_chat", MAX_SCHEMA_RETRIES + 1)
+        return {
+            "action": "chat_reply",
+            "response": "I had trouble processing that request. Could you please rephrase it?"
+        }
 
     def _parse_agent_response(self, response: str) -> dict[str, Any] | None:
         """Parse agent response as JSON action."""

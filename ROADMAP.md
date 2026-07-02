@@ -56,28 +56,10 @@ The AI must stop behaving like a chatbot and instead become an action planner.
 * Retry automatically if invalid output is returned.
 * Keep the existing fallback parser only as an emergency backup.
 
-Example output:
-
-```json
-[
-  {
-    "tool": "launch_program",
-    "params": {
-      "program": "VS Code"
-    }
-  },
-  {
-    "tool": "keyboard_type",
-    "params": {
-      "text": "print('Hello World')"
-    }
-  }
-]
-```
-
 **Completion Criteria**
 
-Natural language requests are consistently converted into executable actions.
+* Natural language requests are consistently converted into executable actions.
+* ✅ Completed: Unified tool schema with 13 tools, validation, auto-retry (max 2), and emergency fallback.
 
 ---
 

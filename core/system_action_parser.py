@@ -2,6 +2,10 @@
 
 Extracted from core/intent_analyzer.py to reduce module size.
 Maintains full backward compatibility.
+
+NOTE: The fallback parser (_simple_fallback_parse) is now emergency-only.
+It is only called when the AI completely fails after all retry attempts.
+The primary path is AIBrain.agent_chat() with unified tool schema.
 """
 
 from __future__ import annotations
@@ -18,7 +22,12 @@ logger = logging.getLogger(__name__)
 
 
 class SystemActionParser:
-    """Convert natural language requests to structured system/Desktop actions."""
+    """Convert natural language requests to structured system/Desktop actions.
+
+    This is the LEGACY path used by IntentRouter. The preferred path is
+    AIBrain.agent_chat() which uses the unified tool schema with validation.
+    This parser is kept for backward compatibility and emergency fallback.
+    """
 
     def __init__(self, registry: SystemCapabilityRegistry):
         self.registry = registry
@@ -55,18 +64,26 @@ class SystemActionParser:
         self.logger = logger
 
     async def parse_request(self, user_request: str) -> list[dict[str, Any]]:
+        """Parse user request into structured actions.
+
+        Flow:
+        1. Try AI interpretation with unified schema (has internal retry)
+        2. Only if AI completely fails, use regex fallback as emergency backup
+        """
         logger.info("Processing request with AI: %s", user_request)
         try:
             ai_response = await self.ai_brain.interpret_system_request(user_request)
             if ai_response and isinstance(ai_response, list):
                 logger.info("AI extracted %d actions", len(ai_response))
                 return ai_response
-            logger.warning("AI returned invalid response, trying fallback")
+            logger.warning("AI returned empty response")
         except Exception as e:
             logger.error("AI interpretation failed: %s", e)
 
+        # Emergency fallback: only when AI completely fails
+        logger.info("Using emergency fallback parser (AI failed)")
         actions = await self._simple_fallback_parse(user_request)
-        logger.info("Extracted %d actions from fallback", len(actions))
+        logger.info("Extracted %d actions from emergency fallback", len(actions))
         return actions
 
     async def _simple_fallback_parse(self, user_request: str) -> list[dict[str, Any]]:

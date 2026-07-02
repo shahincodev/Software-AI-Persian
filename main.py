@@ -34,6 +34,7 @@ from colorama import init as colorama_init, Fore, Style
 from dotenv import load_dotenv
 
 from core.action_controller import ActionController
+from core.action_factory import create_action_from_data
 from core.ai_brain import AIBrain
 from core.capability_manager import CapabilityManager
 from core.intent_router import IntentRouter, RouteType
@@ -43,6 +44,7 @@ from core.memory_integrator import MemoryIntegrator, MemoryManager
 from core.mouse_control import MouseController
 from core.safety_consent_manager import SafetyConsentManager
 from core.smart_wait import SmartWaiter
+from core.tool_schema import TOOLS
 from core.voice_io import VoiceManager
 
 colorama_init(autoreset=True)
@@ -126,7 +128,7 @@ class SystemContext:
 # ─────────────────────────────────────────────────────────────────────────────
 
 class ToolExecutor:
-    """Executes tool calls from the AI agent."""
+    """Executes tool calls from the AI agent using action_factory + ActionController."""
 
     def __init__(self, action_controller: ActionController, safety_mode: str = "safe"):
         self.action_controller = action_controller
@@ -146,28 +148,47 @@ class ToolExecutor:
     async def _dispatch(self, tool: str, params: dict, description: str) -> dict[str, Any]:
         """Dispatch a single tool call to the appropriate handler."""
         try:
-            if tool == "execute_command":
-                return await self._execute_command(params, description)
-            elif tool == "launch_app":
-                return await self._launch_app(params, description)
-            elif tool == "close_app":
-                return await self._close_app(params, description)
-            elif tool == "click":
-                return await self._click(params, description)
-            elif tool == "type_text":
-                return await self._type_text(params, description)
-            elif tool == "hotkey":
-                return await self._hotkey(params, description)
-            elif tool == "list_directory":
+            # Read-only tools: execute directly (no action_factory needed)
+            if tool == "list_directory":
                 return await self._list_directory(params, description)
             elif tool == "read_file":
                 return await self._read_file(params, description)
-            else:
-                # Fallback: try ActionController
-                return await self._fallback_action(tool, params, description)
+            elif tool == "execute_command":
+                return await self._execute_command(params, description)
+
+            # Tools that go through action_factory -> ActionController
+            tool_def = TOOLS.get(tool)
+            if tool_def and tool_def.action_type:
+                return await self._execute_via_action_factory(tool_def.action_type, params, description)
+
+            return {"status": "failed", "description": description, "error": f"Unknown tool: {tool}"}
+
         except Exception as e:
             logger.exception("Tool execution failed: %s", e)
             return {"status": "failed", "description": description, "error": str(e)}
+
+    async def _execute_via_action_factory(self, action_type: str, params: dict, description: str) -> dict[str, Any]:
+        """Create a SystemAction via action_factory and execute via ActionController."""
+        action_data = {"type": action_type, "params": params}
+        action = create_action_from_data(action_data)
+
+        if action is None:
+            return {"status": "failed", "description": description, "error": f"Failed to create action for type: {action_type}"}
+
+        # Validate the action
+        is_valid, msg = action.validate()
+        if not is_valid:
+            return {"status": "failed", "description": description, "error": f"Validation failed: {msg}"}
+
+        # Execute via ActionController
+        result = await self.action_controller.execute_action(action)
+
+        return {
+            "status": "success" if result.success else "failed",
+            "description": description,
+            "output": result.output or "",
+            "error": result.error or "",
+        }
 
     async def _execute_command(self, params: dict, description: str) -> dict[str, Any]:
         command = params.get("command", "")
@@ -197,48 +218,6 @@ class ToolExecutor:
             return {"status": "failed", "description": description, "error": "Command timed out"}
         except Exception as e:
             return {"status": "failed", "description": description, "error": str(e)}
-
-    async def _launch_app(self, params: dict, description: str) -> dict[str, Any]:
-        app_name = params.get("app_name", "")
-        if not app_name:
-            return {"status": "failed", "description": description, "error": "No app_name provided"}
-
-        request = f"open {app_name}"
-        result = await self.action_controller.process_request(request)
-        return {"status": "success", "description": description, "output": result}
-
-    async def _close_app(self, params: dict, description: str) -> dict[str, Any]:
-        process_name = params.get("process_name", "")
-        if not process_name:
-            return {"status": "failed", "description": description, "error": "No process_name provided"}
-
-        request = f"close {process_name}"
-        result = await self.action_controller.process_request(request)
-        return {"status": "success", "description": description, "output": result}
-
-    async def _click(self, params: dict, description: str) -> dict[str, Any]:
-        target = params.get("target", "")
-        request = f"click {target}"
-        result = await self.action_controller.process_request(request)
-        return {"status": "success", "description": description, "output": result}
-
-    async def _type_text(self, params: dict, description: str) -> dict[str, Any]:
-        text = params.get("text", "")
-        if not text:
-            return {"status": "failed", "description": description, "error": "No text provided"}
-
-        request = f"type {text}"
-        result = await self.action_controller.process_request(request)
-        return {"status": "success", "description": description, "output": result}
-
-    async def _hotkey(self, params: dict, description: str) -> dict[str, Any]:
-        keys = params.get("keys", "")
-        if not keys:
-            return {"status": "failed", "description": description, "error": "No keys provided"}
-
-        request = f"keyboard hotkey {keys}"
-        result = await self.action_controller.process_request(request)
-        return {"status": "success", "description": description, "output": result}
 
     async def _list_directory(self, params: dict, description: str) -> dict[str, Any]:
         path = params.get("path", ".")
@@ -271,11 +250,6 @@ class ToolExecutor:
         except Exception as e:
             return {"status": "failed", "description": description, "error": str(e)}
 
-    async def _fallback_action(self, tool: str, params: dict, description: str) -> dict[str, Any]:
-        request = f"{tool} {params}"
-        result = await self.action_controller.process_request(request)
-        return {"status": "success", "description": description, "output": result}
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CLI
@@ -293,7 +267,7 @@ Examples:
   python main.py --safety-mode power # Less restrictive safety
         """,
     )
-    parser.add_argument("--version", action="version", version="Software-AI 0.2.0")
+    parser.add_argument("--version", action="version", version="Software-AI 0.3.0")
     parser.add_argument("--input-mode", choices=["text", "voice"], default="text")
     parser.add_argument("--tts-provider", choices=["google-cloud", "gtts", "elevenlabs"], default="gtts")
     parser.add_argument("--debug", action="store_true")
@@ -324,7 +298,7 @@ def print_banner() -> None:
         except UnicodeEncodeError:
             print(padded)
     print()
-    print(f"  {Fore.GREEN}Software-AI 0.2.0{reset}  |  AI-Powered Windows Agent")
+    print(f"  {Fore.GREEN}Software-AI 0.3.0{reset}  |  AI-Powered Windows Agent")
     print(f"  {Fore.YELLOW}Type your request in natural language{reset}")
     print(f"  {Fore.YELLOW}Type 'help' for commands, 'exit' to quit{reset}")
     print()

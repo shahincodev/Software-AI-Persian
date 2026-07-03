@@ -35,6 +35,7 @@ from dotenv import load_dotenv
 
 from core.action_controller import ActionController
 from core.action_factory import create_action_from_data
+from core.action_types import ActionResult
 from core.ai_brain import AIBrain
 from core.capability_manager import CapabilityManager
 from core.desktop_vision import DesktopVision
@@ -219,7 +220,7 @@ class ToolExecutor:
                 logger.warning("Vision verification failed: %s", e)
 
         return {
-            "status": "success" if result.success and verification_passed else "failed",
+            "status": "success" if result.result == ActionResult.SUCCESS and verification_passed else "failed",
             "description": description,
             "output": result.output or "",
             "error": result.error or ("" if verification_passed else "Visual verification failed"),

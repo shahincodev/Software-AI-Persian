@@ -120,7 +120,59 @@ The agent reliably completes long workflows with minimal user supervision.
 
 ---
 
-# Phase 5 — Intelligent Windows Environment Understanding
+# Phase 5 — Persistent Memory System
+
+## Goals
+
+Allow the agent to remember what happened in previous conversations within a session and recall saved context across sessions.
+
+Without memory, every interaction starts from zero. The agent forgets what it just did, cannot reference earlier commands, and treats each request as isolated.
+
+## Tasks
+
+* Implement short-term memory: remember conversation history within the current session.
+* Implement long-term memory: persist important facts across sessions (SQLite-backed).
+* Inject relevant memory into AI prompts automatically.
+* Allow the agent to reference past actions ("What files did I ask you to create?").
+* Allow the agent to learn user preferences over time.
+* Provide tools: `remember`, `recall`, `forget`.
+* Handle memory size limits to avoid context overflow.
+
+**Completion Criteria**
+
+* The agent can answer "What did I just ask you?" correctly.
+* The agent remembers user preferences (e.g., default save location).
+* Memory persists across app restarts.
+
+---
+
+# Phase 6 — Chat Session Management
+
+## Goals
+
+Transform the single-run agent loop into a multi-session, chat-like experience where users can create, switch, and delete conversation sessions.
+
+## Tasks
+
+* Create named sessions (like chat threads).
+* Switch between sessions.
+* Delete old sessions.
+* Persist session history to disk.
+* Load session context on startup.
+* Show session list and current session name in the CLI.
+* Support session search ("Find the session where I set up VS Code").
+
+**Completion Criteria**
+
+* Users can start a new chat session with `/new`.
+* Users can list past sessions with `/sessions`.
+* Users can switch sessions with `/switch <name>`.
+* Users can delete sessions with `/delete <name>`.
+* Session history is fully preserved.
+
+---
+
+# Phase 7 — Intelligent Windows Environment Understanding
 
 ## Goals
 

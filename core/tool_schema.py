@@ -290,6 +290,56 @@ _register(ToolDefinition(
     ],
 ))
 
+# --- Vision Tools (Phase 3) ---
+
+_register(ToolDefinition(
+    name="screenshot",
+    description="Take a screenshot of the current screen or a specific region",
+    action_type=None,
+    risk_level="safe",
+    params=[
+        ToolParam("region", "str", required=False, default=None, description="Region to capture: 'full', or 'x,y,w,h' for specific area"),
+    ],
+))
+
+_register(ToolDefinition(
+    name="read_screen",
+    description="Read all visible text on screen using OCR",
+    action_type=None,
+    risk_level="safe",
+    params=[],
+))
+
+_register(ToolDefinition(
+    name="find_element",
+    description="Find a UI element on screen by text or image",
+    action_type=None,
+    risk_level="safe",
+    params=[
+        ToolParam("text", "str", required=False, default=None, description="Text to search for on screen"),
+        ToolParam("image", "str", required=False, default=None, description="Path to template image to find"),
+        ToolParam("fuzzy", "bool", required=False, default=False, description="Use fuzzy text matching"),
+    ],
+))
+
+_register(ToolDefinition(
+    name="verify_action",
+    description="Verify that an action achieved its expected outcome by checking the screen",
+    action_type=None,
+    risk_level="safe",
+    params=[
+        ToolParam("expected", "str", required=True, description="Description of expected outcome to verify"),
+    ],
+))
+
+_register(ToolDefinition(
+    name="describe_screen",
+    description="Get a detailed description of what is currently visible on screen",
+    action_type=None,
+    risk_level="safe",
+    params=[],
+))
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Validation

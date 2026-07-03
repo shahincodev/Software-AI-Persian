@@ -615,10 +615,17 @@ JSON Array:"""
         return []
 
     async def agent_chat(self, user_message: str, system_context: str = "",
-                         last_actions: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+                         last_actions: list[dict[str, Any]] | None = None,
+                         screen_context: str = "") -> dict[str, Any]:
         """Agent-mode chat: AI with full system access decides what to do.
 
         Uses unified tool schema with validation and auto-retry.
+
+        Args:
+            user_message: The user's request
+            system_context: System context (files, drives, etc.)
+            last_actions: Recent actions taken
+            screen_context: Current screen state from VisionLoopManager
 
         Returns dict with:
             - "action": "tool_call" | "chat_reply" | "none"
@@ -628,6 +635,10 @@ JSON Array:"""
         context_block = ""
         if system_context:
             context_block = f"\n## Current System Context:\n{system_context}\n"
+
+        screen_block = ""
+        if screen_context:
+            screen_block = f"\n## Current Screen State:\n{screen_context}\n"
 
         actions_block = ""
         if last_actions:
@@ -643,8 +654,10 @@ JSON Array:"""
         prompt = f"""You are Software-AI, an intelligent Windows desktop agent with FULL system access.
 
 Your job is to convert natural language requests into structured tool calls or chat replies.
+You can OBSERVE the screen using vision tools to understand what is currently visible.
 
 {context_block}
+{screen_block}
 {actions_block}
 
 ## Available Tools:

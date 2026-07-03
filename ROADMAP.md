@@ -92,7 +92,7 @@ Execution loop:
 
 **Completion Criteria**
 
-The agent can recover from simple UI failures without user intervention.
+* ✅ Completed: VisionLoopManager with observe → act → verify → retry cycle, 5 vision tools, screen context in AI prompts.
 
 ---
 

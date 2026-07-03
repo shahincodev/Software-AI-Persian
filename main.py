@@ -37,6 +37,7 @@ from core.action_controller import ActionController
 from core.action_factory import create_action_from_data
 from core.ai_brain import AIBrain
 from core.capability_manager import CapabilityManager
+from core.desktop_vision import DesktopVision
 from core.intent_router import IntentRouter, RouteType
 from core.keyboard_control import KeyboardController
 from core.logging_config import install_exception_hook, setup_logging
@@ -45,6 +46,7 @@ from core.mouse_control import MouseController
 from core.safety_consent_manager import SafetyConsentManager
 from core.smart_wait import SmartWaiter
 from core.tool_schema import TOOLS
+from core.vision_loop import VisionLoopManager
 from core.voice_io import VoiceManager
 
 colorama_init(autoreset=True)
@@ -128,10 +130,11 @@ class SystemContext:
 # ─────────────────────────────────────────────────────────────────────────────
 
 class ToolExecutor:
-    """Executes tool calls from the AI agent using action_factory + ActionController."""
+    """Executes tool calls from the AI agent using action_factory + ActionController + VisionLoopManager."""
 
-    def __init__(self, action_controller: ActionController, safety_mode: str = "safe"):
+    def __init__(self, action_controller: ActionController, vision_loop: VisionLoopManager, safety_mode: str = "safe"):
         self.action_controller = action_controller
+        self.vision_loop = vision_loop
         self.safety_mode = safety_mode
 
     async def execute(self, tool_calls: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -156,6 +159,18 @@ class ToolExecutor:
             elif tool == "execute_command":
                 return await self._execute_command(params, description)
 
+            # Vision tools (Phase 3)
+            elif tool == "screenshot":
+                return await self._screenshot(params, description)
+            elif tool == "read_screen":
+                return await self._read_screen(params, description)
+            elif tool == "find_element":
+                return await self._find_element(params, description)
+            elif tool == "verify_action":
+                return await self._verify_action(params, description)
+            elif tool == "describe_screen":
+                return await self._describe_screen(params, description)
+
             # Tools that go through action_factory -> ActionController
             tool_def = TOOLS.get(tool)
             if tool_def and tool_def.action_type:
@@ -168,7 +183,7 @@ class ToolExecutor:
             return {"status": "failed", "description": description, "error": str(e)}
 
     async def _execute_via_action_factory(self, action_type: str, params: dict, description: str) -> dict[str, Any]:
-        """Create a SystemAction via action_factory and execute via ActionController."""
+        """Create a SystemAction via action_factory and execute via ActionController with vision verification."""
         action_data = {"type": action_type, "params": params}
         action = create_action_from_data(action_data)
 
@@ -180,15 +195,136 @@ class ToolExecutor:
         if not is_valid:
             return {"status": "failed", "description": description, "error": f"Validation failed: {msg}"}
 
+        # Observe screen before action
+        screen_before = None
+        try:
+            screen_before = self.vision_loop.observe_screen()
+        except Exception as e:
+            logger.warning("Failed to observe screen before action: %s", e)
+
         # Execute via ActionController
-        result = await self.action_controller.execute_action(action)
+        result = self.action_controller.execute_action(action)
+
+        # Verify action with vision if it's a UI action
+        verification_passed = True
+        if result.result.value != "success":
+            verification_passed = False
+        elif screen_before and action_type in ("DesktopClick", "DesktopType", "DesktopHotkey"):
+            try:
+                verification_passed, verify_msg = self.vision_loop.verify_action(
+                    description, screen_before
+                )
+                logger.info("Vision verification: %s", verify_msg)
+            except Exception as e:
+                logger.warning("Vision verification failed: %s", e)
 
         return {
-            "status": "success" if result.success else "failed",
+            "status": "success" if result.success and verification_passed else "failed",
             "description": description,
             "output": result.output or "",
-            "error": result.error or "",
+            "error": result.error or ("" if verification_passed else "Visual verification failed"),
         }
+
+    # ── Vision Tools (Phase 3) ──────────────────────────────────────────
+
+    async def _screenshot(self, params: dict, description: str) -> dict[str, Any]:
+        """Take a screenshot of the current screen."""
+        try:
+            region = params.get("region")
+            screenshot = self.vision_loop.vision.capture_screen()
+            path = f"data/screenshots/screenshot_{int(__import__('time').time())}.png"
+            screenshot.save(path)
+            return {
+                "status": "success",
+                "description": description,
+                "output": f"Screenshot saved to: {path}",
+            }
+        except Exception as e:
+            return {"status": "failed", "description": description, "error": str(e)}
+
+    async def _read_screen(self, params: dict, description: str) -> dict[str, Any]:
+        """Read all visible text on screen using OCR."""
+        try:
+            state = self.vision_loop.observe_screen()
+            return {
+                "status": "success",
+                "description": description,
+                "output": state.ocr_text or "(no text found on screen)",
+            }
+        except Exception as e:
+            return {"status": "failed", "description": description, "error": str(e)}
+
+    async def _find_element(self, params: dict, description: str) -> dict[str, Any]:
+        """Find a UI element on screen by text or image."""
+        try:
+            text = params.get("text")
+            image = params.get("image")
+            fuzzy = params.get("fuzzy", False)
+
+            if text:
+                if fuzzy:
+                    result = self.vision_loop.vision.find_text_fuzzy(text)
+                else:
+                    result = self.vision_loop.vision.find_text(text)
+
+                if result:
+                    return {
+                        "status": "success",
+                        "description": description,
+                        "output": f"Found '{text}' at position: ({result[0]}, {result[1]})",
+                        "position": list(result),
+                    }
+                else:
+                    return {
+                        "status": "failed",
+                        "description": description,
+                        "error": f"Element '{text}' not found on screen",
+                    }
+            elif image:
+                result = self.vision_loop.vision.find_image(image)
+                if result:
+                    return {
+                        "status": "success",
+                        "description": description,
+                        "output": f"Found image at position: ({result.x}, {result.y}), confidence: {result.confidence:.2f}",
+                        "position": [result.x, result.y],
+                    }
+                else:
+                    return {
+                        "status": "failed",
+                        "description": description,
+                        "error": f"Image template '{image}' not found on screen",
+                    }
+            else:
+                return {"status": "failed", "description": description, "error": "Either 'text' or 'image' parameter required"}
+
+        except Exception as e:
+            return {"status": "failed", "description": description, "error": str(e)}
+
+    async def _verify_action(self, params: dict, description: str) -> dict[str, Any]:
+        """Verify that an action achieved its expected outcome."""
+        try:
+            expected = params.get("expected", "")
+            passed, message = self.vision_loop.verify_action(expected)
+            return {
+                "status": "success" if passed else "failed",
+                "description": description,
+                "output": message,
+            }
+        except Exception as e:
+            return {"status": "failed", "description": description, "error": str(e)}
+
+    async def _describe_screen(self, params: dict, description: str) -> dict[str, Any]:
+        """Get a detailed description of what is currently visible on screen."""
+        try:
+            desc = self.vision_loop.describe_screen()
+            return {
+                "status": "success",
+                "description": description,
+                "output": desc,
+            }
+        except Exception as e:
+            return {"status": "failed", "description": description, "error": str(e)}
 
     async def _execute_command(self, params: dict, description: str) -> dict[str, Any]:
         command = params.get("command", "")
@@ -267,7 +403,7 @@ Examples:
   python main.py --safety-mode power # Less restrictive safety
         """,
     )
-    parser.add_argument("--version", action="version", version="Software-AI 0.3.0")
+    parser.add_argument("--version", action="version", version="Software-AI 0.4.0")
     parser.add_argument("--input-mode", choices=["text", "voice"], default="text")
     parser.add_argument("--tts-provider", choices=["google-cloud", "gtts", "elevenlabs"], default="gtts")
     parser.add_argument("--debug", action="store_true")
@@ -322,6 +458,7 @@ def print_help() -> None:
     help          Show this help
     clear         Clear the screen
     context       Show current system context
+    screen        Show current screen state (OCR + elements)
     history       Show recent actions
     pause/resume  Pause or resume the session
     stop/exit     Exit the program
@@ -344,7 +481,9 @@ async def agent_loop(args: argparse.Namespace) -> None:
     intent_router = IntentRouter()
     ai_brain = AIBrain()
     system_context = SystemContext()
-    tool_executor = ToolExecutor(action_controller, safety_mode=args.safety_mode)
+    vision = DesktopVision()
+    vision_loop = VisionLoopManager(vision=vision)
+    tool_executor = ToolExecutor(action_controller, vision_loop, safety_mode=args.safety_mode)
     chat_brain = AIBrain()
 
     # Safety
@@ -421,6 +560,16 @@ async def agent_loop(args: argparse.Namespace) -> None:
                 print()
                 continue
 
+            if cmd_lower == "screen":
+                print(f"\n{Fore.CYAN}Screen State:{Style.RESET_ALL}")
+                try:
+                    desc = vision_loop.describe_screen()
+                    print(desc)
+                except Exception as e:
+                    print(f"{Fore.RED}Failed to observe screen: {e}{Style.RESET_ALL}")
+                print()
+                continue
+
             if cmd_lower == "history":
                 if not action_history:
                     print(f"{Fore.YELLOW}No actions yet.{Style.RESET_ALL}\n")
@@ -440,13 +589,21 @@ async def agent_loop(args: argparse.Namespace) -> None:
             # Step 1: Build system context
             context_str = system_context.get_context()
 
-            # Step 2: AI decides what to do (with system context)
+            # Step 1.5: Observe screen for vision context (Phase 3)
+            screen_context_str = ""
+            try:
+                screen_context_str = vision_loop.get_screen_context()
+            except Exception as e:
+                logger.warning("Failed to get screen context: %s", e)
+
+            # Step 2: AI decides what to do (with system + screen context)
             print(f"{Fore.MAGENTA}Thinking...{Style.RESET_ALL}", end="", flush=True)
 
             agent_response = await ai_brain.agent_chat(
                 user_message=user_text,
                 system_context=context_str,
                 last_actions=action_history,
+                screen_context=screen_context_str,
             )
 
             action_type = agent_response.get("action", "chat_reply")

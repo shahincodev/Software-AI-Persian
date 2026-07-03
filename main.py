@@ -404,7 +404,7 @@ Examples:
   python main.py --safety-mode power # Less restrictive safety
         """,
     )
-    parser.add_argument("--version", action="version", version="Software-AI 0.4.0")
+    parser.add_argument("--version", action="version", version="Software-AI 0.5.0")
     parser.add_argument("--input-mode", choices=["text", "voice"], default="text")
     parser.add_argument("--tts-provider", choices=["google-cloud", "gtts", "elevenlabs"], default="gtts")
     parser.add_argument("--debug", action="store_true")
@@ -435,7 +435,7 @@ def print_banner() -> None:
         except UnicodeEncodeError:
             print(padded)
     print()
-    print(f"  {Fore.GREEN}Software-AI 0.4.0{reset}  |  AI-Powered Windows Agent")
+    print(f"  {Fore.GREEN}Software-AI 0.5.0{reset}  |  AI-Powered Windows Agent")
     print(f"  {Fore.YELLOW}Type your request in natural language{reset}")
     print(f"  {Fore.YELLOW}Type 'help' for commands, 'exit' to quit{reset}")
     print(f"  {Fore.CYAN}Made By shahincodev{reset}")

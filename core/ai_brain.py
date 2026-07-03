@@ -2,12 +2,16 @@
 # Copyright © 2025 Shahin - All Rights Reserved
 # Software-AI: AI-Powered Windows Control System
 
-"""لایهٔ ساده برای انتخاب مدل‌های LLM.
+"""لایه هوشمند برای مدیریت و انتخاب مدل‌های LLM.
 
-اینجا از lazy-loading استفاده می‌کنیم تا بارگذاری ماژول‌های سنگین تنها هنگام نیاز انجام شود.
-همچنین امکان پیکربندی از طریق متغیرهای محیطی فراهم است.
+این ماژول به‌صورت خودکار کلیدهای API موجود در محیط را شناسایی کرده
+و فقط از ارائه‌دهندگانی که کلید API دارند استفاده می‌کند.
 
-دارای پشتیبانی برای هزاران مدل مختلف با fallback خودکار - مانند Microsoft Copilot و GitHub Copilot
+ویژگی‌های کلیدی:
+- شناسایی خودکار ارائه‌دهندگان فعال (Google, Groq, OpenRouter, etc.)
+- انتخاب هوشمند مدل بر اساس تسک و ارائه‌دهنده موجود
+- fallback خودکار بین ارائه‌دهندگان فعال
+- بدون تلاش برای ارائه‌دهندگانی که کلید API ندارند
 """
 
 from __future__ import annotations
@@ -17,7 +21,8 @@ import os
 import logging
 import json
 import re
-from typing import Any
+from typing import Any, Optional
+from dataclasses import dataclass, field
 
 from core.model_config import get_model_registry, ModelConfig
 from core.tool_schema import (
@@ -29,14 +34,117 @@ logger = logging.getLogger(__name__)
 MAX_SCHEMA_RETRIES = 2
 
 
-class AIBrain:
-    """کلاس برای مدیریت و انتخاب مدل مناسب بر اساس منظور (purpose).
+@dataclass
+class ProviderStatus:
+    """وضعیت یک ارائه‌دهنده API"""
+    name: str
+    api_key_env: str
+    is_available: bool = False
+    api_key_set: bool = False
+    models_count: int = 0
 
-    روش کار: مدل‌ها هنگام نیاز ساخته می‌شوند تا زمان شروع برنامه سبک بماند.
+
+class ProviderDetector:
+    """شناسایی خودکار ارائه‌دهندگان API موجود در محیط.
+    
+    این کلاس متغیرهای محیطی را بررسی کرده و مشخص می‌کند کدام ارائه‌دهندگان
+    دارای کلید API معتبر هستند.
+    """
+    
+    # نقشه ارائه‌دهندگان به متغیرهای محیطی کلید API
+    PROVIDER_KEY_MAP: dict[str, str] = {
+        "google": "GOOGLE_API_KEY",
+        "groq": "GROQ_API_KEY",
+        "openrouter": "OPENROUTER_API_KEY",
+        "openai": "OPENAI_API_KEY",
+        "anthropic": "ANTHROPIC_API_KEY",
+        "huggingface": "HUGGINGFACE_API_KEY",
+    }
+    
+    def __init__(self):
+        self._providers: dict[str, ProviderStatus] = {}
+        self._detect_providers()
+    
+    def _detect_providers(self) -> None:
+        """شناسایی ارائه‌دهندگان فعال"""
+        for provider_name, env_var in self.PROVIDER_KEY_MAP.items():
+            api_key = os.getenv(env_var, "").strip()
+            is_valid = bool(api_key and not api_key.startswith("your-") and not api_key.startswith("AIza-your-"))
+            
+            status = ProviderStatus(
+                name=provider_name,
+                api_key_env=env_var,
+                is_available=is_valid,
+                api_key_set=bool(api_key),
+            )
+            self._providers[provider_name] = status
+            
+            if is_valid:
+                logger.info(f"✅ Provider detected: {provider_name} (key: {env_var})")
+            elif api_key:
+                logger.debug(f"⚠️ Provider {provider_name}: key appears placeholder")
+    
+    def is_provider_available(self, provider: str) -> bool:
+        """بررسی در دسترس بودن یک ارائه‌دهنده"""
+        status = self._providers.get(provider)
+        return status.is_available if status else False
+    
+    def get_available_providers(self) -> list[str]:
+        """دریافت لیست ارائه‌دهندگان فعال"""
+        return [name for name, status in self._providers.items() if status.is_available]
+    
+    def get_provider_status(self, provider: str) -> Optional[ProviderStatus]:
+        """دریافت وضعیت یک ارائه‌دهنده"""
+        return self._providers.get(provider)
+    
+    def get_all_status(self) -> dict[str, ProviderStatus]:
+        """دریافت وضعیت تمام ارائه‌دهندگان"""
+        return self._providers.copy()
+    
+    def log_summary(self) -> None:
+        """نمایش خلاصه وضعیت ارائه‌دهندگان"""
+        available = self.get_available_providers()
+        total = len(self._providers)
+        
+        if available:
+            logger.info(f"🔍 Available providers ({len(available)}/{total}): {', '.join(available)}")
+        else:
+            logger.warning("❌ No API providers detected! Check your .env file")
+            logger.info("📋 Required environment variables:")
+            for name, env_var in self.PROVIDER_KEY_MAP.items():
+                logger.info(f"   - {env_var} (for {name})")
+
+
+# نمونه سراسری_detector
+_provider_detector: Optional[ProviderDetector] = None
+
+
+def get_provider_detector() -> ProviderDetector:
+    """دریافت نمونه سراسری شناسایی ارائه‌دهندگان"""
+    global _provider_detector
+    if _provider_detector is None:
+        _provider_detector = ProviderDetector()
+    return _provider_detector
+
+
+class AIBrain:
+    """کلاس هوشمند برای مدیریت و انتخاب مدل بر اساس ارائه‌دهندگان فعال.
+    
+    ویژگی‌های کلیدی:
+    1. شناسایی خودکار ارائه‌دهندگان فعال
+    2. انتخاب مدل بر اساس نوع تسک و ارائه‌دهنده موجود
+    3. fallback هوشمند بین ارائه‌دهندگان فعال
+    4. بدون تلاش برای ارائه‌دهندگان بدون کلید API
     """
 
     def __init__(self) -> None:
         self._models: dict[str, Any] = {}
+        self._detector = get_provider_detector()
+        self._detector.log_summary()
+        
+        # بارگذاری مدل‌های دردسترس
+        self._available_providers = self._detector.get_available_providers()
+        logger.info(f"🧠 AIBrain initialized with providers: {self._available_providers}")
 
     def _analyze_task_complexity(self, task: str) -> str:
         """تحلیل خودکار پیچیدگی تسک و انتخاب بهترین مدل.
@@ -101,6 +209,7 @@ class AIBrain:
         """بارگذاری مدل با نام منطقی. این توابع importهای سنگین را محصور می‌کند.
         
         پشتیبانی برای OpenRouter (OpenAI)، Google AI Studio، Groq و سایرین.
+        فقط از ارائه‌دهندگانی که کلید API دارند استفاده می‌کند.
         """
         try:
             # دریافت پیکربندی مدل
@@ -112,11 +221,10 @@ class AIBrain:
                 # Fallback به سیستم قدیمی
                 return self._load_model_legacy(name)
             
-            # بررسی کلید API
-            if model_config.api_key_env:
-                api_key = os.getenv(model_config.api_key_env)
-                if not api_key:
-                    raise ValueError(f"Missing API key: {model_config.api_key_env}")
+            # بررسی کلید API و در دسترس بودن ارائه‌دهنده
+            if not self._detector.is_provider_available(model_config.provider):
+                logger.warning(f"❌ Provider '{model_config.provider}' not available (no API key)")
+                raise ValueError(f"Provider '{model_config.provider}' not available")
             
             # بارگذاری بر اساس ارائه‌دهنده
             if model_config.provider == "openrouter":
@@ -231,45 +339,66 @@ class AIBrain:
             raise
     
     def _load_model_legacy(self, name: str) -> Any:
-        """سیستم قدیمی برای compatibility"""
+        """سیستم قدیمی برای compatibility
+        
+        این متد فقط از ارائه‌دهندگان فعال استفاده می‌کند.
+        """
+        # بررسی ارائه‌دهندگان فعال
+        has_google = self._detector.is_provider_available("google")
+        has_groq = self._detector.is_provider_available("groq")
+        has_openrouter = self._detector.is_provider_available("openrouter")
+        has_openai = self._detector.is_provider_available("openai")
+        
         if name == "reasoning":
-            from browser_use.llm.google.chat import ChatGoogle
-
-            model = ChatGoogle(model=os.getenv("GOOGLE_REASONING_MODEL", "gemini-2.5-flash"),
-                               temperature=float(os.getenv("MODEL_TEMPERATURE", "0.5")))
+            if has_google:
+                from browser_use.llm.google.chat import ChatGoogle
+                model = ChatGoogle(model=os.getenv("GOOGLE_REASONING_MODEL", "gemini-2.5-flash"),
+                                   temperature=float(os.getenv("MODEL_TEMPERATURE", "0.5")))
+            else:
+                raise ValueError("No Google API key for reasoning model")
         elif name == "system":
-            from browser_use.llm.google.chat import ChatGoogle
-
-            model = ChatGoogle(model=os.getenv("GOOGLE_SYSTEM_MODEL", "gemini-2.5-flash"),
-                               temperature=float(os.getenv("SYSTEM_MODEL_TEMPERATURE", "0.3")))
+            if has_google:
+                from browser_use.llm.google.chat import ChatGoogle
+                model = ChatGoogle(model=os.getenv("GOOGLE_SYSTEM_MODEL", "gemini-2.5-flash"),
+                                   temperature=float(os.getenv("SYSTEM_MODEL_TEMPERATURE", "0.3")))
+            else:
+                raise ValueError("No Google API key for system model")
         elif name == "browser_use":
             from browser_use.llm.browser_use.chat import ChatBrowserUse
-
             model = ChatBrowserUse()
         elif name == "fast":
-            from browser_use.llm.groq.chat import ChatGroq
-
-            model = ChatGroq(model=os.getenv("GROQ_MODEL", "groq-1"),
-                              temperature=float(os.getenv("MODEL_TEMPERATURE", "0.7")))
+            if has_groq:
+                from browser_use.llm.groq.chat import ChatGroq
+                model = ChatGroq(model=os.getenv("GROQ_MODEL", "groq-1"),
+                                  temperature=float(os.getenv("MODEL_TEMPERATURE", "0.7")))
+            else:
+                raise ValueError("No Groq API key for fast model")
         elif name == "normal":
-            from browser_use.llm.openai.chat import ChatOpenAI
-
-            model = ChatOpenAI(
-                model=os.getenv("OPENAI_MODEL", "openai/gpt-4o-mini"),
-                temperature=float(os.getenv("MODEL_TEMPERATURE", "0")),
-                api_key=os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY"),
-                base_url="https://openrouter.ai/api/v1",
-            )
+            if has_openrouter or has_openai:
+                from browser_use.llm.openai.chat import ChatOpenAI
+                api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
+                model = ChatOpenAI(
+                    model=os.getenv("OPENAI_MODEL", "openai/gpt-4o-mini"),
+                    temperature=float(os.getenv("MODEL_TEMPERATURE", "0")),
+                    api_key=api_key,
+                    base_url="https://openrouter.ai/api/v1",
+                )
+            else:
+                raise ValueError("No OpenRouter/OpenAI API key for normal model")
         else:
             logger.warning("Invalid model name: %s - use default model", name)
-            from browser_use.llm.openai.chat import ChatOpenAI
-
-            model = ChatOpenAI(
-                model=os.getenv("OPENAI_MODEL", "openai/gpt-4o-mini"),
-                temperature=float(os.getenv("MODEL_TEMPERATURE", "0")),
-                api_key=os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY"),
-                base_url="https://openrouter.ai/api/v1",
-            )
+            if has_openrouter or has_openai:
+                from browser_use.llm.openai.chat import ChatOpenAI
+                api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
+                model = ChatOpenAI(
+                    model=os.getenv("OPENAI_MODEL", "openai/gpt-4o-mini"),
+                    temperature=float(os.getenv("MODEL_TEMPERATURE", "0")),
+                    api_key=api_key,
+                    base_url="https://openrouter.ai/api/v1",
+                )
+            else:
+                raise ValueError("No API key available for default model")
+        
         logger.info("Artificial intelligence model opened (legacy): %s", name)
         return model
 
@@ -314,8 +443,8 @@ class AIBrain:
     async def ask_with_fallback(self, prompt: str, mode: str = "normal", max_tokens: int = 500) -> str:
         """پرسش هوشمند با fallback خودکار به مدل‌های دیگر.
         
-        اگر یک مدل فیل شد، خودکار مدل‌های بعدی را امتحان می‌کند - مانند GitHub Copilot.
-        از registry استفاده می‌کند تا دسترسی به هزاران مدل داشته باشیم.
+        این متد فقط از ارائه‌دهندگان فعال (دارای کلید API) استفاده می‌کند
+        و هرگز برای ارائه‌دهندگان بدون کلید تلاش نمی‌کند.
         
         Args:
             prompt: سوال یا دستور
@@ -793,3 +922,25 @@ Return ONLY the JSON:"""
             pass
         
         return None
+    
+    def get_provider_info(self) -> dict[str, Any]:
+        """دریافت اطلاعات ارائه‌دهندگان فعال
+        
+        Returns:
+            دیکشنری حاوی اطلاعات ارائه‌دهندگان
+        """
+        detector = get_provider_detector()
+        all_status = detector.get_all_status()
+        
+        return {
+            "available_providers": detector.get_available_providers(),
+            "total_providers": len(all_status),
+            "providers": {
+                name: {
+                    "available": status.is_available,
+                    "key_env": status.api_key_env,
+                    "key_set": status.api_key_set,
+                }
+                for name, status in all_status.items()
+            }
+        }

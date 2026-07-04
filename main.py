@@ -44,11 +44,15 @@ from core.keyboard_control import KeyboardController
 from core.logging_config import install_exception_hook, setup_logging
 from core.memory_integrator import MemoryIntegrator, MemoryManager
 from core.mouse_control import MouseController
+from core.plan_generator import PlanGenerator, ExecutionPlan
+from core.plan_validator import PlanValidator
 from core.safety_consent_manager import SafetyConsentManager
 from core.smart_wait import SmartWaiter
+from core.step_tracker import StepTracker
 from core.tool_schema import TOOLS
 from core.vision_loop import VisionLoopManager
 from core.voice_io import VoiceManager
+from core.workflow_engine import WorkflowEngine
 
 colorama_init(autoreset=True)
 logger = logging.getLogger(__name__)
@@ -131,12 +135,38 @@ class SystemContext:
 # ─────────────────────────────────────────────────────────────────────────────
 
 class ToolExecutor:
-    """Executes tool calls from the AI agent using action_factory + ActionController + VisionLoopManager."""
+    """Executes tool calls from the AI agent using action_factory + ActionController + VisionLoopManager.
 
-    def __init__(self, action_controller: ActionController, vision_loop: VisionLoopManager, safety_mode: str = "safe"):
+    Supports both atomic tool calls and multi-step plan execution (Phase 4).
+    """
+
+    def __init__(
+        self,
+        action_controller: ActionController,
+        vision_loop: VisionLoopManager,
+        safety_mode: str = "safe",
+        ai_brain: Optional[AIBrain] = None,
+    ):
         self.action_controller = action_controller
         self.vision_loop = vision_loop
         self.safety_mode = safety_mode
+        self.ai_brain = ai_brain
+        self.plan_generator: Optional[PlanGenerator] = None
+        self.plan_validator: Optional[PlanValidator] = None
+        self.workflow_engine: Optional[WorkflowEngine] = None
+        self._pending_plan: Optional[ExecutionPlan] = None
+
+        # Initialize plan system if AI brain is available
+        if ai_brain:
+            self.plan_generator = PlanGenerator(ai_brain=ai_brain)
+            self.plan_validator = PlanValidator(ai_brain=ai_brain)
+            self.workflow_engine = WorkflowEngine(
+                tool_executor=self,
+                ai_brain=ai_brain,
+                validate_before_execute=True,
+                max_retries_per_step=2,
+            )
+            logger.info("Plan system initialized (PlanGenerator + PlanValidator + WorkflowEngine)")
 
     async def execute(self, tool_calls: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Execute a list of tool calls and return results."""
@@ -149,9 +179,106 @@ class ToolExecutor:
             results.append(result)
         return results
 
+    async def execute_plan(self, plan: ExecutionPlan) -> dict[str, Any]:
+        """Execute an entire ExecutionPlan via WorkflowEngine.
+
+        Returns:
+            A tool-call-compatible result dict with workflow summary.
+        """
+        if not self.workflow_engine:
+            return {
+                "status": "failed",
+                "description": "Workflow engine not initialized",
+                "error": "Plan system requires AI brain",
+            }
+
+        logger.info("Executing plan %s (%d steps)", plan.plan_id, len(plan.steps))
+
+        workflow_result = await self.workflow_engine.execute(plan)
+
+        return {
+            "status": "success" if workflow_result.success else "failed",
+            "description": f"Plan {plan.plan_id}: {workflow_result.completed_steps}/{workflow_result.total_steps} steps completed",
+            "output": (
+                f"Plan completed successfully.\n"
+                f"Steps: {workflow_result.completed_steps}/{workflow_result.total_steps}\n"
+                f"Failed: {workflow_result.failed_steps}\n"
+                f"Skipped: {workflow_result.skipped_steps}\n"
+                f"Time: {workflow_result.elapsed_ms:.0f}ms"
+            ),
+            "error": workflow_result.error_summary if workflow_result.error_summary else "",
+            "plan_id": workflow_result.plan_id,
+            "step_results": workflow_result.step_results,
+        }
+
+    async def generate_and_execute_plan(
+        self,
+        user_text: str,
+        context_str: str = "",
+        screen_context_str: str = "",
+    ) -> dict[str, Any]:
+        """Generate a plan from user text and execute it.
+
+        This is the main entry point for multi-step requests.
+        """
+        if not self.plan_generator or not self.plan_validator or not self.workflow_engine:
+            return {
+                "status": "failed",
+                "description": "Plan system not initialized",
+                "error": "Plan system requires AI brain",
+            }
+
+        try:
+            from core.intent_analyzer import Intent, IntentAnalysisResult
+
+            # Create a minimal intent for plan generation
+            intent = Intent(
+                verb="execute",
+                target=user_text,
+                parameters={"user_request": user_text},
+                confidence=0.9,
+                raw_request=user_text,
+                language="en",
+            )
+
+            # Generate plan
+            plan = await self.plan_generator.generate_plan(intent)
+
+            # Validate
+            report = await self.plan_validator.validate(
+                plan, intent=intent,
+                check_security=True,
+                check_resources=False,
+            )
+
+            if not report.is_valid:
+                return {
+                    "status": "failed",
+                    "description": "Plan validation failed",
+                    "error": f"Validation errors: {report.total_errors}",
+                }
+
+            # Execute
+            self._pending_plan = plan
+            return await self.execute_plan(plan)
+
+        except Exception as e:
+            logger.exception("Plan generation/execution failed: %s", e)
+            return {
+                "status": "failed",
+                "description": "Plan generation failed",
+                "error": str(e),
+            }
+
     async def _dispatch(self, tool: str, params: dict, description: str) -> dict[str, Any]:
         """Dispatch a single tool call to the appropriate handler."""
         try:
+            # Phase 4: Plan tools
+            if tool == "execute_plan":
+                return await self._handle_execute_plan(params, description)
+            elif tool == "list_plan_steps":
+                return await self._handle_list_plan_steps(params, description)
+
             # Read-only tools: execute directly (no action_factory needed)
             if tool == "list_directory":
                 return await self._list_directory(params, description)
@@ -182,6 +309,39 @@ class ToolExecutor:
         except Exception as e:
             logger.exception("Tool execution failed: %s", e)
             return {"status": "failed", "description": description, "error": str(e)}
+
+    async def _handle_execute_plan(self, params: dict, description: str) -> dict[str, Any]:
+        """Handle execute_plan tool call."""
+        user_request = params.get("request", "") or params.get("user_request", "")
+        if not user_request:
+            return {"status": "failed", "description": description, "error": "No request provided"}
+
+        result = await self.generate_and_execute_plan(user_request)
+        result["description"] = description
+        return result
+
+    async def _handle_list_plan_steps(self, params: dict, description: str) -> dict[str, Any]:
+        """Handle list_plan_steps tool call."""
+        if not self._pending_plan:
+            return {
+                "status": "failed",
+                "description": description,
+                "error": "No pending plan",
+            }
+
+        steps_info = []
+        for step in sorted(self._pending_plan.steps, key=lambda s: s.order):
+            deps = ", ".join(step.dependencies) if step.dependencies else "none"
+            steps_info.append(
+                f"[{step.order}] {step.action} "
+                f"(type={step.step_type.value}, deps=[{deps}], timeout={step.timeout}s)"
+            )
+
+        return {
+            "status": "success",
+            "description": description,
+            "output": "\n".join(steps_info),
+        }
 
     async def _execute_via_action_factory(self, action_type: str, params: dict, description: str) -> dict[str, Any]:
         """Create a SystemAction via action_factory and execute via ActionController with vision verification."""
@@ -332,6 +492,16 @@ class ToolExecutor:
         if not command:
             return {"status": "failed", "description": description, "error": "No command provided"}
 
+        shell_type = params.get("shell", "cmd")
+
+        # Detect PowerShell-specific syntax and wrap properly
+        is_powershell_cmd = self._needs_powershell_wrapper(command, shell_type)
+
+        if is_powershell_cmd:
+            # Wrap PowerShell commands with -Command flag to ensure they run in PowerShell
+            if not command.strip().lower().startswith("powershell"):
+                command = f'powershell -NoProfile -Command "{command}"'
+
         logger.info("Executing command: %s", command)
         try:
             proc = subprocess.run(
@@ -356,6 +526,48 @@ class ToolExecutor:
         except Exception as e:
             return {"status": "failed", "description": description, "error": str(e)}
 
+    @staticmethod
+    def _needs_powershell_wrapper(command: str, shell_type: str = "cmd") -> bool:
+        """Detect if a command needs PowerShell wrapper.
+
+        Returns True if the command uses PowerShell syntax like:
+        - PowerShell variables ($var = ...)
+        - Here-strings (@' ... '@ or @" ... "@)
+        - PowerShell cmdlets (Set-Content, Get-ChildItem, etc.)
+        - Pipeline with PowerShell-only commands
+        """
+        if shell_type == "powershell":
+            return True
+
+        cmd_lower = command.lower().strip()
+
+        # PowerShell variables
+        if "$" in command and ("=" in command or "(" in command):
+            return True
+
+        # Here-string syntax
+        if "@'" in command or "'@" in command or '@"' in command or '"@' in command:
+            return True
+
+        # Common PowerShell cmdlets
+        ps_cmdlets = [
+            "set-content", "get-content", "get-childitem", "new-item",
+            "remove-item", "copy-item", "move-item", "test-path",
+            "out-file", "write-output", "write-host", "get-process",
+            "get-service", "get-wmiobject", "invoke-command",
+            "foreach-object", "where-object", "select-object",
+            "sort-object", "measure-object", "compare-object",
+            "import-csv", "export-csv", "convertto-json", "convertfrom-json",
+            "start-process", "stop-process", "get-date",
+            "get-random", "systeminfo", "hostname",
+        ]
+
+        for cmdlet in ps_cmdlets:
+            if cmdlet in cmd_lower:
+                return True
+
+        return False
+
     async def _list_directory(self, params: dict, description: str) -> dict[str, Any]:
         path = params.get("path", ".")
         try:
@@ -376,14 +588,27 @@ class ToolExecutor:
 
     async def _read_file(self, params: dict, description: str) -> dict[str, Any]:
         path = params.get("path", "")
+        max_size = params.get("max_size", 100_000)  # Default 100KB, but configurable
         try:
             p = Path(path)
             if not p.exists():
                 return {"status": "failed", "description": description, "error": f"File not found: {path}"}
-            if p.stat().st_size > 100_000:
-                return {"status": "failed", "description": description, "error": "File too large (>100KB)"}
-            content = p.read_text(encoding="utf-8", errors="replace")
-            return {"status": "success", "description": description, "output": content[:5000]}
+            file_size = p.stat().st_size
+            if file_size > max_size:
+                # Read in chunks - first chunk + summary
+                content_parts = []
+                chunk_size = max_size // 2  # Read first half
+                with open(p, "r", encoding="utf-8", errors="replace") as f:
+                    content_parts.append(f.read(chunk_size))
+                content_parts.append(f"\n\n[... File truncated ({file_size} bytes total, showing first {chunk_size} bytes) ...]")
+                content = "".join(content_parts)
+            else:
+                content = p.read_text(encoding="utf-8", errors="replace")
+            return {
+                "status": "success",
+                "description": description,
+                "output": content[:10000],  # Increased from 5000 to 10000
+            }
         except Exception as e:
             return {"status": "failed", "description": description, "error": str(e)}
 
@@ -404,7 +629,7 @@ Examples:
   python main.py --safety-mode power # Less restrictive safety
         """,
     )
-    parser.add_argument("--version", action="version", version="Software-AI 0.5.0")
+    parser.add_argument("--version", action="version", version="Software-AI 0.6.0")
     parser.add_argument("--input-mode", choices=["text", "voice"], default="text")
     parser.add_argument("--tts-provider", choices=["google-cloud", "gtts", "elevenlabs"], default="gtts")
     parser.add_argument("--debug", action="store_true")
@@ -435,7 +660,7 @@ def print_banner() -> None:
         except UnicodeEncodeError:
             print(padded)
     print()
-    print(f"  {Fore.GREEN}Software-AI 0.5.0{reset}  |  AI-Powered Windows Agent")
+    print(f"  {Fore.GREEN}Software-AI 0.6.0{reset}  |  AI-Powered Windows Agent")
     print(f"  {Fore.YELLOW}Type your request in natural language{reset}")
     print(f"  {Fore.YELLOW}Type 'help' for commands, 'exit' to quit{reset}")
     print(f"  {Fore.CYAN}Made By shahincodev{reset}")
@@ -485,7 +710,7 @@ async def agent_loop(args: argparse.Namespace) -> None:
     system_context = SystemContext()
     vision = DesktopVision()
     vision_loop = VisionLoopManager(vision=vision)
-    tool_executor = ToolExecutor(action_controller, vision_loop, safety_mode=args.safety_mode)
+    tool_executor = ToolExecutor(action_controller, vision_loop, safety_mode=args.safety_mode, ai_brain=ai_brain)
     chat_brain = AIBrain()
 
     # Safety

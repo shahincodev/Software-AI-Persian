@@ -71,6 +71,12 @@ from .context_aware_actions import (
     ApplicationCategory,
 )
 
+# Phase 4: Multi-Step Planning
+from .plan_generator import PlanGenerator, ExecutionPlan, ExecutionStep, StepType, ExecutionMode
+from .plan_validator import PlanValidator, ValidationLevel, ValidationStatus
+from .step_tracker import StepTracker, StepStatus, StepResult
+from .workflow_engine import WorkflowEngine, WorkflowResult
+
 __all__ = [
     # Actions
     "RiskLevel",
@@ -126,4 +132,18 @@ __all__ = [
     "ContextInfo",
     "SystemState",
     "ApplicationCategory",
+    # Phase 4: Multi-Step Planning
+    "PlanGenerator",
+    "ExecutionPlan",
+    "ExecutionStep",
+    "StepType",
+    "ExecutionMode",
+    "PlanValidator",
+    "ValidationLevel",
+    "ValidationStatus",
+    "StepTracker",
+    "StepStatus",
+    "StepResult",
+    "WorkflowEngine",
+    "WorkflowResult",
 ]

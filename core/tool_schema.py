@@ -340,6 +340,40 @@ _register(ToolDefinition(
     params=[],
 ))
 
+# --- Memory Tools (Phase 5) ---
+
+_register(ToolDefinition(
+    name="remember",
+    description="Save information to long-term memory for future recall",
+    action_type=None,
+    risk_level="safe",
+    params=[
+        ToolParam("content", "str", required=True, description="The information to remember"),
+        ToolParam("category", "str", required=False, default="general", description="Category: preference, fact, instruction, conversation"),
+    ],
+))
+
+_register(ToolDefinition(
+    name="recall",
+    description="Search memory for previously saved information",
+    action_type=None,
+    risk_level="safe",
+    params=[
+        ToolParam("query", "str", required=True, description="Search query to find relevant memories"),
+        ToolParam("limit", "int", required=False, default=5, description="Maximum number of results"),
+    ],
+))
+
+_register(ToolDefinition(
+    name="forget",
+    description="Delete a specific memory by its ID",
+    action_type=None,
+    risk_level="safe",
+    params=[
+        ToolParam("memory_id", "str", required=True, description="The ID of the memory to delete"),
+    ],
+))
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Validation

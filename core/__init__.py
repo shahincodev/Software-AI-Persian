@@ -77,6 +77,9 @@ from .plan_validator import PlanValidator, ValidationLevel, ValidationStatus
 from .step_tracker import StepTracker, StepStatus, StepResult
 from .workflow_engine import WorkflowEngine, WorkflowResult
 
+# Phase 5: Persistent Memory
+from .memory_integrator import MemoryManager, MemoryItem, ShortTermMemory, LongTermMemory
+
 __all__ = [
     # Actions
     "RiskLevel",
@@ -146,4 +149,9 @@ __all__ = [
     "StepResult",
     "WorkflowEngine",
     "WorkflowResult",
+    # Phase 5: Persistent Memory
+    "MemoryManager",
+    "MemoryItem",
+    "ShortTermMemory",
+    "LongTermMemory",
 ]

@@ -745,7 +745,8 @@ JSON Array:"""
 
     async def agent_chat(self, user_message: str, system_context: str = "",
                          last_actions: list[dict[str, Any]] | None = None,
-                         screen_context: str = "") -> dict[str, Any]:
+                         screen_context: str = "",
+                         memory_context: str = "") -> dict[str, Any]:
         """Agent-mode chat: AI with full system access decides what to do.
 
         Uses unified tool schema with validation and auto-retry.
@@ -755,6 +756,7 @@ JSON Array:"""
             system_context: System context (files, drives, etc.)
             last_actions: Recent actions taken
             screen_context: Current screen state from VisionLoopManager
+            memory_context: Conversation history and recalled memories (Phase 5)
 
         Returns dict with:
             - "action": "tool_call" | "chat_reply" | "none"
@@ -768,6 +770,10 @@ JSON Array:"""
         screen_block = ""
         if screen_context:
             screen_block = f"\n## Current Screen State:\n{screen_context}\n"
+
+        memory_block = ""
+        if memory_context:
+            memory_block = f"\n## Memory & Conversation History:\n{memory_context}\n"
 
         actions_block = ""
         if last_actions:
@@ -784,9 +790,11 @@ JSON Array:"""
 
 Your job is to convert natural language requests into structured tool calls or chat replies.
 You can OBSERVE the screen using vision tools to understand what is currently visible.
+You can REMEMBER and RECALL information across conversations using memory tools.
 
 {context_block}
 {screen_block}
+{memory_block}
 {actions_block}
 
 ## Available Tools:

@@ -146,11 +146,13 @@ class ToolExecutor:
         vision_loop: VisionLoopManager,
         safety_mode: str = "safe",
         ai_brain: Optional[AIBrain] = None,
+        memory_manager: Optional[MemoryManager] = None,
     ):
         self.action_controller = action_controller
         self.vision_loop = vision_loop
         self.safety_mode = safety_mode
         self.ai_brain = ai_brain
+        self.memory_manager = memory_manager
         self.plan_generator: Optional[PlanGenerator] = None
         self.plan_validator: Optional[PlanValidator] = None
         self.workflow_engine: Optional[WorkflowEngine] = None
@@ -279,6 +281,14 @@ class ToolExecutor:
             elif tool == "list_plan_steps":
                 return await self._handle_list_plan_steps(params, description)
 
+            # Phase 5: Memory tools
+            elif tool == "remember":
+                return self._handle_remember(params, description)
+            elif tool == "recall":
+                return self._handle_recall(params, description)
+            elif tool == "forget":
+                return self._handle_forget(params, description)
+
             # Read-only tools: execute directly (no action_factory needed)
             if tool == "list_directory":
                 return await self._list_directory(params, description)
@@ -342,6 +352,90 @@ class ToolExecutor:
             "description": description,
             "output": "\n".join(steps_info),
         }
+
+    # ── Memory Tools (Phase 5) ──────────────────────────────────────────
+
+    def _handle_remember(self, params: dict, description: str) -> dict[str, Any]:
+        """Handle remember tool call — save to long-term memory."""
+        content = params.get("content", "")
+        category = params.get("category", "general")
+        if not content:
+            return {"status": "failed", "description": description, "error": "No content to remember"}
+
+        if not self.memory_manager:
+            return {"status": "failed", "description": description, "error": "Memory system not initialized"}
+
+        try:
+            item = self.memory_manager.remember_long(
+                content=content,
+                metadata={"category": category, "source": "ai_tool"}
+            )
+            return {
+                "status": "success",
+                "description": description,
+                "output": f"Remembered (id: {item.id[:8]}...): {content[:100]}",
+                "memory_id": item.id,
+            }
+        except Exception as e:
+            return {"status": "failed", "description": description, "error": str(e)}
+
+    def _handle_recall(self, params: dict, description: str) -> dict[str, Any]:
+        """Handle recall tool call — search memory."""
+        query = params.get("query", "")
+        limit = params.get("limit", 5)
+        if not query:
+            return {"status": "failed", "description": description, "error": "No query provided"}
+
+        if not self.memory_manager:
+            return {"status": "failed", "description": description, "error": "Memory system not initialized"}
+
+        try:
+            results = self.memory_manager.recall(query, limit=limit)
+            if not results:
+                return {
+                    "status": "success",
+                    "description": description,
+                    "output": "No memories found matching the query.",
+                }
+
+            lines = []
+            for item in results:
+                cat = item.metadata.get("category", "general")
+                lines.append(f"[{item.id[:8]}...] ({cat}): {item.content[:200]}")
+
+            return {
+                "status": "success",
+                "description": description,
+                "output": f"Found {len(results)} memories:\n" + "\n".join(lines),
+            }
+        except Exception as e:
+            return {"status": "failed", "description": description, "error": str(e)}
+
+    def _handle_forget(self, params: dict, description: str) -> dict[str, Any]:
+        """Handle forget tool call — delete a memory."""
+        memory_id = params.get("memory_id", "")
+        if not memory_id:
+            return {"status": "failed", "description": description, "error": "No memory_id provided"}
+
+        if not self.memory_manager:
+            return {"status": "failed", "description": description, "error": "Memory system not initialized"}
+
+        try:
+            deleted = self.memory_manager.forget_long(memory_id)
+            if deleted:
+                return {
+                    "status": "success",
+                    "description": description,
+                    "output": f"Memory {memory_id[:8]}... forgotten.",
+                }
+            else:
+                return {
+                    "status": "failed",
+                    "description": description,
+                    "error": f"Memory {memory_id} not found",
+                }
+        except Exception as e:
+            return {"status": "failed", "description": description, "error": str(e)}
 
     async def _execute_via_action_factory(self, action_type: str, params: dict, description: str) -> dict[str, Any]:
         """Create a SystemAction via action_factory and execute via ActionController with vision verification."""
@@ -629,7 +723,7 @@ Examples:
   python main.py --safety-mode power # Less restrictive safety
         """,
     )
-    parser.add_argument("--version", action="version", version="Software-AI 0.6.0")
+    parser.add_argument("--version", action="version", version="Software-AI 0.7.0")
     parser.add_argument("--input-mode", choices=["text", "voice"], default="text")
     parser.add_argument("--tts-provider", choices=["google-cloud", "gtts", "elevenlabs"], default="gtts")
     parser.add_argument("--debug", action="store_true")
@@ -660,7 +754,7 @@ def print_banner() -> None:
         except UnicodeEncodeError:
             print(padded)
     print()
-    print(f"  {Fore.GREEN}Software-AI 0.6.0{reset}  |  AI-Powered Windows Agent")
+    print(f"  {Fore.GREEN}Software-AI 0.7.0{reset}  |  AI-Powered Windows Agent")
     print(f"  {Fore.YELLOW}Type your request in natural language{reset}")
     print(f"  {Fore.YELLOW}Type 'help' for commands, 'exit' to quit{reset}")
     print(f"  {Fore.CYAN}Made By shahincodev{reset}")
@@ -710,7 +804,7 @@ async def agent_loop(args: argparse.Namespace) -> None:
     system_context = SystemContext()
     vision = DesktopVision()
     vision_loop = VisionLoopManager(vision=vision)
-    tool_executor = ToolExecutor(action_controller, vision_loop, safety_mode=args.safety_mode, ai_brain=ai_brain)
+    tool_executor = ToolExecutor(action_controller, vision_loop, safety_mode=args.safety_mode, ai_brain=ai_brain, memory_manager=memory)
     chat_brain = AIBrain()
 
     # Safety
@@ -813,6 +907,12 @@ async def agent_loop(args: argparse.Namespace) -> None:
             # ── Agent Processing ──
             log_event("agent_start", text=user_text[:100])
 
+            # Record user message in conversation history
+            try:
+                memory.add_conversation("user", user_text, metadata={"action_type": "pending"})
+            except Exception:
+                pass
+
             # Step 1: Build system context
             context_str = system_context.get_context()
 
@@ -823,7 +923,14 @@ async def agent_loop(args: argparse.Namespace) -> None:
             except Exception as e:
                 logger.warning("Failed to get screen context: %s", e)
 
-            # Step 2: AI decides what to do (with system + screen context)
+            # Step 1.7: Build memory context (Phase 5)
+            memory_context_str = ""
+            try:
+                memory_context_str = memory.get_memory_context(max_items=5)
+            except Exception as e:
+                logger.warning("Failed to get memory context: %s", e)
+
+            # Step 2: AI decides what to do (with system + screen + memory context)
             print(f"{Fore.MAGENTA}Thinking...{Style.RESET_ALL}", end="", flush=True)
 
             agent_response = await ai_brain.agent_chat(
@@ -831,6 +938,7 @@ async def agent_loop(args: argparse.Namespace) -> None:
                 system_context=context_str,
                 last_actions=action_history,
                 screen_context=screen_context_str,
+                memory_context=memory_context_str,
             )
 
             action_type = agent_response.get("action", "chat_reply")
@@ -886,6 +994,11 @@ async def agent_loop(args: argparse.Namespace) -> None:
                         summary = await chat_brain.ask_with_fallback(summary_prompt, mode="system", max_tokens=300)
                         if summary:
                             print(f"\n{Fore.CYAN}{summary}{Style.RESET_ALL}\n")
+                            # Store assistant summary in conversation history
+                            try:
+                                memory.add_conversation("assistant", summary, metadata={"action_type": "tool_summary"})
+                            except Exception:
+                                pass
                     except Exception:
                         print()
 
@@ -898,6 +1011,11 @@ async def agent_loop(args: argparse.Namespace) -> None:
                 response_text = agent_response.get("response", "I couldn't process that.")
                 print(f"\r{Fore.CYAN}{response_text}{Style.RESET_ALL}\n")
                 log_event("agent_chat")
+                # Store assistant response in conversation history
+                try:
+                    memory.add_conversation("assistant", response_text, metadata={"action_type": "chat_reply"})
+                except Exception:
+                    pass
 
             else:
                 print(f"\r{Fore.YELLOW}Unknown response type.{Style.RESET_ALL}\n")

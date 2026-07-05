@@ -723,13 +723,92 @@ class LongTermMemory:
 
 
 class MemoryManager:
-    """مدیریت یکپارچهٔ حافظه: ترکیب short-term و long-term."""
+    """مدیریت یکپارچهٔ حافظه: ترکیب short-term و long-term با تاریخچه مکالمه."""
 
     def __init__(self, *, lt_db_path: Optional[str] = None, consolidation_threshold: int = 50) -> None:
         self.short = ShortTermMemory()
         self.long = LongTermMemory(db_path=lt_db_path)
         self._consolidation_threshold = max(1, int(consolidation_threshold))
         self._lock = Lock()
+        self._conversation_history: List[Dict[str, str]] = []
+        self._max_history = 50
+        self._init_conversation_table()
+
+    def _init_conversation_table(self) -> None:
+        """ایجاد جدول تاریخچه مکالمه در دیتابیس"""
+        with self.long._lock:
+            cursor = self.long._conn.cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS conversation_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    role TEXT NOT NULL,
+                    content TEXT NOT NULL,
+                    metadata TEXT,
+                    timestamp REAL NOT NULL
+                )
+            """)
+            self.long._conn.commit()
+
+    def add_conversation(self, role: str, content: str, metadata: Optional[Dict[str, Any]] = None) -> None:
+        """افزودن یک پیام به تاریخچه مکالمه (user یا assistant)"""
+        import time as _time
+        now = _time.time()
+        meta_json = json.dumps(metadata or {}, ensure_ascii=False)
+
+        # Store in memory (short-term for current session)
+        entry = {"role": role, "content": content[:500], "metadata": metadata or {}}
+        self._conversation_history.append(entry)
+        if len(self._conversation_history) > self._max_history:
+            self._conversation_history = self._conversation_history[-self._max_history:]
+
+        # Persist to long-term DB
+        with self.long._lock:
+            cursor = self.long._conn.cursor()
+            cursor.execute("""
+                INSERT INTO conversation_history (role, content, metadata, timestamp)
+                VALUES (?, ?, ?, ?)
+            """, (role, content[:2000], meta_json, now))
+            self.long._conn.commit()
+
+    def get_conversation_history(self, limit: int = 10) -> List[Dict[str, str]]:
+        """دریافت تاریخچه مکالمه اخیر"""
+        # Return from in-memory first (current session)
+        if self._conversation_history:
+            return self._conversation_history[-limit:]
+
+        # Fallback to DB
+        with self.long._lock:
+            cursor = self.long._conn.cursor()
+            cursor.execute("""
+                SELECT role, content, metadata, timestamp
+                FROM conversation_history
+                ORDER BY timestamp DESC
+                LIMIT ?
+            """, (limit,))
+            rows = cursor.fetchall()
+            results = []
+            for role, content, meta_json, ts in reversed(rows):
+                meta = json.loads(meta_json) if meta_json else {}
+                results.append({"role": role, "content": content, "metadata": meta})
+            return results
+
+    def get_memory_context(self, max_items: int = 5) -> str:
+        """تولید بخش حافظه برای تزریق به پرامپت AI"""
+        lines = []
+
+        # Recent conversation
+        history = self.get_conversation_history(limit=max_items)
+        if history:
+            lines.append("Recent Conversation:")
+            for entry in history:
+                role = entry["role"]
+                content = entry["content"][:200]
+                lines.append(f"  {role}: {content}")
+
+        # Relevant recalled memories
+        # (Will be populated by recall when needed)
+
+        return "\n".join(lines) if lines else ""
 
     def remember_short(self, content: str, ttl: Optional[float] = 60.0, metadata: Optional[Dict[str, Any]] = None) -> MemoryItem:
         item = self.short.add(content, ttl=ttl, metadata=metadata)

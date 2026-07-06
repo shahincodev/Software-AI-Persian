@@ -12,10 +12,11 @@
 Software-AI یک **عامل هوشمند ویندوز** است که دستورات زبان طبیعی (فارسی/انگلیسی) را دریافت کرده و با **دسترسی کامل به سیستم** آن‌ها را اجرا می‌کند. برخلاف ابزارهای خودکارسازی سنتی، این سیستم هر درخواست را از طریق یک **حلقه عامل** پردازش می‌کند:
 
 1. دریافت درخواست کاربر
-2. ساخت زمینه سیستم (فایل‌ها، پوشه‌ها، درایوها، اقدامات اخیر)
-3. تصمیم‌گیری هوش مصنوعی (فراخوانی ابزار یا پاسخ متنی)
-4. اجرای اقدامات سیستمی
-5. بازخورد به کاربر
+2. بارگذاری/ایجاد نشست مکالمه
+3. ساخت زمینه سیستم (فایل‌ها، پوشه‌ها، درایوها، برنامه‌ها، اقدامات اخیر)
+4. تصمیم‌گیری هوش مصنوعی (فراخوانی ابزار یا پاسخ متنی)
+5. اجرای اقدامات سیستمی
+6. بازخورد به کاربر
 
 ### نسخه 0.9.0 — درک محیط ویندوز
 
@@ -107,6 +108,8 @@ Software-AI یک **عامل هوشمند ویندوز** است که دستورا
 | **انتظار هوشمند** | ✅ فعال | انتظار برای CPU بیکار، پنجره، ظهور عنصر، تغییر صفحه |
 | **کنترلر عملیات** | ✅ فعال | اقدامات سطح بالای دسکتاپ (کلیک روی متن، پر کردن فرم و غیره) |
 | **سیستم حافظه** | ✅ فعال | حافظه کوتاه‌مدت (TTL) + بلندمدت (SQLite) + تاریخچه مکالمه + ابزارهای remember/recall/forget |
+| **مدیریت نشست‌ها** | ✅ فعال | ایجاد، حذف، جستجو و سوئیچ بین نشست‌های مکالمه با ذخیره‌سازی SQLite |
+| **درک محیط ویندوز** | ✅ فعال | مسیریاب متمرکز، شناسایی برنامه‌ها، نمایش درایوها، نام‌های محلی‌شده |
 | **تاریخچه مکالمه** | ✅ فعال | ذخیره خودکار پیام‌های کاربر و دستیار با پنجره غلتانی ۵۰ پیام |
 | **زمینه حافظه** | ✅ فعال | تزریق خودکار حافظه و تاریخچه مکالمه به پرامپت AI |
 | **هوش مصنوعی چندارائه‌دهنده** | ✅ فعال | زنجیره failover Groq → Gemini → OpenRouter → Ollama |
@@ -128,12 +131,14 @@ Software-AI یک **عامل هوشمند ویندوز** است که دستورا
 
 ## نمای کلی معماری
 
-### معماری عامل‌محور (نسخه 0.7.0)
+### معماری عامل‌محور (نسخه 0.9.0)
 
 ```
 main.py (نقطه ورودی)
     ↓
-SystemContext + VisionLoopManager — ساخت زمینه سیستم + مشاهده صفحه
+SessionManager — مدیریت نشست‌های مکالمه (ایجاد، سوئیچ، جستجو)
+    ↓
+SystemContext + VisionLoopManager + WindowsEnvironment — ساخت زمینه سیستم + مشاهده صفحه + درک محیط
     ↓
 MemoryManager — بارگذاری تاریخچه مکالمه + حافظه کوتاه‌مدت/بلندمدت
     ↓
@@ -154,14 +159,15 @@ AIBrain.agent_chat(memory_context=...) — AI با زمینه سیستم + حا�
 ### پشته پنج‌لایه (هسته اصلی)
 
 ```
-لایه ۵ [UI]             main.py — نقطه ورودی مکالمه‌ای واحد
-لایه ۴ [ORCHESTRATION]  IntentRouter → CapabilityManager
-لایه ۳ [PLANNING]       IntentAnalyzer → PlanGenerator → PlanValidator → WorkflowEngine → MemoryIntegrator
-لایه ۲ [EXECUTION]      ActionController → ExecutionManager
-لایه ۱ [CAPABILITIES]   DesktopVision, MouseControl, KeyboardControl, SmartWait,
-                         BrowserCore, VoiceIO, SystemTools
+لایه ۶ [SESSION]          SessionManager → SQLite (نشست‌های مکالمه)
+لایه ۵ [UI]               main.py — نقطه ورودی مکالمه‌ای واحد
+لایه ۴ [ORCHESTRATION]    IntentRouter → CapabilityManager
+لایه ۳ [PLANNING]         IntentAnalyzer → PlanGenerator → PlanValidator → WorkflowEngine → MemoryIntegrator
+لایه ۲ [EXECUTION]        ActionController → ExecutionManager
+لایه ۱ [CAPABILITIES]     DesktopVision, MouseControl, KeyboardControl, SmartWait,
+                           BrowserCore, VoiceIO, SystemTools, WindowsEnvironment
 
-حافظه [MEMORY]          MemoryManager → ShortTermMemory (TTL) + LongTermMemory (SQLite) + ConversationHistory
+حافظه [MEMORY]            MemoryManager → ShortTermMemory (TTL) + LongTermMemory (SQLite) + ConversationHistory
 ```
 
 ### جریان اجرا
@@ -169,10 +175,13 @@ AIBrain.agent_chat(memory_context=...) — AI با زمینه سیستم + حا�
 ```
 ورودی کاربر (متن/صدا)
     ↓
+SessionManager — بارگذاری/ایجاد نشست مکالمه
+    ↓
 SystemContext.get_context() — ساخت زمینه سیستم
     ├─ فایل‌ها و پوشه‌های فعلی
     ├─ مکان‌های کلیدی ویندوز (Desktop, Downloads, Documents)
     ├─ درایوهای موجود (C:, D:, E:)
+    ├─ برنامه‌های نصب شده (شناسایی خودکار)
     └─ اقدامات اخیر
     ↓
 MemoryManager — بارگذاری حافظه
@@ -204,7 +213,9 @@ AIBrain.agent_chat(memory_context=...) — AI تصمیم می‌گیرد
 
 - **عامل‌محور**: هر درخواست از طریق AI با زمینه سیستم پردازش می‌شود، نه مسیریابی قاعده‌محور.
 - **زمینه بلادرنگ**: AI قبل از تصمیم‌گیری، وضعیت فعلی سیستم (فایل‌ها، پوشه‌ها، درایوها) را می‌بیند.
+- **درک محیط**: سیستم به‌صورت خودکار برنامه‌ها، مسیرها و درایوها را شناسایی کرده و به AI تزریق می‌کند.
 - **حافظه پایدار**: مکالمات قبلی، ترجیحات کاربر و اطلاعات مهم در SQLite ذخیره شده و در مکالمات آینده بازیابی می‌شوند.
+- **مدیریت نشست**: مکالمات در نشست‌های جداگانه ذخیره شده و کاربر می‌تواند بین آن‌ها سوئیچ کند.
 - **ایجاد تنبلانه**: اجزای پرهزینه (DesktopVision, BrowserCore) فقط در اولین درخواست ساخته می‌شوند.
 - **بازخورد حلقه‌ای**: پس از هر اجرا، نتیجه به AI گزارش شده و خلاصه‌ای به کاربر نمایش داده می‌شود.
 
@@ -221,6 +232,8 @@ Software-AI/
 │   ├── action_factory.py   # کارخانه ایجاد اقدامات از دیکشنری
 │   ├── action_recovery.py  # مدیریت خطا و تلاش مجدد
 │   ├── action_safety.py    # بررسی‌های امنیتی پیش از اجرا
+│   ├── action_types.py     # تعاریف نوع اقدام
+│   ├── advanced_logging.py # سیستم لاگ پیشرفته
 │   ├── agent_core.py       # ابزارهای اصلی عامل
 │   ├── autonomous_agent.py # اجراگر هدف‌محور با بازخورد تصویری
 │   ├── browser_core.py     # خودکارسازی وب مبتنی بر Playwright
@@ -232,9 +245,11 @@ Software-AI/
 │   ├── execution_manager.py # اجراگر اقدامات سیستمی (اجرا، نصب و غیره)
 │   ├── intelligent_agent.py # [منسوخ] صادرات مجدد از intent_analyzer + action_controller
 │   ├── intent_analyzer.py  # استخراج هدف + گفتگو + تحلیل اقدام (~۱۴۰۰ خط)
+│   ├── intent_models.py    # مدل‌های داده intent
 │   ├── intent_router.py    # طبقه‌بندی مسیر، ارزیابی ریسک
 │   ├── keyboard_control.py # خودکارسازی صفحه‌کلید
 │   ├── logging_config.py   # زیرساخت ثبت رویداد
+│   ├── logging_decorators.py # دکوراتورهای لاگ
 │   ├── master_controller.py # [منسوخ] صادرات مجدد از intent_router + system_tools
 │   ├── memory_integrator.py # حافظه کوتاه‌مدت/بلندمدت + تاریخچه مکالمه + یادگیری الگو
 │   ├── memory_system.py    # [منسوخ] صادرات مجدد از memory_integrator
@@ -245,22 +260,24 @@ Software-AI/
 │   ├── multi_monitor.py    # پشتیبانی از چند نمایشگر
 │   ├── plan_generator.py   # ایجاد برنامه اجرایی چندمرحله‌ای
 │   ├── plan_validator.py   # نمره‌دهی امنیت/قابلیت اطمینان برنامه
-│   ├── step_tracker.py     # رهگیری پیشرفت مراحل اجرا
-│   ├── workflow_engine.py  # موتور اجرای گردش کار با مدیریت وابستگی
 │   ├── realtime_interpreter.py # تفسیر وضعیت اجرا
 │   ├── realtime_loop.py    # اجرای بی‌درنگ با بازخورد
 │   ├── safety_consent_manager.py # ارزیابی ریسک + رضایت
 │   ├── safety_filter.py    # فیلتر محتوا
+│   ├── session_manager.py  # مدیریت نشست‌های مکالمه (ایجاد، حذف، جستجو، سوئیچ)
 │   ├── smart_wait.py       # polling هوشمند (CPU بیکار، پنجره و غیره)
+│   ├── step_tracker.py     # رهگیری پیشرفت مراحل اجرا
+│   ├── system_action_parser.py # پارسر اقدامات سیستمی
 │   ├── system_actions.py   # تعاریف اقدامات سیستمی
 │   ├── system_capabilities.py # ثبت قابلیت‌های سیستم
 │   ├── system_tools.py     # عملیات سطح سیستم‌عامل
 │   ├── task_engine.py      # موتور حالت وظیفه
 │   ├── tool_schema.py      # ثبت ابزار یکپارچه (۱۸ ابزار) + اعتبارسنجی schema
 │   ├── vision_loop.py      # حلقه بینایی خودمختار (مشاهده → اجرا → اعتبارسنجی)
-│   └── voice_io.py         # گفتار به متن، متن به گفتار
-├── tests/                  # ۴۴+ فایل تست (شامل ۲۵+ تست Phase 5)
-├── docs/                   # مستندات (~۶۵ فایل)
+│   ├── voice_io.py         # گفتار به متن، متن به گفتار
+│   └── windows_environment.py # درک محیط ویندوز (مسیرها، برنامه‌ها، درایوها)
+├── tests/                  # ۴۷ فایل تست
+├── docs/                   # مستندات (~۶۹ فایل)
 ├── data/                   # داده‌های زمان اجرا (لاگ‌ها، دیتابیس SQLite، عکس‌های صفحه)
 ├── AI_PROJECT_RULES.md     # اصول مهندسی دائمی
 ├── PROJECT_MIGRATION_CONTEXT.md  # تاریخچه تحول معماری
@@ -380,6 +397,12 @@ screen        نمایش وضعیت فعلی صفحه (OCR + عناصر)
 history       نمایش اقدامات اخیر
 pause/resume  توقف یا ادامه نشست
 stop/exit     خروج از برنامه
+/new [name]   ایجاد نشست جدید
+/sessions     نمایش لیست نشست‌ها
+/switch <id>  سوئیچ به نشست دیگر
+/delete <id>  حذف نشست
+/search <q>   جستجو در نشست‌ها
+/current      نمایش اطلاعات نشست فعلی
 ```
 
 ### ورودی صوتی
@@ -413,8 +436,8 @@ python main.py --input-mode voice
 ۳. **✅ Phase 3 — حلقه بینایی خودمختار**: یکپارچه‌سازی DesktopVision، اعتبارسنجی بصری، تلاش مجدد.
 ۴. **✅ Phase 4 — برنامه‌ریزی چندمرحله‌ای هوشمند**: پشتیبانی از درخواست‌های پیچیده چندعملی با WorkflowEngine و StepTracker.
 ۵. **✅ Phase 5 — حافظه پایدار**: یادآوری مکالمات قبلی، یادگیری ترجیحات کاربر، حافظه کوتاه‌مدت و بلندمدت.
-۶. **Phase 6 — مدیریت نشست‌های چت**: ایجاد، حذف، جستجو و سوئیچ بین نشست‌های مکالمه.
-۷. **Phase 7 — درک محیط ویندوز**: تشخیص خودکار برنامه‌ها، مسیرها، پوشه‌های محلی‌شده.
+۶. **✅ Phase 6 — مدیریت نشست‌های چت**: ایجاد، حذف، جستجو و سوئیچ بین نشست‌های مکالمه.
+۷. **✅ Phase 7 — درک محیط ویندوز**: تشخیص خودکار برنامه‌ها، مسیرها، پوشه‌های محلی‌شده.
 
 ---
 
@@ -427,7 +450,7 @@ python main.py --input-mode voice
 | `AI_PROJECT_RULES.md` | اصول مهندسی دائمی |
 | `PROJECT_MIGRATION_CONTEXT.md` | تاریخچه کامل معماری، ADRها، بدهی فنی |
 | `AGENTS.md` | حافظه عملیاتی عامل هوش مصنوعی و مسیریابی بافت |
-| `ROADMAP.md` | نقشه راه توسعه (فاز ۱ تا ۷) |
+| `ROADMAP.md` | نقشه راه توسعه (فاز ۱ تا ۷ — همه تکمیل شده) |
 
 ### گزارش‌های فاز
 
@@ -437,6 +460,8 @@ python main.py --input-mode voice
 | `docs/PHASE3_AUTONOMOUS_VISION_LOOP_REPORT.md` | Phase 3 | حلقه بینایی خودمختار با مشاهده صفحه |
 | `docs/PHASE4_MULTI_STEP_PLANNING_REPORT.md` | Phase 4 | برنامه‌ریزی چندمرحله‌ای هوشمند |
 | `docs/PHASE5_PERSISTENT_MEMORY_REPORT.md` | Phase 5 | حافظه پایدار (کوتاه‌مدت + بلندمدت + مکالمه) |
+| `docs/PHASE6_SESSION_MANAGEMENT_REPORT.md` | Phase 6 | مدیریت نشست‌های مکالمه |
+| `docs/PHASE7_WINDOWS_ENVIRONMENT_REPORT.md` | Phase 7 | درک محیط ویندوز (مسیرها، برنامه‌ها، درایوها) |
 
 ### مستندات فنی
 
@@ -445,7 +470,7 @@ python main.py --input-mode voice
 | `docs/CLI_Architecture.md` | معماری رابط کاربری CLI |
 | `docs/CLI_Environment_Restoration_Report.md` | گزارش بازسازی محیط CLI |
 | `docs/AI_BRAIN_REWRITE_REPORT.md` | گزارش بازنویسی ai_brain.py — شناسایی هوشمند ارائه‌دهندگان API |
-| `docs/` | ~۶۵ فایل مارک‌داون پوشش‌دهنده ماژول‌های فردی و گزارش‌های فاز |
+| `docs/` | ~۶۹ فایل مارک‌داون پوشش‌دهنده ماژول‌های فردی و گزارش‌های فاز |
 
 ---
 
@@ -453,6 +478,6 @@ python main.py --input-mode voice
 
 **اختصاصی — تمامی حقوق محفوظ است.**
 
-© ۲۰۲۵ شاهین (shahincodev)
+© ۲۰۲۵-۲۰۲۶ شاهین (shahincodev)
 
 این نرم‌افزار "همانطور که هست" بدون هیچ گونه ضمانتی ارائه می‌شود. برای جزئیات به فایل [LICENSE](LICENSE) مراجعه کنید. برای سوالات مجوز با `shahincodev@gmail.com` تماس بگیرید.

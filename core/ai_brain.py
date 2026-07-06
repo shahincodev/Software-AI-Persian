@@ -186,10 +186,10 @@ class AIBrain:
         
         # بررسی اولویت‌دار
         if any(kw in task_lower for kw in system_keywords):
-            logger.info("تشخیص نوع تسک: system")
+            logger.info("Task type detected: system")
             return "system"
         elif any(kw in task_lower for kw in browser_keywords):
-            logger.info("تشخیص نوع تسک: browser_use")
+            logger.info("Task type detected: browser_use")
             return "browse"
         elif any(kw in task_lower for kw in reasoning_keywords):
             logger.info("Task type identification: reasoning")

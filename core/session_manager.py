@@ -157,7 +157,7 @@ class SessionManager:
                 conn.close()
 
         self._current_session = session
-        self.logger.info("نشست جدید ایجاد شد: %s (%s)", session.name, session.id)
+        self.logger.info("New session created: %s (%s)", session.name, session.id)
         return session
 
     def get_session(self, session_id: str) -> Optional[Session]:
@@ -279,7 +279,7 @@ class SessionManager:
             session = self.get_session_by_name(identifier)
         if session:
             self._current_session = session
-            self.logger.info("سوئیچ به نشست: %s", session.name)
+            self.logger.info("Switched to session: %s", session.name)
         return session
 
     def add_message(
@@ -527,4 +527,4 @@ class SessionManager:
     def close(self) -> None:
         """بستن اتصالات"""
         self._current_session = None
-        self.logger.info("Session Manager بسته شد")
+        self.logger.info("Session Manager closed")

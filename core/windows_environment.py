@@ -356,7 +356,7 @@ class AppDetector:
         self._cache = apps
         self._cache_time = datetime.now()
 
-        self.logger.info("شناسایی %d برنامه انجام شد", len(apps))
+        self.logger.info("Identified %d programs", len(apps))
         return apps
 
     def _scan_registry(self) -> List[AppInfo]:

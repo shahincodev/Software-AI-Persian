@@ -185,7 +185,7 @@ class SystemCapabilityRegistry:
                     type="app",
                     path=path,
                 )
-                logger.debug("برنامه کشف شد: %s در %s", app, path)
+                logger.debug("Discovered program: %s at %s", app, path)
     
     def _discover_package_managers(self) -> None:
         """کشف مدیران بسته نصب‌شده."""

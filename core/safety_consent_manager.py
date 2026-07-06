@@ -222,7 +222,7 @@ class SafetyConsentManager:
     def clear_history(self) -> None:
         """پاک کردن تاریخچه تصمیمات"""
         self._decision_history.clear()
-        logger.info("تاریخچه تصمیمات پاک شد")
+        logger.info("Decision history cleared")
     
     def get_statistics(self) -> Dict[str, Any]:
         """دریافت آمار تصمیمات"""

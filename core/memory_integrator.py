@@ -725,13 +725,20 @@ class LongTermMemory:
 class MemoryManager:
     """مدیریت یکپارچهٔ حافظه: ترکیب short-term و long-term با تاریخچه مکالمه."""
 
-    def __init__(self, *, lt_db_path: Optional[str] = None, consolidation_threshold: int = 50) -> None:
+    def __init__(
+        self,
+        *,
+        lt_db_path: Optional[str] = None,
+        consolidation_threshold: int = 50,
+        session_id: Optional[str] = None,
+    ) -> None:
         self.short = ShortTermMemory()
         self.long = LongTermMemory(db_path=lt_db_path)
         self._consolidation_threshold = max(1, int(consolidation_threshold))
         self._lock = Lock()
         self._conversation_history: List[Dict[str, str]] = []
         self._max_history = 50
+        self._session_id = session_id
         self._init_conversation_table()
 
     def _init_conversation_table(self) -> None:
@@ -748,6 +755,10 @@ class MemoryManager:
                 )
             """)
             self.long._conn.commit()
+
+    def set_session_id(self, session_id: Optional[str]) -> None:
+        """تنظیم شناسه نشست فعلی"""
+        self._session_id = session_id
 
     def add_conversation(self, role: str, content: str, metadata: Optional[Dict[str, Any]] = None) -> None:
         """افزودن یک پیام به تاریخچه مکالمه (user یا assistant)"""
@@ -769,6 +780,15 @@ class MemoryManager:
                 VALUES (?, ?, ?, ?)
             """, (role, content[:2000], meta_json, now))
             self.long._conn.commit()
+
+        # Persist to session DB if session_id is set
+        if self._session_id:
+            try:
+                from core.session_manager import SessionManager
+                sm = SessionManager()
+                sm.add_message(self._session_id, role, content, metadata)
+            except Exception:
+                pass
 
     def get_conversation_history(self, limit: int = 10) -> List[Dict[str, str]]:
         """دریافت تاریخچه مکالمه اخیر"""

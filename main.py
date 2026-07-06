@@ -43,6 +43,8 @@ from core.intent_router import IntentRouter, RouteType
 from core.keyboard_control import KeyboardController
 from core.logging_config import install_exception_hook, setup_logging
 from core.memory_integrator import MemoryIntegrator, MemoryManager
+from core.session_manager import SessionManager
+from core.windows_environment import WindowsEnvironment
 from core.mouse_control import MouseController
 from core.plan_generator import PlanGenerator, ExecutionPlan
 from core.plan_validator import PlanValidator
@@ -723,7 +725,7 @@ Examples:
   python main.py --safety-mode power # Less restrictive safety
         """,
     )
-    parser.add_argument("--version", action="version", version="Software-AI 0.7.0")
+    parser.add_argument("--version", action="version", version="Software-AI 0.9.0")
     parser.add_argument("--input-mode", choices=["text", "voice"], default="text")
     parser.add_argument("--tts-provider", choices=["google-cloud", "gtts", "elevenlabs"], default="gtts")
     parser.add_argument("--debug", action="store_true")
@@ -754,7 +756,7 @@ def print_banner() -> None:
         except UnicodeEncodeError:
             print(padded)
     print()
-    print(f"  {Fore.GREEN}Software-AI 0.7.0{reset}  |  AI-Powered Windows Agent")
+    print(f"  {Fore.GREEN}Software-AI 0.9.0{reset}  |  AI-Powered Windows Agent")
     print(f"  {Fore.YELLOW}Type your request in natural language{reset}")
     print(f"  {Fore.YELLOW}Type 'help' for commands, 'exit' to quit{reset}")
     print(f"  {Fore.CYAN}Made By shahincodev{reset}")
@@ -781,6 +783,12 @@ def print_help() -> None:
     context       Show current system context
     screen        Show current screen state (OCR + elements)
     history       Show recent actions
+    /new [name]   Create a new chat session
+    /sessions     List all chat sessions
+    /switch <id>  Switch to a different session
+    /delete <id>  Delete a session
+    /search <q>   Search across sessions
+    /current      Show current session info
     pause/resume  Pause or resume the session
     stop/exit     Exit the program
 
@@ -796,11 +804,24 @@ async def agent_loop(args: argparse.Namespace) -> None:
     """Main agent interaction loop — every input goes through the AI with system access."""
 
     # Initialize core components
-    memory = MemoryManager()
+    session_manager = SessionManager()
+
+    # Try to load last session or create a new one
+    recent_sessions = session_manager.get_recent_sessions(limit=1)
+    if recent_sessions:
+        current_session = recent_sessions[0]
+        session_manager.set_current_session(current_session)
+        print(f"{Fore.GREEN}Resumed session: {current_session.name}{Style.RESET_ALL}")
+    else:
+        current_session = session_manager.create_session()
+        print(f"{Fore.GREEN}New session: {current_session.name}{Style.RESET_ALL}")
+
+    memory = MemoryManager(session_id=current_session.id)
     voice = VoiceManager(tts_provider=args.tts_provider)
     action_controller = ActionController(dry_run=args.dry_run)
     intent_router = IntentRouter()
     ai_brain = AIBrain()
+    windows_env = WindowsEnvironment()
     system_context = SystemContext()
     vision = DesktopVision()
     vision_loop = VisionLoopManager(vision=vision)
@@ -875,6 +896,89 @@ async def agent_loop(args: argparse.Namespace) -> None:
                 print(f"{Fore.YELLOW}Paused. Type 'resume' to continue.{Style.RESET_ALL}")
                 continue
 
+            # ── Session management commands (Phase 6) ──
+            if cmd_lower.startswith("/new"):
+                parts = cmd_lower.split(maxsplit=1)
+                name = parts[1] if len(parts) > 1 else None
+                current_session = session_manager.create_session(name)
+                memory.set_session_id(current_session.id)
+                print(f"{Fore.GREEN}New session created: {current_session.name}{Style.RESET_ALL}")
+                continue
+
+            if cmd_lower == "/sessions":
+                sessions = session_manager.list_sessions()
+                if not sessions:
+                    print(f"{Fore.YELLOW}No sessions found.{Style.RESET_ALL}")
+                else:
+                    print(f"\n{Fore.CYAN}Chat Sessions:{Style.RESET_ALL}")
+                    for s in sessions:
+                        marker = " * " if current_session and s.id == current_session.id else "   "
+                        updated = datetime.fromtimestamp(s.updated_at).strftime("%Y-%m-%d %H:%M")
+                        print(f"{marker}{Fore.GREEN}{s.name}{Style.RESET_ALL} ({s.message_count} msgs, {updated})")
+                    print()
+                continue
+
+            if cmd_lower.startswith("/switch"):
+                parts = cmd_lower.split(maxsplit=1)
+                if len(parts) < 2:
+                    print(f"{Fore.RED}Usage: /switch <session_name_or_id>{Style.RESET_ALL}")
+                    continue
+                identifier = parts[1].strip()
+                session = session_manager.switch_session(identifier)
+                if session:
+                    current_session = session
+                    memory.set_session_id(session.id)
+                    print(f"{Fore.GREEN}Switched to: {session.name}{Style.RESET_ALL}")
+                else:
+                    print(f"{Fore.RED}Session not found: {identifier}{Style.RESET_ALL}")
+                continue
+
+            if cmd_lower.startswith("/delete"):
+                parts = cmd_lower.split(maxsplit=1)
+                if len(parts) < 2:
+                    print(f"{Fore.RED}Usage: /delete <session_name_or_id>{Style.RESET_ALL}")
+                    continue
+                identifier = parts[1].strip()
+                if session_manager.delete_session_by_name(identifier) or session_manager.delete_session(identifier):
+                    print(f"{Fore.GREEN}Session deleted: {identifier}{Style.RESET_ALL}")
+                    if not current_session or (current_session and current_session.name == identifier):
+                        current_session = session_manager.create_session()
+                        memory.set_session_id(current_session.id)
+                        print(f"{Fore.GREEN}New session: {current_session.name}{Style.RESET_ALL}")
+                else:
+                    print(f"{Fore.RED}Session not found: {identifier}{Style.RESET_ALL}")
+                continue
+
+            if cmd_lower.startswith("/search"):
+                parts = cmd_lower.split(maxsplit=1)
+                if len(parts) < 2:
+                    print(f"{Fore.RED}Usage: /search <query>{Style.RESET_ALL}")
+                    continue
+                query = parts[1].strip()
+                results = session_manager.search_sessions(query)
+                if not results:
+                    print(f"{Fore.YELLOW}No sessions found matching: {query}{Style.RESET_ALL}")
+                else:
+                    print(f"\n{Fore.CYAN}Search Results ({len(results)} sessions):{Style.RESET_ALL}")
+                    for s in results:
+                        updated = datetime.fromtimestamp(s.updated_at).strftime("%Y-%m-%d %H:%M")
+                        print(f"  {Fore.GREEN}{s.name}{Style.RESET_ALL} ({s.message_count} msgs, {updated})")
+                    print()
+                continue
+
+            if cmd_lower == "/current":
+                if current_session:
+                    print(f"\n{Fore.CYAN}Current Session:{Style.RESET_ALL}")
+                    print(f"  Name: {current_session.name}")
+                    print(f"  ID: {current_session.id}")
+                    print(f"  Messages: {current_session.message_count}")
+                    created = datetime.fromtimestamp(current_session.created_at).strftime("%Y-%m-%d %H:%M:%S")
+                    print(f"  Created: {created}")
+                else:
+                    print(f"{Fore.YELLOW}No active session.{Style.RESET_ALL}")
+                print()
+                continue
+
             if cmd_lower == "context":
                 print(f"\n{Fore.CYAN}System Context:{Style.RESET_ALL}")
                 print(system_context.get_context())
@@ -915,6 +1019,14 @@ async def agent_loop(args: argparse.Namespace) -> None:
 
             # Step 1: Build system context
             context_str = system_context.get_context()
+
+            # Step 1.2: Add environment context (Phase 7)
+            try:
+                env_context = windows_env.get_context_summary()
+                if env_context:
+                    context_str = f"{context_str}\n\n{env_context}"
+            except Exception as e:
+                logger.warning("Failed to get environment context: %s", e)
 
             # Step 1.5: Observe screen for vision context (Phase 3)
             screen_context_str = ""
@@ -1033,6 +1145,7 @@ async def agent_loop(args: argparse.Namespace) -> None:
         print(f"\n{Fore.YELLOW}Interrupted. Shutting down...{Style.RESET_ALL}")
     finally:
         try:
+            session_manager.close()
             memory.shutdown()
             voice.shutdown()
         except Exception:

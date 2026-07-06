@@ -168,6 +168,8 @@ Transform the single-run agent loop into a multi-session, chat-like experience w
 * Users can delete sessions with `/delete <name>`.
 * Session history is fully preserved.
 
+✅ **Completed**: SessionManager with CRUD operations, SQLite persistence, 6 CLI commands, auto-generated session names, 32 tests passing.
+
 ---
 
 # Phase 7 — Intelligent Windows Environment Understanding
@@ -192,6 +194,8 @@ The agent should understand requests like:
 * "Move it into Documents."
 
 without requiring explicit paths.
+
+✅ **Completed**: WindowsEnvironment with PathResolver, AppDetector, DriveEnumerator, localized names (Persian/English), environment context injection, 33 tests passing.
 
 ---
 

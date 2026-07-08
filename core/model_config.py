@@ -3,11 +3,11 @@
 # Software-AI: AI-Powered Windows Control System
 
 """
-لایه‌ی پیکربندی مدل‌های LLM - پشتیبانی از مدل‌های رایگان
-مانند Microsoft Copilot و GitHub Copilot
+LLM Model Configuration Layer - Free Model Support
+Like Microsoft Copilot and GitHub Copilot
 
-دارای قابلیت fallback خودکار و انتخاب ذکی مدل‌ها
-تمام مدل‌های این فایل رایگان هستند (2026 verified)
+With automatic fallback and smart model selection
+All models in this file are free (2026 verified)
 """
 
 from __future__ import annotations
@@ -22,25 +22,25 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ModelConfig:
-    """تنظیمات یک مدل LLM"""
-    name: str                    # نام مدل (مثلاً: gemini-2.5-flash, llama-3.3-70b)
-    provider: str                # ارائه‌دهنده (openrouter, google, groq, ollama, huggingface)
-    api_key_env: str            # متغیر محیطی کلید API
-    base_url: Optional[str]     = None  # آدرس پایه برای OpenRouter و سایرین
-    temperature: float          = 0.5   # دمای مدل
-    max_tokens: int            = 4000   # حداکثر tokens
-    priority: int              = 0      # اولویت (بالاتر = اولی‌تر)
-    description: str           = ""     # توضیح مدل
-    is_free: bool              = True   # آیا مدل رایگان است
+    """Configuration for an LLM model"""
+    name: str                    # Model name (e.g., gemini-2.5-flash, llama-3.3-70b)
+    provider: str                # Provider (openrouter, google, groq, ollama, huggingface)
+    api_key_env: str            # Environment variable for API key
+    base_url: Optional[str]     = None  # Base URL for OpenRouter and others
+    temperature: float          = 0.5   # Model temperature
+    max_tokens: int            = 4000   # Maximum tokens
+    priority: int              = 0      # Priority (higher = tried first)
+    description: str           = ""     # Model description
+    is_free: bool              = True   # Whether the model is free
 
 
 class ModelRegistry:
-    """ثبت‌نام مرکزی برای مدل‌های LLM رایگان.
+    """Central registry for free LLM models.
 
-    این سیستم مانند Microsoft Copilot و GitHub Copilot کار می‌کند:
-    - مدل‌های رایگان در دسترس
-    - اگر یک مدل موفق نبود، خودکار به مدل بعدی می‌رود
-    - هر مدل دارای اولویت و ویژگی‌های خاص است
+    This system works like Microsoft Copilot and GitHub Copilot:
+    - Free models are available
+    - If one model fails, it automatically moves to the next
+    - Each model has priority and specific features
     """
 
     def __init__(self):
@@ -48,56 +48,56 @@ class ModelRegistry:
         self._load_default_models()
 
     def _load_default_models(self):
-        """بارگذاری مدل‌های پیش‌فرض رایگان"""
+        """Load default free models"""
 
         # ================== OpenRouter (Free Models) ==================
-        # مدل‌های رایگان OpenRouter - بدون نیاز به پرداخت
+        # Free OpenRouter models - no payment required
 
         self.register_model(ModelConfig(
-            name="openai/gpt-oss-120b:free",
+            name="tencent/hy3:free",
             provider="openrouter",
             api_key_env="OPENROUTER_API_KEY",
             base_url="https://openrouter.ai/api/v1",
             temperature=0.5,
             max_tokens=4000,
             priority=100,
-            description="OpenAI GPT-OSS 120B (Free on OpenRouter)",
+            description="Tencent Hunyuan 120B (Free on OpenRouter)",
             is_free=True
         ))
 
         self.register_model(ModelConfig(
-            name="meta-llama/llama-3.3-70b-instruct:free",
+            name="nvidia/nemotron-3-super-120b-a12b:free",
             provider="openrouter",
             api_key_env="OPENROUTER_API_KEY",
             base_url="https://openrouter.ai/api/v1",
             temperature=0.5,
             max_tokens=4000,
             priority=95,
-            description="Meta Llama 3.3 70B (Free on OpenRouter)",
+            description="NVIDIA Nemotron 3 Super 120B (Free on OpenRouter)",
             is_free=True
         ))
 
         self.register_model(ModelConfig(
-            name="qwen/qwen3-235b-a22b:free",
+            name="poolside/laguna-xs-2.1:free",
             provider="openrouter",
             api_key_env="OPENROUTER_API_KEY",
             base_url="https://openrouter.ai/api/v1",
             temperature=0.5,
             max_tokens=4000,
             priority=90,
-            description="Qwen3 235B MoE (Free on OpenRouter)",
+            description="Poolside Laguna XS 2.1 (Free on OpenRouter)",
             is_free=True
         ))
 
         self.register_model(ModelConfig(
-            name="nvidia/nemotron-3-ultra-550b-a55b:free",
+            name="google/gemma-4-31b-it:free",
             provider="openrouter",
             api_key_env="OPENROUTER_API_KEY",
             base_url="https://openrouter.ai/api/v1",
             temperature=0.5,
             max_tokens=4000,
             priority=85,
-            description="NVIDIA Nemotron 3 Ultra 550B (Free on OpenRouter)",
+            description="Google Gemma 4 31B IT (Free on OpenRouter)",
             is_free=True
         ))
 
@@ -106,7 +106,7 @@ class ModelRegistry:
             provider="openrouter",
             api_key_env="OPENROUTER_API_KEY",
             base_url="https://openrouter.ai/api/v1",
-            temperature=0.7,
+            temperature=0.5,
             max_tokens=4000,
             priority=80,
             description="Qwen3 Coder (Free on OpenRouter)",
@@ -126,7 +126,7 @@ class ModelRegistry:
         ))
 
         # ================== Google AI Studio (Free Tier) ==================
-        # Google AI Studio برای Gemini - رایگان، 250 درخواست در روز
+        # Google AI Studio for Gemini - free, 250 requests per day
 
         self.register_model(ModelConfig(
             name="gemini-2.5-flash",
@@ -140,7 +140,7 @@ class ModelRegistry:
         ))
 
         # ================== Groq (Free Tier - Very Fast) ==================
-        # Groq - سریع‌ترین inference رایگان
+        # Groq - fastest free inference
 
         self.register_model(ModelConfig(
             name="llama-3.3-70b-versatile",
@@ -154,83 +154,90 @@ class ModelRegistry:
         ))
 
         self.register_model(ModelConfig(
-            name="qwen-qwq-32b",
+            name="qwen/qwen3-32b",
             provider="groq",
             api_key_env="GROQ_API_KEY",
             temperature=0.5,
             max_tokens=4000,
             priority=75,
-            description="Groq Qwen QWQ 32B (Reasoning, Free)",
+            description="Groq Qwen3 32B (Fast, Free)",
             is_free=True
         ))
 
-        # ================== Ollama (Local - Unlimited) ==================
-        # اگر Ollama نصب است - کاملاً رایگان و نامحدود
-
         self.register_model(ModelConfig(
-            name="ollama-neural-chat",
-            provider="ollama",
-            api_key_env="",
-            base_url="http://localhost:11434",
+            name="qwen2.5-coder:14b",
+            provider="groq",
+            api_key_env="GROQ_API_KEY",
             temperature=0.5,
             max_tokens=4000,
-            priority=50,
-            description="Ollama Neural Chat (Local, Unlimited)",
+            priority=73,
+            description="Groq Qwen2.5 Coder 14B (Fast, Free)",
+            is_free=True
+        ))
+
+        self.register_model(ModelConfig(
+            name="llama3.3:70b",
+            provider="groq",
+            api_key_env="GROQ_API_KEY",
+            temperature=0.5,
+            max_tokens=4000,
+            priority=71,
+            description="Groq Llama 3.3 70B (Fast, Free)",
             is_free=True
         ))
 
         # ================== HuggingFace Inference (Free Tier) ==================
 
         self.register_model(ModelConfig(
-            name="deepseek-ai/DeepSeek-V3.2",
+            name="Qwen/Qwen3-Coder-480B-A35B-Instruct",
             provider="huggingface",
             api_key_env="HUGGINGFACE_API_KEY",
             temperature=0.5,
-            max_tokens=2000,
+            max_tokens=4000,
             priority=60,
-            description="HuggingFace DeepSeek-V3.2 (Free Tier)",
+            description="HuggingFace Qwen3 Coder 480B (Free Tier)",
             is_free=True
         ))
 
         logger.info("✅ Loaded %d FREE models from default registry", len(self.models))
 
     def register_model(self, config: ModelConfig):
-        """ثبت یک مدل جدید"""
+        """Register a new model"""
         self.models[config.name] = config
         logger.debug(f"📌 Registered model: {config.name} (Free: {config.is_free})")
 
     def get_model(self, name: str) -> Optional[ModelConfig]:
-        """دریافت تنظیمات یک مدل"""
+        """Get configuration for a model"""
         return self.models.get(name)
 
     def get_available_models(self) -> list[ModelConfig]:
-        """دریافت تمام مدل‌های دردسترس (آن‌هایی که کلید API دارند)"""
+        """Get all available models (those with API keys)"""
         available = []
         for model in self.models.values():
             if model.api_key_env:
                 if os.getenv(model.api_key_env):
                     available.append(model)
             else:
-                # مدل‌های محلی یا بدون نیاز به کلید
+                # Local models or those without keys
                 available.append(model)
 
-        # مرتب‌سازی بر اساس اولویت
+        # Sort by priority
         available.sort(key=lambda m: m.priority, reverse=True)
         return available
 
     def get_free_models(self) -> list[ModelConfig]:
-        """دریافت تمام مدل‌های رایگان"""
+        """Get all free models"""
         return [m for m in self.models.values() if m.is_free]
 
     def get_fallback_chain(self, primary_model: str) -> list[str]:
-        """دریافت زنجیر fallback برای یک مدل اولیه.
+        """Get fallback chain for a primary model.
 
-        بدون اولویت در نظر گرفتن، تمام مدل‌های دردسترس را برمی‌گرداند.
+        Without considering priority, returns all available models.
         """
         available = self.get_available_models()
         model_names = [m.name for m in available]
 
-        # اگر مدل اولیه در لیست است، آن را برای اول قرار دهید
+        # If primary model is in the list, put it first
         if primary_model in model_names:
             model_names.remove(primary_model)
             model_names.insert(0, primary_model)
@@ -239,7 +246,7 @@ class ModelRegistry:
         return model_names
 
     def export_config(self) -> dict:
-        """صادرات پیکربندی برای log و debug"""
+        """Export configuration for logging and debugging"""
         return {
             "total_models": len(self.models),
             "free_models": len(self.get_free_models()),
@@ -263,7 +270,7 @@ _registry: Optional[ModelRegistry] = None
 
 
 def get_model_registry() -> ModelRegistry:
-    """دریافت نمونه global model registry"""
+    """Get global model registry instance"""
     global _registry
     if _registry is None:
         _registry = ModelRegistry()

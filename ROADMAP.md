@@ -1,229 +1,260 @@
-# Software-AI Improvement Roadmap
+# Software-AI Development Roadmap
 
-## Objective
-
-The goal of this roadmap is to transform this project into a true AI-powered desktop agent capable of understanding natural language requests and autonomously controlling a Windows computer through mouse, keyboard, vision, browser automation, and system commands.
-
-This document is the project's long-term implementation plan. Keep it updated as each phase is completed.
+## Free Models & Smart API System - Development Plan
 
 ---
 
-# Phase 1 — Stabilize the Execution Pipeline
+## Current Issues Identified
 
-## Goals
+### 1. Security Issue (FIXED)
+- `.env` file contained a **real API key** that was exposed
+- **Status**: FIXED - Key removed, `.env` cleaned up
 
-* Ensure desktop automation requests never fall back to chat because of routing issues.
-* Verify the entire execution pipeline works end-to-end.
-* Improve path resolution and command execution reliability.
+### 2. Duplicate Variables
+- `GROQ_API_KEY` appears twice (lines 31 and 80)
+- `OPENAI_API_KEY` appears twice (lines 64 and 83)
+- `GOOGLE_API_KEY` appears twice (lines 23 and 86)
+- `MODEL_TEMPERATURE` appears twice (lines 49 and 101)
 
-## Tasks
-
-* Verify the Intent → Router → ActionController → Execution pipeline.
-* Remove any remaining routing downgrade logic.
-* Clear obsolete caches if necessary.
-* Improve Windows path parsing.
-* Support:
-
-  * Desktop
-  * Downloads
-  * Documents
-  * Any drive (C:, D:, E:, ...)
-  * Absolute and relative paths
-* Improve file and folder creation reliability.
-* Improve error reporting and logging.
-
-**Completion Criteria**
-
-* "Create a file on drive D"
-* "Create a folder in Downloads"
-
-should execute successfully without AI fallback failures.
+### 3. Outdated/Non-free Models
+- OpenRouter models listed are paid (gpt-5.2, claude-sonnet-4.5, etc.)
+- Should use free `:free` variants available on OpenRouter
 
 ---
 
-# Phase 2 — Replace Chat Responses with Structured Tool Calling
+## Phase 1: Clean `.env.example` & `.env`
 
-## Goals
+**Goal:** Fix security issues, remove duplicates, update placeholders
 
-The AI must stop behaving like a chatbot and instead become an action planner.
+### Tasks
+- [ ] Remove duplicate variables from `.env.example`
+- [ ] Replace all placeholder keys with consistent format: `your-{provider}-key-here`
+- [ ] Remove the exposed real API key from `.env`
+- [ ] Add comments explaining which models are free
+- [ ] Organize sections cleanly with clear headers
+- [ ] Add new section for smart API checker settings
 
-## Tasks
-
-* Redesign `AIBrain.interpret_system_request()`.
-* Force structured tool outputs instead of conversational text.
-* Introduce a strict tool schema.
-* Validate every AI response.
-* Retry automatically if invalid output is returned.
-* Keep the existing fallback parser only as an emergency backup.
-
-**Completion Criteria**
-
-* Natural language requests are consistently converted into executable actions.
-* ✅ Completed: Unified tool schema with 13 tools, validation, auto-retry (max 2), and emergency fallback.
+### Files to Modify
+| File | Action |
+|------|--------|
+| `.env.example` | Edit - Clean up duplicates, update placeholders |
+| `.env` | Edit - Remove exposed key, fix duplicates |
 
 ---
 
-# Phase 3 — Build an Autonomous Vision Loop
+## Phase 2: Update `model_config.py` with Free Models
 
-## Goals
+**Goal:** Replace paid models with current free alternatives (2026 verified)
 
-Create a real autonomous desktop agent.
+### Model Mapping
 
-Instead of blindly executing commands, the agent should continuously observe the screen, reason, act, and verify.
+| Provider | Old (Paid) | New (Free) |
+|----------|-----------|------------|
+| OpenRouter | `openai/gpt-oss-120b` | `openai/gpt-oss-120b:free` |
+| OpenRouter | `openai/gpt-5.2` | `meta-llama/llama-3.3-70b-instruct:free` |
+| OpenRouter | `openai/gpt-5-mini` | `qwen/qwen3-coder:free` |
+| OpenRouter | `anthropic/claude-sonnet-4.5` | `qwen/qwen3-235b-a22b:free` |
+| OpenRouter | `mistralai/ministral-14b-2512` | `nvidia/nemotron-3-ultra-550b-a55b:free` |
+| Google | Keep existing | Gemini 2.5 Flash (free) |
+| Groq | Keep existing | Llama 3.3 70B (free) |
+| HuggingFace | Keep existing | DeepSeek (free tier) |
 
-Execution loop:
+### New Free Models to Add
 
-1. Capture the screen.
-2. Analyze the current state.
-3. Ask the AI for the next action.
-4. Execute the action.
-5. Capture the screen again.
-6. Verify success.
-7. Retry if necessary.
-8. Continue until the goal is complete.
+#### OpenRouter (Free Tier)
+- `openai/gpt-oss-120b:free` - Priority 100
+- `meta-llama/llama-3.3-70b-instruct:free` - Priority 95
+- `qwen/qwen3-235b-a22b:free` - Priority 90
+- `nvidia/nemotron-3-ultra-550b-a55b:free` - Priority 85
+- `qwen/qwen3-coder:free` - Priority 80
+- `openrouter/free` - Priority 70 (auto-router fallback)
 
-## Tasks
+#### Google AI Studio (Free Tier)
+- `gemini-2.5-flash` - Priority 88 (10 RPM, 250 RPD)
 
-* Integrate DesktopVision into the execution loop.
-* Implement visual verification.
-* Improve OCR usage.
-* Detect UI failures automatically.
-* Retry with alternative actions when needed.
+#### Groq (Free Tier)
+- `llama-3.3-70b-versatile` - Priority 78
+- `qwen-qwq-32b` - Priority 75
 
-**Completion Criteria**
+#### HuggingFace (Free Tier)
+- `deepseek-ai/DeepSeek-V3.2` - Priority 60
 
-* ✅ Completed: VisionLoopManager with observe → act → verify → retry cycle, 5 vision tools, screen context in AI prompts.
+### Tasks
+- [ ] Update OpenRouter models to free variants
+- [ ] Add new free models from OpenRouter
+- [ ] Verify Google/Groq/HuggingFace models are current
+- [ ] Update priority rankings
+- [ ] Update model descriptions
 
----
-
-# Phase 4 — Intelligent Multi-Step Planning
-
-## Goals
-
-Support complex user requests consisting of multiple dependent actions.
-
-Example:
-
-> Open Chrome, search for OpenAI, summarize the homepage, then save the summary into a text file.
-
-## Tasks
-
-* Break large requests into atomic actions.
-* Maintain execution context between steps.
-* Track progress.
-* Recover from failures.
-* Resume execution when possible.
-
-**Completion Criteria**
-
-The agent reliably completes long workflows with minimal user supervision.
-
-✅ **Completed**: PlanGenerator, PlanValidator, WorkflowEngine with dependency resolution, StepTracker for progress monitoring, integrated into ToolExecutor with 2 new tools (execute_plan, list_plan_steps).
+### Files to Modify
+| File | Action |
+|------|--------|
+| `core/model_config.py` | Edit - Update model registry |
 
 ---
 
-# Phase 5 — Persistent Memory System
+## Phase 3: Create Smart API Checker Program
 
-## Goals
+**Goal:** Build `tools/api_checker.py` - Smart program to check API status and auto-select models
 
-Allow the agent to remember what happened in previous conversations within a session and recall saved context across sessions.
+### Features
 
-Without memory, every interaction starts from zero. The agent forgets what it just did, cannot reference earlier commands, and treats each request as isolated.
+#### 1. API Key Validation
+- Test each provider's API key validity
+- Show response times and availability
+- Detect rate limits and quotas
 
-## Tasks
+#### 2. Auto Model Selection (OpenCode-style)
+- User enters API key → system selects best free model
+- Like OpenCode: you provide the key, we pick the model
+- Automatic priority optimization
 
-* Implement short-term memory: remember conversation history within the current session.
-* Implement long-term memory: persist important facts across sessions (SQLite-backed).
-* Inject relevant memory into AI prompts automatically.
-* Allow the agent to reference past actions ("What files did I ask you to create?").
-* Allow the agent to learn user preferences over time.
-* Provide tools: `remember`, `recall`, `forget`.
-* Handle memory size limits to avoid context overflow.
+#### 3. Health Monitoring
+- Track which providers are responding
+- Log response times
+- Detect outages
 
-✅ **Completed**: MemoryManager with conversation history (add_conversation, get_conversation_history), get_memory_context for prompt injection, remember/recall/forget AI tools, memory integration in ToolExecutor and AIBrain.
+#### 4. Fallback Configuration
+- Auto-configure optimal fallback chain
+- Generate recommended `model_config.py` settings
 
----
+### Program Flow
+```
+User runs: python tools/api_checker.py
 
-# Phase 6 — Chat Session Management
+1. Reads .env file
+2. Tests each API key:
+   - Google: Quick Gemini flash request
+   - Groq: Quick Llama request
+   - OpenRouter: Check free models available
+   - HuggingFace: Check inference endpoint
+3. Shows status table:
+   ✅ Google   - 3 free models available
+   ✅ Groq     - 2 free models available
+   ❌ OpenRouter - No valid key
+4. Auto-updates .env with optimal model selections
+5. Generates config recommendations
+```
 
-## Goals
+### CLI Options
+```bash
+# Full check
+python tools/api_checker.py
 
-Transform the single-run agent loop into a multi-session, chat-like experience where users can create, switch, and delete conversation sessions.
+# Check specific provider
+python tools/api_checker.py --provider google
 
-## Tasks
+# Auto-configure .env
+python tools/api_checker.py --auto-configure
 
-* Create named sessions (like chat threads).
-* Switch between sessions.
-* Delete old sessions.
-* Persist session history to disk.
-* Load session context on startup.
-* Show session list and current session name in the CLI.
-* Support session search ("Find the session where I set up VS Code").
+# Show only available models
+python tools/api_checker.py --available-only
 
-**Completion Criteria**
+# Test specific model
+python tools/api_checker.py --test-model gemini-2.5-flash
+```
 
-* Users can start a new chat session with `/new`.
-* Users can list past sessions with `/sessions`.
-* Users can switch sessions with `/switch <name>`.
-* Users can delete sessions with `/delete <name>`.
-* Session history is fully preserved.
+### Tasks
+- [ ] Create `tools/api_checker.py` base structure
+- [ ] Implement API key validation for each provider
+- [ ] Implement auto model selection logic
+- [ ] Add health monitoring
+- [ ] Add CLI interface with argparse
+- [ ] Add auto-configure feature
+- [ ] Add status table display
 
-✅ **Completed**: SessionManager with CRUD operations, SQLite persistence, 6 CLI commands, auto-generated session names, 32 tests passing.
-
----
-
-# Phase 7 — Intelligent Windows Environment Understanding
-
-## Goals
-
-Allow the agent to understand the user's computer naturally.
-
-## Tasks
-
-* Resolve common Windows locations.
-* Detect installed applications.
-* Discover executable locations automatically.
-* Support localized Windows folder names.
-* Improve environment awareness.
-
-The agent should understand requests like:
-
-* "Save it to Downloads."
-* "Open VS Code."
-* "Create a project on drive D."
-* "Move it into Documents."
-
-without requiring explicit paths.
-
-✅ **Completed**: WindowsEnvironment with PathResolver, AppDetector, DriveEnumerator, localized names (Persian/English), environment context injection, 33 tests passing.
-
----
-
-# Long-Term Vision
-
-The final system should function as a true AI desktop agent rather than a traditional automation script.
-
-It should be capable of:
-
-* Understanding natural language.
-* Planning complex workflows.
-* Controlling the mouse and keyboard.
-* Observing the screen.
-* Interacting with desktop applications.
-* Browsing the web autonomously.
-* Recovering from errors.
-* Verifying task completion.
-* Executing multi-step goals.
-* Continuously improving reliability while maintaining safe execution.
+### Files to Create
+| File | Action |
+|------|--------|
+| `tools/api_checker.py` | Create - Smart API checker program |
 
 ---
 
-# Development Rules
+## Phase 4: Update `.env` (Runtime)
 
-* Prioritize reliability over adding new features.
-* Never break existing functionality.
-* Every phase must include testing before moving to the next.
-* Update this roadmap whenever a phase is completed or significantly changed.
-* Keep the implementation modular and maintainable.
-* Favor structured tool execution over free-form AI responses whenever possible.
- 
+**Goal:** Clean up runtime .env file
+
+### Tasks
+- [ ] Remove the exposed real API key
+- [ ] Add placeholder format consistent with .env.example
+- [ ] Add new variables for smart API checker
+
+### Files to Modify
+| File | Action |
+|------|--------|
+| `.env` | Edit - Remove exposed key, fix duplicates |
+
+---
+
+## Phase 5: Testing & Validation
+
+**Goal:** Verify everything works correctly
+
+### Tasks
+- [ ] Test API checker with valid keys
+- [ ] Test API checker with invalid keys
+- [ ] Verify model fallback chain works
+- [ ] Run existing test suite
+- [ ] Update test files if needed
+
+### Files to Check
+| File | Action |
+|------|--------|
+| `tests/test_ai_brain_provider_detection.py` | Verify tests pass |
+| `tests/test_api_connection.py` | Verify API tests pass |
+| `tests/test_comprehensive.py` | Verify comprehensive tests pass |
+
+---
+
+## Free Models Reference (2026)
+
+### Google AI Studio (Free)
+- **Gemini 2.5 Flash** - 10 RPM, 250K TPM, 250 RPD
+- **Gemini Flash-Lite** - 30 RPM, 1000 RPD
+
+### Groq (Free)
+- **Llama 3.3 70B** - Very fast inference
+- **Llama 3.1 8B** - Ultra fast
+- **Qwen3 32B** - Reasoning capable
+
+### OpenRouter (Free)
+- `openai/gpt-oss-120b:free`
+- `meta-llama/llama-3.3-70b-instruct:free`
+- `qwen/qwen3-235b-a22b:free`
+- `nvidia/nemotron-3-ultra-550b-a55b:free`
+- `qwen/qwen3-coder:free`
+- `openrouter/free` (auto-router)
+
+### HuggingFace (Free)
+- **DeepSeek-V3.2** - Free serverless inference
+
+### Ollama (Local - Unlimited)
+- Any model pulled locally via `ollama pull`
+
+---
+
+## Success Criteria
+
+- [ ] No real API keys in `.env.example`
+- [ ] No duplicate variables in `.env` or `.env.example`
+- [ ] All models in `model_config.py` are free
+- [ ] Smart API checker program works
+- [ ] All existing tests pass
+- [ ] Documentation updated
+
+---
+
+## Timeline
+
+| Phase | Estimated Time | Status |
+|-------|---------------|--------|
+| Phase 1: Clean .env files | 10 min | Pending |
+| Phase 2: Update models | 15 min | Pending |
+| Phase 3: Create API checker | 30 min | Pending |
+| Phase 4: Update runtime .env | 5 min | Pending |
+| Phase 5: Testing | 15 min | Pending |
+| **Total** | **~75 min** | |
+
+---
+
+*Last updated: 2026-07-08*

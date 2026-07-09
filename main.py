@@ -478,7 +478,7 @@ class ToolExecutor:
         return {
             "status": "success" if result.result == ActionResult.SUCCESS and verification_passed else "failed",
             "description": description,
-            "output": result.output or "",
+            "output": result.message or "",
             "error": result.error or ("" if verification_passed else "Visual verification failed"),
         }
 

@@ -20,17 +20,15 @@ Test Suite for Plan Generator - مجموعه تست‌های Plan Generator
 
 import pytest
 import asyncio
-from datetime import datetime
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 from core.plan_generator import (
     PlanGenerator,
     ExecutionStep,
     ExecutionPlan,
     StepType,
-    ExecutionMode
 )
-from core.intent_analyzer import Intent, ConfidenceLevel
+from core.intent_analyzer import Intent
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -500,8 +498,6 @@ class TestEdgeCases:
         plan = await plan_generator.generate_plan(intent)
         
         assert plan is not None
-        # باید تمام پارامترها در steps موجود باشند
-        all_actions = " ".join(s.action for s in plan.steps)
     
     @pytest.mark.asyncio
     async def test_very_long_action_text(self, plan_generator):
@@ -581,7 +577,7 @@ class TestPerformance:
         import time
         
         start = time.time()
-        plan = await plan_generator.generate_plan(sample_intent)
+        await plan_generator.generate_plan(sample_intent)
         elapsed = time.time() - start
         
         # تولید پلان باید در کمتر از ۰.۵ ثانیه انجام شود

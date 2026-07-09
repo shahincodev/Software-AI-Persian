@@ -15,7 +15,7 @@
 import json
 import argparse
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Dict, Any, Optional
 from collections import Counter
 
@@ -187,7 +187,7 @@ class LogAnalyzer:
         # درخواست‌های AI
         ai_requests = self.filter_logs(category='ai_request')
         ai_responses = self.filter_logs(category='ai_response')
-        print(f"\nAI interactions:")
+        print("\nAI interactions:")
         print(f"  Requests: {len(ai_requests)}")
         print(f"  Responses: {len(ai_responses)}")
         

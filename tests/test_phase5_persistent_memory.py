@@ -10,11 +10,10 @@ and memory integration with AI brain.
 """
 
 import pytest
-import time
 import tempfile
 import os
 import sys
-from unittest.mock import Mock, MagicMock, patch, AsyncMock
+from unittest.mock import Mock
 
 # Add project root to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -83,11 +82,6 @@ class TestMemoryManagerConversationHistory:
         # Verify in-memory
         history = memory_manager.get_conversation_history()
         assert len(history) == 1
-
-        # Verify in DB (create new manager to force DB read)
-        new_manager = MemoryManager(lt_db_path=memory_manager.long._conn.cursor().execute(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        ).fetchone()[0] if False else None)
 
     def test_add_conversation_with_metadata(self, memory_manager):
         """add_conversation stores metadata correctly."""

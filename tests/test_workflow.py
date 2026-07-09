@@ -39,7 +39,7 @@ async def test_workflow():
         # Execute with approval
         result = controller.execute_action(action, auto_consent=False)
         
-        print(f"\n✅ Execution result:")
+        print("\n✅ Execution result:")
         print(f"   Status: {result.result.name}")
         print(f"   Message: {result.message}")
         if result.error:
@@ -120,7 +120,7 @@ async def test_multi_action():
         # Execute with approval
         result = controller.execute_action(action, auto_consent=False)
         
-        print(f"\n✅ Execution result:")
+        print("\n✅ Execution result:")
         print(f"   Status: {result.result.name}")
         print(f"   Message: {result.message}")
         

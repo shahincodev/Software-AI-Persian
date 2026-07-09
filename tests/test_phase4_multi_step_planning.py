@@ -10,15 +10,13 @@ Tests for StepTracker, WorkflowEngine, and ToolExecutor plan integration.
 
 import pytest
 import asyncio
-import time
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
-from datetime import datetime
+from unittest.mock import Mock, AsyncMock
 
-from core.step_tracker import StepTracker, StepStatus, StepResult
+from core.step_tracker import StepTracker, StepStatus
 from core.plan_generator import (
-    PlanGenerator, ExecutionPlan, ExecutionStep, StepType, ExecutionMode
+    PlanGenerator, ExecutionPlan, ExecutionStep, StepType
 )
-from core.plan_validator import PlanValidator, ValidationLevel, ValidationStatus
+from core.plan_validator import PlanValidator, ValidationStatus
 from core.intent_analyzer import Intent
 
 

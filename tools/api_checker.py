@@ -331,7 +331,7 @@ class SmartAPIChecker:
                 new_lines.append(line)
 
         if not model_found:
-            new_lines.append(f"\n# مدل پیشنهادی توسط Smart API Checker")
+            new_lines.append("\n# مدل پیشنهادی توسط Smart API Checker")
             new_lines.append(f"RECOMMENDED_MODEL={recommended}")
 
         # Write back

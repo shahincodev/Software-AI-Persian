@@ -1,351 +1,98 @@
-# 📝 CHANGELOG
-## Software-AI Development History
+# Changelog
 
-All notable changes to this project will be documented in this file.
+تمام تغییرات قابل توجه در Software-AI در این فایل ثبت می‌شود.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+قالب بر اساس [Keep a Changelog](https://keepachangelog.com/fa/1.1.0/).
 
 ---
 
-## [Unreleased]
+## [1.0.0] — 2026-07-10
 
-### 🚀 Week 2: Action Layer Implementation (In Progress)
-> **Focus**: Click, Type, Smart Wait - Complete Desktop Automation
-
-#### ✅ Completed (2025-11-26)
-- ✅ **Task 1.1: Mouse Control System** (100%)
-  - `core/mouse_control.py` - Complete AI-powered mouse automation (711 lines)
-  - `tests/test_mouse_control.py` - Comprehensive test suite (494 lines, 97% coverage)
-  - `examples/mouse_demo.py` - Full demonstration suite (273 lines)
-  - Features: Safety validation, Human behavior simulation, Vision-guided operations
-  
-- ✅ **Task 1.2: Keyboard Control System** (100%)
-  - `core/keyboard_control.py` - Smart keyboard control with Persian/English support (711 lines)
-  - `tests/test_keyboard_control.py` - Complete test coverage (42 tests, 100% passing)
-  - `examples/keyboard_demo.py` - Comprehensive demo (8 scenarios)
-  - Features: Language detection, Typing speeds, Hotkeys, Clipboard, Safety validation
-
-#### 🔄 In Progress
-- ⏳ Task 1.3: Smart Wait System - Intelligent waiting strategies
-
-#### Added (Planned)
-- `core/smart_wait.py` - Intelligent waiting strategies
-- `core/action_controller.py` - High-level action orchestrator
-- `core/action_safety.py` - Safety filters for desktop actions
-- `core/action_recovery.py` - Error recovery mechanisms
-
-#### Documentation
-- ✅ `WEEK2_TODO.md` - Week 2 progress tracker
-- 📋 `docs/MOUSE_CONTROL.md` - Mouse control API documentation (Planned)
-- Security validation tests
-
-### 🎯 Week 1: Foundation & Windows Automation
-#### Added
-- **Core Systems**
-    - Window management
-    - Element detection
-    - Natural language request processing
-    - System action parsing
-    - Integration with AIBrain
-    - Safety-first execution
-  
-  - `core/system_actions.py` - System action definitions
-    - LaunchAppAction
-    - InstallPackageAction
-    - QueryHardwareAction
-    - TerminateProcessAction
-    - Risk level assessment
-    - Action validation
-  
-  - `core/system_tools.py` - System tool adapters
-    - WinGet integration
-    - Chocolatey support
-    - pip/npm support
-    - Process management
-    - Hardware queries
-  
-  - `core/safety_filter.py` - Security system
-    - Whitelist/blacklist
-    - Risk assessment
-    - User consent management
-    - Suspicious pattern detection
-  
-  - `core/execution_manager.py` - Action execution manager
-    - Priority-based queue
-    - Concurrent execution
-    - State management
-    - Audit logging
-  
-  - `core/system_capabilities.py` - Capability discovery
-    - System scanning
-    - Installed apps detection
-    - Hardware detection
-    - Capability caching
-  
-  - `core/monitoring_service.py` - Resource monitoring
-    - Real-time CPU/RAM/Disk monitoring
-    - Process monitoring
-    - Alert system
-    - Historical data
-
-#### Enhanced
-- `core/ai_brain.py` - Enhanced model selection
-  - Added `system` purpose for Windows operations
-  - Auto task complexity analysis
-  - System-specific model configuration
-  - Better model routing
-
-- `main.py` - Enhanced CLI
-  - System request detection
-  - Direct execution for system tasks
-  - Improved error handling
-  - Better user feedback
-
-#### Documentation
-- `docs/DESKTOP_VISION.md` - Complete vision system guide
-- `docs/WINDOWS_AUTOMATION.md` - Windows automation guide
-- `docs/AI_WINDOWS_CONTROL.md` - AI control guide
-- `docs/QUICKSTART.md` - Quick start guide
-- Updated `README.md` - Week 1 features
-
-#### Tests
-- `test_desktop_vision.py` - Desktop vision tests
-- `test_intelligent_agent.py` - Intelligent agent tests
-
-#### Examples
-- `examples/intelligent_system_demo.py` - System automation demo
-- `examples/windows_automation_demo.py` - Windows automation examples
-
-#### Fixed
-- Project name typo: "Sofware-AI" → "Software-AI" (all occurrences)
-- Repository references updated
-- Documentation consistency improved
-
----
-
-## [0.1.0] - Initial Release - 2025-11-XX
-
-### 🌟 Initial Project Setup
+### Phase 8 — تاب‌آوری خطا و بهینه‌سازی زنجیره Failover
 
 #### Added
-- **Core Infrastructure**
-  - `core/agent_core.py` - Agent factory
-  - `core/ai_brain.py` - Multi-model LLM support
-    - OpenAI integration
-    - Google Gemini integration
-    - Groq integration
-    - Browser-Use integration
-  
-  - `core/browser_core.py` - Browser automation
-    - browser-use integration
-    - Headless mode support
-    - Window size configuration
-  
-  - `core/task_engine.py` - Task management
-    - Queue system
-    - Concurrent execution
-    - Error handling
-  
-  - `core/memory_system.py` - Memory management
-    - Short-term memory (TTL-based)
-    - Long-term memory (SQLite)
-    - Memory transfer logic
-  
-  - `core/voice_io.py` - Voice I/O
-    - Speech recognition
-    - Text-to-speech
-    - Multi-language support (EN/FA)
-    - Multiple TTS providers
-  
-  - `core/logging_config.py` - Centralized logging
-    - Structured logging
-    - File + console output
-    - Log rotation
+- **Input Sanitization**: حذف کاراکترهای اضافی (backslash) از ورودی کاربر
+- **`/providers` command**: نمایش لحظه‌ای وضعیت ارائه‌دهندگان API در CLI
+- **`/status` command**: نمایش وضعیت کامل سیستم (ارائه‌دهندگان، سلامت مدل‌ها، حافظه)
+- **`ModelCircuitBreaker`**: قفل خودکار مدل‌های 403 پس از ۳ بار شکست (قفل ۵ دقیقه‌ای)
+- **`ModelHealthTracker`**: ردیابی تاریخچه موفقیت/شکست مدل‌ها و رتبه‌بندی بر اساس امتیاز سلامت
+- **Sorted model fallback**: مدل‌ها بر اساس امتیاز سلامت + اولویت مرتب می‌شوند
 
-- **CLI Interface**
-  - `main.py` - Main entry point
-    - Interactive CLI
-    - Voice/Text input modes
-    - Task queuing
-    - Argument parsing
+#### Changed
+- `ask_with_fallback()` اکنون از Circuit Breaker و Health Tracker استفاده می‌کند
+- مدل‌های 403 دیگر بیش از یک بار تلاش نمی‌شوند
 
-- **Configuration**
-  - `.env.example` - Environment variables template
-  - `requirements.txt` - Python dependencies
-  - `pyproject.toml` - Project metadata
-  - `run.bat` / `run.sh` - Launch scripts
+### Phase 9 — بهینه‌سازی عملکرد و تجربه کاربری
 
-- **Documentation**
-  - `README.md` - Project overview
-  - `CONTRIBUTING.md` - Contribution guidelines
-  - `LICENSE` - All Rights Reserved
-
-#### Browser Automation
-- Full web automation with browser-use
-- Agent for web tasks
-- Vision support for browser
-- Code analysis capabilities
-
-#### Multi-Language Support
-- Persian (Farsi) interface
-- English interface
-- Automatic language detection
-- RTL support
-
----
-
-## Version History Summary
-
-| Version | Date | Focus | Status |
-|---------|------|-------|--------|
-| 0.1.0 | 2025-11 | Initial Setup + Browser | ✅ Complete |
-| 0.2.0 | 2025-11-24 | Windows Automation | ✅ Complete |
-| 0.3.0 | TBD | Action Layer (Week 2) | 📋 Planned |
-| 0.4.0 | TBD | Advanced AI Vision | 🔮 Future |
-| 1.0.0 | TBD | Public Release | 🔮 Future |
-
----
-
-## Change Categories
-
-### Types of Changes
-- **Added**: New features
-- **Changed**: Changes in existing functionality
-- **Deprecated**: Soon-to-be removed features
-- **Removed**: Removed features
-- **Fixed**: Bug fixes
-- **Security**: Vulnerability fixes
-- **Enhanced**: Improvements to existing features
-- **Documentation**: Documentation updates
-- **Tests**: Test additions/improvements
-
-### Priority Levels
-- 🔴 **Critical**: Breaking changes, security fixes
-- 🟡 **Important**: Major features, significant improvements
-- 🟢 **Minor**: Small features, bug fixes
-- ⚪ **Documentation**: Docs only
-
----
-
-## Contribution Guidelines
-
-When updating this CHANGELOG:
-
-1. **Always update Unreleased section first**
-2. **Use clear, descriptive language**
-3. **Link to issues/PRs when applicable**
-4. **Group changes by category**
-5. **Include version number and date**
-6. **Follow semantic versioning**
-
-Example entry:
-```markdown
 #### Added
-- `core/new_module.py` - Description of what it does
-  - Feature 1
-  - Feature 2
-  - Feature 3
-```
+- **`ResponseCache`**: کش ۱۰ دقیقه‌ای برای پاسخ‌های AI تکراری (حداکثر ۱۰۰ entry)
+- **Context Compression**: فشرده‌سازی پیام‌های قدیمی‌تر در memory context
+- **Progress Indicator**: نمایش "Analyzing request..." هنگام پردازش درخواست
+- **Integration Tests**: ۱۳ تست یکپارچه‌سازی برای زنجیره failover، ورودی، حافظه و نسخه
+
+#### Changed
+- `_max_history` از ۵۰ به ۳۰ کاهش یافت (کاهش مصرف حافظه)
+- پیام‌های قدیمی‌تر از ۳ پیام آخر خلاصه می‌شوند
+
+### Fixed
+- ورودی‌هایی با backslash ابتدایی (مثل `\What is my CPU?`) بدون خطا پردازش می‌شوند
+- مدل‌های 403 دیگر باعث retry storm نمی‌شوند
 
 ---
 
-## Roadmap Preview
+## [0.9.0] — 2026-07-09
 
-### Week 3 (Planned)
-- Advanced AI Vision (GPT-4 Vision, YOLO)
-- Workflow templates
-- Macro recording & playback
-
-### Week 4 (Planned)
-- Cross-platform support (Linux/macOS)
-- Cloud integration
-- Remote control capabilities
-
-### Month 2 (Planned)
-- Action marketplace
-- Community templates
-- Advanced analytics
-
-### Month 3 (Planned)
-- Public beta release
-- Mobile app
-- Web dashboard
+### Phase 7 — درک محیط ویندوز
+- مسیریاب متمرکز برای تبدیل نام‌های طبیعی به مسیرهای فایل
+- پشتیبانی از نام‌های محلی‌شده (فارسی و انگلیسی)
+- شناسایی خودکار برنامه‌های نصب شده
+- اطلاعات درایوها (برچسب، فضای کل و خالی)
 
 ---
 
-## Statistics
+## [0.8.0] — 2026-07-08
 
-### Project Growth
-```
-Week 1:  ~3000 LOC, 15 modules, 5 docs
-Week 2:  ~5000 LOC, 24 modules, 15 docs (planned)
-Week 3:  TBD
-Week 4:  TBD
-```
-
-### Test Coverage
-```
-Week 1:  ~70%
-Week 2:  >85% (target)
-Week 3:  >90% (target)
-```
-
-### Documentation
-```
-Week 1:  5 major docs
-Week 2:  15 major docs (target)
-Week 3:  20+ docs (target)
-```
+### Phase 6 — مدیریت نشست‌های مکالمه
+- ایجاد، حذف، جستجو و سوئیچ بین نشست‌ها
+- پشتیبانی از `SessionManager` و `ChatSession`
 
 ---
 
-## Breaking Changes
+## [0.7.0] — 2026-07-07
 
-### Version 0.2.0
-- None (backward compatible)
-
-### Version 0.1.0
-- Initial release (no breaking changes)
-
----
-
-## Migration Guides
-
-### Migrating from 0.1.0 to 0.2.0
-No migration needed. All changes are additive.
-
-### Migrating to 0.3.0 (Future)
-TBD when Week 2 is released.
+### Phase 5 — حافظه پایدار
+- یادآوری مکالمات قبلی
+- یادگیری ترجیحات کاربر
+- حافظه کوتاه‌مدت و بلندمدت
 
 ---
 
-## Contributors
+## [0.6.0] — 2026-07-06
 
-- **Shahin** - Project Creator & Lead Developer
-  - GitHub: [@shahincodev](https://github.com/shahincodev)
-  - Email: shahincodev@gmail.com
-
----
-
-## Acknowledgments
-
-- **browser-use** - Browser automation framework
-- **OpenAI** - GPT models
-- **Google** - Gemini models
-- **Groq** - Fast inference
-- **Tesseract** - OCR engine
+### Phase 4 — برنامه‌ریزی چندمرحله‌ای هوشمند
+- پشتیبانی از درخواست‌های پیچیده چندعملی
+- WorkflowEngine و StepTracker
 
 ---
 
-## License
+## [0.5.0] — 2026-07-05
 
-All Rights Reserved © 2025 Shahin
-
-See [LICENSE](LICENSE) file for details.
+### Phase 3 — حلقه بینایی خودمختار
+- یکپارچه‌سازی DesktopVision
+- اعتبارسنجی بصری و تلاش مجدد
 
 ---
 
-**Keep this file updated with every significant change!** 📝
+## [0.4.0] — 2026-07-04
 
-*Last Updated: 2025-11-26 (Week 2 - Day 1 Complete)*
+### Phase 2 — فراخوانی ابزار ساختاریافته
+- جایگزینی پاسخ‌های چت با فراخوانی ابزار معتبر با schema
+
+---
+
+## [0.3.0] — 2026-07-03
+
+### Phase 1 — معماری عامل‌محور
+- حلقه عامل اصلی
+- شناسایی هوشمند ارائه‌دهندگان API
+- ۲۰ ابزار استاندارد

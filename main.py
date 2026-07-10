@@ -725,7 +725,7 @@ Examples:
   python main.py --safety-mode power # Less restrictive safety
         """,
     )
-    parser.add_argument("--version", action="version", version="Software-AI 0.9.0")
+    parser.add_argument("--version", action="version", version="Software-AI 1.0.0")
     parser.add_argument("--input-mode", choices=["text", "voice"], default="text")
     parser.add_argument("--tts-provider", choices=["google-cloud", "gtts", "elevenlabs"], default="gtts")
     parser.add_argument("--debug", action="store_true")
@@ -756,7 +756,7 @@ def print_banner() -> None:
         except UnicodeEncodeError:
             print(padded)
     print()
-    print(f"  {Fore.GREEN}Software-AI 0.9.0{reset}  |  AI-Powered Windows Agent")
+    print(f"  {Fore.GREEN}Software-AI 1.0.0{reset}  |  AI-Powered Windows Agent")
     print(f"  {Fore.YELLOW}Type your request in natural language{reset}")
     print(f"  {Fore.YELLOW}Type 'help' for commands, 'exit' to quit{reset}")
     print(f"  {Fore.CYAN}Made By shahincodev{reset}")
@@ -789,6 +789,7 @@ def print_help() -> None:
     /delete <id>  Delete a session
     /search <q>   Search across sessions
     /current      Show current session info
+    /providers    Show API provider status
     pause/resume  Pause or resume the session
     stop/exit     Exit the program
 
@@ -860,6 +861,11 @@ async def agent_loop(args: argparse.Namespace) -> None:
                 except (EOFError, KeyboardInterrupt):
                     break
 
+            if not user_text:
+                continue
+
+            # Phase 8: Input sanitization — strip leading backslashes and control chars
+            user_text = user_text.lstrip("\\").strip()
             if not user_text:
                 continue
 
@@ -1006,6 +1012,24 @@ async def agent_loop(args: argparse.Namespace) -> None:
                         icon = f"{Fore.GREEN}+" if status == "success" else f"{Fore.RED}X" if status == "failed" else f"{Fore.YELLOW}~"
                         print(f"  {icon}{Style.RESET_ALL} {desc}")
                     print()
+                continue
+
+            # Phase 8: Provider status command
+            if cmd_lower == "/providers":
+                try:
+                    from core.ai_brain import ProviderDetector
+                    detector = ProviderDetector()
+                    providers = detector.get_all_status()
+                    print(f"\n{Fore.CYAN}API Provider Status:{Style.RESET_ALL}")
+                    for name, status in providers.items():
+                        icon = f"{Fore.GREEN}ACTIVE" if status.is_available else f"{Fore.RED}INACTIVE"
+                        key_info = f"key: {status.api_key_env}" if status.api_key_set else "no key"
+                        print(f"  {icon}{Style.RESET_ALL} {name:15s} ({key_info})")
+                    available = detector.get_available_providers()
+                    print(f"\n  {Fore.GREEN}{len(available)} active provider(s){Style.RESET_ALL}")
+                    print()
+                except Exception as e:
+                    print(f"{Fore.RED}Failed to get provider status: {e}{Style.RESET_ALL}")
                 continue
 
             # ── Agent Processing ──

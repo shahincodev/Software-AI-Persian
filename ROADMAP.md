@@ -1,260 +1,176 @@
-# Software-AI Development Roadmap
+# ROADMAP.md — نقشه راه توسعه Software-AI
 
-## Free Models & Smart API System - Development Plan
-
----
-
-## Current Issues Identified
-
-### 1. Security Issue (FIXED)
-- `.env` file contained a **real API key** that was exposed
-- **Status**: FIXED - Key removed, `.env` cleaned up
-
-### 2. Duplicate Variables
-- `GROQ_API_KEY` appears twice (lines 31 and 80)
-- `OPENAI_API_KEY` appears twice (lines 64 and 83)
-- `GOOGLE_API_KEY` appears twice (lines 23 and 86)
-- `MODEL_TEMPERATURE` appears twice (lines 49 and 101)
-
-### 3. Outdated/Non-free Models
-- OpenRouter models listed are paid (gpt-5.2, claude-sonnet-4.5, etc.)
-- Should use free `:free` variants available on OpenRouter
+> **نکته مهم**: این فایل حافظه عملیاتی توسعه است. پس از هر فاز، وضعیت تکمیل اینجا ثبت می‌شود تا نیاز به خواندن Context از ابتدا نباشد.
 
 ---
 
-## Phase 1: Clean `.env.example` & `.env`
+## وضعیت فعلی
 
-**Goal:** Fix security issues, remove duplicates, update placeholders
-
-### Tasks
-- [ ] Remove duplicate variables from `.env.example`
-- [ ] Replace all placeholder keys with consistent format: `your-{provider}-key-here`
-- [ ] Remove the exposed real API key from `.env`
-- [ ] Add comments explaining which models are free
-- [ ] Organize sections cleanly with clear headers
-- [ ] Add new section for smart API checker settings
-
-### Files to Modify
-| File | Action |
-|------|--------|
-| `.env.example` | Edit - Clean up duplicates, update placeholders |
-| `.env` | Edit - Remove exposed key, fix duplicates |
+| آیتم | مقدار |
+|------|-------|
+| نسخه فعلی | 0.9.0 |
+| نسخه هدف | 1.0.0 |
+| فازهای تکمیل شده | Phase 1-7 |
+| فاز جاری | Phase 8 |
+| تاریخ آخرین به‌روزرسانی | 2026-07-10 |
 
 ---
 
-## Phase 2: Update `model_config.py` with Free Models
+## Phase 8 — تاب‌آوری خطا و بهینه‌سازی زنجیره Failover
 
-**Goal:** Replace paid models with current free alternatives (2026 verified)
+**وضعیت**: 🔄 در حال انجام
 
-### Model Mapping
+**مشکل اصلی**: بر اساس `test_log.log`، زنجیره failover مدل‌ها کاملاً شکست می‌خورد:
+- مدل‌های OpenRouter: خطای 403 "Access denied by security policy" (6 مدل)
+- ارائه‌دهندگان غیرفعال: Google, Groq, Huggingface, Ollama (بدون API key)
+- خطای TimeoutError در اولین مدل (tencent/hy3:free)
+- **نتیجه نهایی**: "All 11 available models failed" پس از 3 تلاش
 
-| Provider | Old (Paid) | New (Free) |
-|----------|-----------|------------|
-| OpenRouter | `openai/gpt-oss-120b` | `openai/gpt-oss-120b:free` |
-| OpenRouter | `openai/gpt-5.2` | `meta-llama/llama-3.3-70b-instruct:free` |
-| OpenRouter | `openai/gpt-5-mini` | `qwen/qwen3-coder:free` |
-| OpenRouter | `anthropic/claude-sonnet-4.5` | `qwen/qwen3-235b-a22b:free` |
-| OpenRouter | `mistralai/ministral-14b-2512` | `nvidia/nemotron-3-ultra-550b-a55b:free` |
-| Google | Keep existing | Gemini 2.5 Flash (free) |
-| Groq | Keep existing | Llama 3.3 70B (free) |
-| HuggingFace | Keep existing | DeepSeek (free tier) |
+### زیرفازها
 
-### New Free Models to Add
+#### 8.1 — اصلاح ورودی کاربر (Input Sanitization)
+- [x] حذف کاراکترهای اضافی از ورودی (backslash, special chars)
+- [ ] اعتبارسنجی طول ورودی
+- [ ] فیلتر کردن ورودی‌های خالی یا فقط فاصله
+- **فایل‌ها**: `main.py` (agent_loop)
+- **تست**: `tests/test_phase8_error_resilience.py`
 
-#### OpenRouter (Free Tier)
-- `openai/gpt-oss-120b:free` - Priority 100
-- `meta-llama/llama-3.3-70b-instruct:free` - Priority 95
-- `qwen/qwen3-235b-a22b:free` - Priority 90
-- `nvidia/nemotron-3-ultra-550b-a55b:free` - Priority 85
-- `qwen/qwen3-coder:free` - Priority 80
-- `openrouter/free` - Priority 70 (auto-router fallback)
+#### 8.2 — بهینه‌سازی زنجیره Failover
+- [ ] اضافه کردن سازوکار "circuit breaker" برای مدل‌های 403
+- [ ] caching پاسخ‌های 403 برای جلوگیری از تلاش مجدد بی‌فایده
+- [ ] محدود کردن تعداد تلاش‌ها برای هر مدل خاص (نه فقط کل زنجیره)
+- [ ] بهبود پیام خطای کاربرپسند
+- **فایل‌ها**: `core/ai_brain.py`, `core/model_config.py`
 
-#### Google AI Studio (Free Tier)
-- `gemini-2.5-flash` - Priority 88 (10 RPM, 250 RPD)
+#### 8.3 — مدیریت هوشمند ارائه‌دهندگان
+- [ ] بررسی اعتبار API key قبل از تلاش اتصال
+- [ ] رتبه‌بندی مدل‌ها بر اساس تاریخچه موفقیت
+- [ ] اضافه کردن مکانیزم "model health check" در ابتدا
+- **فایل‌ها**: `core/ai_brain.py`, `core/model_orchestrator.py`
 
-#### Groq (Free Tier)
-- `llama-3.3-70b-versatile` - Priority 78
-- `qwen-qwq-32b` - Priority 75
+#### 8.4 — گزارش وضعیت ارائه‌دهندگان
+- [x] نمایش لحظه‌ای وضعیت ارائه‌دهندگان در CLI
+- [x] دستور `/providers` برای نمایش ارائه‌دهندگان فعال و غیرفعال
+- **فایل‌ها**: `main.py`
+- **تست**: `tests/test_phase8_error_resilience.py`
 
-#### HuggingFace (Free Tier)
-- `deepseek-ai/DeepSeek-V3.2` - Priority 60
+### فایل‌های تغییر یافته Phase 8
+| فایل | تغییرات |
+|------|---------|
+| `main.py` | ✅ Input sanitization, ✅ `/providers` command, improved error display |
+| `core/ai_brain.py` | 🔄 Circuit breaker, model health tracking, better fallback logic |
+| `core/model_config.py` | 🔄 Model health scoring, retry limits |
+| `tests/test_phase8_error_resilience.py` | ✅ 28 تست جدید (همه عبور) |
+| `docs/PHASE8_ERROR_RESILIENCE_REPORT.md` | ✅ گزارش فاز |
 
-### Tasks
-- [ ] Update OpenRouter models to free variants
-- [ ] Add new free models from OpenRouter
-- [ ] Verify Google/Groq/HuggingFace models are current
-- [ ] Update priority rankings
-- [ ] Update model descriptions
-
-### Files to Modify
-| File | Action |
-|------|--------|
-| `core/model_config.py` | Edit - Update model registry |
+### معیار تکمیل Phase 8
+- [x] ورودی‌های خاص (backslash, empty) بدون خطا پردازش شوند
+- [ ] مدل‌های 403 بیش از یک بار تلاش نشوند
+- [ ] پیام خطای کاربرپسند نمایش داده شود
+- [x] دستور `/providers` کار کند
+- [x] تست‌ها با موفقیت اجرا شوند
 
 ---
 
-## Phase 3: Create Smart API Checker Program
+## Phase 9 — بهینه‌سازی عملکرد و تجربه کاربری
 
-**Goal:** Build `tools/api_checker.py` - Smart program to check API status and auto-select models
+**وضعیت**: 📋 برنامه‌ریزی شده
 
-### Features
+### زیرفازها
 
-#### 1. API Key Validation
-- Test each provider's API key validity
-- Show response times and availability
-- Detect rate limits and quotas
+#### 9.1 — بهینه‌سازی حافظه و کش
+- [ ] پیاده‌سازی کش پاسخ‌های AI برای درخواست‌های تکراری
+- [ ] بهینه‌سازی حجم context (فشرده‌سازی system context)
+- [ ] محدود کردن اندازه conversation history بهینه
+- **فایل‌ها**: `core/memory_integrator.py`, `core/ai_brain.py`
 
-#### 2. Auto Model Selection (OpenCode-style)
-- User enters API key → system selects best free model
-- Like OpenCode: you provide the key, we pick the model
-- Automatic priority optimization
+#### 9.2 — بهبود تجربه کاربری CLI
+- [ ] نمایش پیشرفت درصدی برای عملیات طولانی
+- [ ] رنگ‌بندی بهتر خروجی‌ها
+- [ ] دستور `/status` برای نمایش وضعیت سیستم
+- [ ] پشتیبانی از Tab completion برای دستورات
+- **فایل‌ها**: `main.py`
 
-#### 3. Health Monitoring
-- Track which providers are responding
-- Log response times
-- Detect outages
+#### 9.3 — تست‌های یکپارچه‌سازی
+- [ ] تست خودکار زنجیره failover
+- [ ] تست input sanitization
+- [ ] تست /providers command
+- [ ] تست memory context compression
+- **فایل‌ها**: `tests/test_phase9_integration.py`
 
-#### 4. Fallback Configuration
-- Auto-configure optimal fallback chain
-- Generate recommended `model_config.py` settings
+### معیار تکمیل Phase 9
+- [ ] زمان پاسخ‌گویی برای درخواست‌های تکراری < 500ms
+- [ ] context size بهینه شده باشد
+- [ ] CLI تجربه کاربری بهتری داشته باشد
+- [ ] تست‌های یکپارچه‌سازی عبور کنند
 
-### Program Flow
+---
+
+## Phase 10 — آماده‌سازی انتشار 1.0.0
+
+**وضعیت**: 📋 برنامه‌ریزی شده
+
+### زیرفازها
+
+#### 10.1 — مستندسازی نهایی
+- [ ] به‌روزرسانی README.md با تمام قابلیت‌های Phase 8-9
+- [ ] ایجاد CHANGELOG.md کامل
+- [ ] به‌روزرسانی CONTRIBUTING.md
+- [ ] بررسی تمام مستندات در docs/
+- **فایل‌ها**: `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `docs/*`
+
+#### 10.2 — تست نهایی و پاکسازی
+- [ ] اجرای کامل تست‌ها
+- [ ] بررسی lint و type hints
+- [ ] پاکسازی فایل‌های اضافی
+- [ ] به‌روزرسانی requirements.txt
+- **فایل‌ها**: `requirements.txt`, `tests/*`
+
+#### 10.3 — انتشار و برچسب‌گذاری
+- [ ] تغییر نسخه به 1.0.0 در `main.py` و `README.md`
+- [ ] ایجاد Git tag v1.0.0
+- [ ] نوشتن release notes
+- [ ] ایجاد GitHub Release
+- **فایل‌ها**: `main.py`, `README.md`
+
+### معیار تکمیل Phase 10
+- [ ] نسخه 1.0.0 در تمام فایل‌ها یکسان باشد
+- [ ] تمام تست‌ها عبور کنند
+- [ ] مستندات کامل و به‌روز باشند
+- [ ] Git tag ایجاد شده باشد
+
+---
+
+## ساختار فایل‌ها پس از هر فاز
+
 ```
-User runs: python tools/api_checker.py
+پس از Phase 8:
+├── ROADMAP.md                          ← این فایل (به‌روزرسانی وضعیت)
+├── README.md                           ← نسخه 1.0.0
+├── main.py                             ← Input sanitization + /providers
+├── core/ai_brain.py                    ← Circuit breaker + model health
+├── core/model_config.py                ← Health scoring
+├── docs/PHASE8_ERROR_RESILIENCE_REPORT.md  ← گزارش فاز
+└── tests/test_phase8_error_resilience.py   ← تست‌های جدید
 
-1. Reads .env file
-2. Tests each API key:
-   - Google: Quick Gemini flash request
-   - Groq: Quick Llama request
-   - OpenRouter: Check free models available
-   - HuggingFace: Check inference endpoint
-3. Shows status table:
-   ✅ Google   - 3 free models available
-   ✅ Groq     - 2 free models available
-   ❌ OpenRouter - No valid key
-4. Auto-updates .env with optimal model selections
-5. Generates config recommendations
+پس از Phase 9:
+├── core/memory_integrator.py           ← Context compression
+├── docs/PHASE9_PERFORMANCE_REPORT.md   ← گزارش فاز
+└── tests/test_phase9_integration.py    ← تست‌های یکپارچه‌سازی
+
+پس از Phase 10:
+├── CHANGELOG.md                        ← تاریخچه تغییرات
+├── docs/PHASE10_RELEASE_REPORT.md      ← گزارش انتشار
+└── Git tag: v1.0.0
 ```
 
-### CLI Options
-```bash
-# Full check
-python tools/api_checker.py
-
-# Check specific provider
-python tools/api_checker.py --provider google
-
-# Auto-configure .env
-python tools/api_checker.py --auto-configure
-
-# Show only available models
-python tools/api_checker.py --available-only
-
-# Test specific model
-python tools/api_checker.py --test-model gemini-2.5-flash
-```
-
-### Tasks
-- [ ] Create `tools/api_checker.py` base structure
-- [ ] Implement API key validation for each provider
-- [ ] Implement auto model selection logic
-- [ ] Add health monitoring
-- [ ] Add CLI interface with argparse
-- [ ] Add auto-configure feature
-- [ ] Add status table display
-
-### Files to Create
-| File | Action |
-|------|--------|
-| `tools/api_checker.py` | Create - Smart API checker program |
-
 ---
 
-## Phase 4: Update `.env` (Runtime)
+## قوانین توسعه (غیرقابل تغییر)
 
-**Goal:** Clean up runtime .env file
-
-### Tasks
-- [ ] Remove the exposed real API key
-- [ ] Add placeholder format consistent with .env.example
-- [ ] Add new variables for smart API checker
-
-### Files to Modify
-| File | Action |
-|------|--------|
-| `.env` | Edit - Remove exposed key, fix duplicates |
-
----
-
-## Phase 5: Testing & Validation
-
-**Goal:** Verify everything works correctly
-
-### Tasks
-- [ ] Test API checker with valid keys
-- [ ] Test API checker with invalid keys
-- [ ] Verify model fallback chain works
-- [ ] Run existing test suite
-- [ ] Update test files if needed
-
-### Files to Check
-| File | Action |
-|------|--------|
-| `tests/test_ai_brain_provider_detection.py` | Verify tests pass |
-| `tests/test_api_connection.py` | Verify API tests pass |
-| `tests/test_comprehensive.py` | Verify comprehensive tests pass |
-
----
-
-## Free Models Reference (2026)
-
-### Google AI Studio (Free)
-- **Gemini 2.5 Flash** - 10 RPM, 250K TPM, 250 RPD
-- **Gemini Flash-Lite** - 30 RPM, 1000 RPD
-
-### Groq (Free)
-- **Llama 3.3 70B** - Very fast inference
-- **Llama 3.1 8B** - Ultra fast
-- **Qwen3 32B** - Reasoning capable
-
-### OpenRouter (Free)
-- `openai/gpt-oss-120b:free`
-- `meta-llama/llama-3.3-70b-instruct:free`
-- `qwen/qwen3-235b-a22b:free`
-- `nvidia/nemotron-3-ultra-550b-a55b:free`
-- `qwen/qwen3-coder:free`
-- `openrouter/free` (auto-router)
-
-### HuggingFace (Free)
-- **DeepSeek-V3.2** - Free serverless inference
-
-### Ollama (Local - Unlimited)
-- Any model pulled locally via `ollama pull`
-
----
-
-## Success Criteria
-
-- [ ] No real API keys in `.env.example`
-- [ ] No duplicate variables in `.env` or `.env.example`
-- [ ] All models in `model_config.py` are free
-- [ ] Smart API checker program works
-- [ ] All existing tests pass
-- [ ] Documentation updated
-
----
-
-## Timeline
-
-| Phase | Estimated Time | Status |
-|-------|---------------|--------|
-| Phase 1: Clean .env files | 10 min | Pending |
-| Phase 2: Update models | 15 min | Pending |
-| Phase 3: Create API checker | 30 min | Pending |
-| Phase 4: Update runtime .env | 5 min | Pending |
-| Phase 5: Testing | 15 min | Pending |
-| **Total** | **~75 min** | |
-
----
-
-*Last updated: 2026-07-08*
+1. **پس از هر فاز**: این فایل (ROADMAP.md) به‌روزرسانی شود
+2. **پس از هر فاز**: گزارش در `docs/` ذخیره شود
+3. **پس از هر فاز**: تست در `tests/` ایجاد شود
+4. **پس از هر فاز**: commit و push انجام شود
+5. **نسخه**: در `README.md` و `main.py` یکسان باشد
+6. **تست‌ها**: قبل از commit اجرا شوند

@@ -3,6 +3,7 @@ browser-use>=0.11.0
 python-dotenv>=1.0.0
 playwright>=1.36.0
 pyfiglet>=1.0.4
+colorama>=0.4.6  # Terminal colors
 
 # System automation
 psutil>=5.9.0  # برای نظارت و مدیریت فرآیندها
@@ -64,4 +65,4 @@ huggingface-hub>=0.17.0
 pywin32>=305; platform_system == "Windows"
 
 # Testing
-pytest>=7.4.0
+pytest>=9.0.0

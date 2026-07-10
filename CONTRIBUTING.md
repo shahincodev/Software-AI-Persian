@@ -6,6 +6,28 @@
 
 از اینکه می‌خواهید در پروژه Software-AI مشارکت کنید، سپاسگزاریم! این راهنما به شما کمک می‌کند تا فرآیند مشارکت را به درستی انجام دهید.
 
+## نسخه فعلی: 1.0.0
+
+پروژه در نسخه 1.0.0 قرار دارد. فازهای ۱ تا ۱۰ تکمیل شده‌اند.
+
+### ساختار پروژه
+
+```
+├── main.py                  ← نقطه ورود اصلی + CLI
+├── core/
+│   ├── ai_brain.py          ← هوش مصنوعی + Circuit Breaker + Cache
+│   ├── model_config.py      ← پیکربندی مدل‌ها + Health Tracker
+│   ├── memory_integrator.py ← حافظه + فشرده‌سازی Context
+│   ├── tool_schema.py       ← تعریف ابزارها
+│   └── ...
+├── tests/
+│   ├── test_phase8_error_resilience.py  ← 61 تست
+│   └── test_phase9_integration.py       ← 13 تست
+├── docs/                    ← گزارش‌های فاز
+├── CHANGELOG.md             ← تاریخچه تغییرات
+└── ROADMAP.md               ← نقشه راه توسعه
+```
+
 ## فرآیند ارسال Pull Request
 
 1. ابتدا یک Fork از مخزن بسازید.
@@ -78,9 +100,19 @@ feat: اضافه کردن پشتیبانی از مدل chatgpt-4
 - در هر PR فقط یک تغییر اصلی اعمال کنید.
 - PR را کوچک نگه دارید (ترجیحاً زیر 500 خط).
 - قبل از PR مطمئن شوید:
-  - همهٔ تست‌ها pass می‌شوند
+  - همهٔ تست‌ها pass می‌شوند (`python -m pytest tests/test_phase8_error_resilience.py tests/test_phase9_integration.py -v`)
   - تغییرات مستند شده‌اند
   - کد با style guide هماهنگ است
+
+## اجرای تست‌ها
+
+```bash
+# اجرای تست‌های Phase 8 و 9
+python -m pytest tests/test_phase8_error_resilience.py tests/test_phase9_integration.py -v
+
+# اجرای تمام تست‌ها
+python -m pytest tests/ -v
+```
 
 ## گزارش باگ
 

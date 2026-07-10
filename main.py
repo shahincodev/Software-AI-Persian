@@ -17,6 +17,7 @@ import asyncio
 import io
 import logging
 import os
+import readline  # Phase 9.2: Tab completion
 import shutil
 import subprocess
 import sys
@@ -799,11 +800,41 @@ def print_help() -> None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Phase 9.2: Tab Completion for CLI Commands
+# ─────────────────────────────────────────────────────────────────────────────
+
+COMMANDS = [
+    "/help", "/providers", "/status", "/history", "/new", "/sessions",
+    "/switch", "/delete", "/search", "/current", "pause", "resume",
+    "stop", "exit", "quit",
+]
+
+def _completer(text: str, state: int) -> str | None:
+    """Tab completion for CLI commands."""
+    if not text.startswith("/"):
+        return None
+    matches = [c for c in COMMANDS if c.startswith(text)]
+    return matches[state] if state < len(matches) else None
+
+def setup_tab_completion() -> None:
+    """Configure readline tab completion."""
+    try:
+        readline.set_completer(_completer)
+        readline.set_completer_delims(" \t\n")
+        readline.parse_and_bind("tab: complete")
+    except Exception:
+        pass  # readline not available on some platforms
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Main Agent Loop
 # ─────────────────────────────────────────────────────────────────────────────
 
 async def agent_loop(args: argparse.Namespace) -> None:
     """Main agent interaction loop — every input goes through the AI with system access."""
+
+    # Phase 9.2: Setup tab completion
+    setup_tab_completion()
 
     # Initialize core components
     session_manager = SessionManager()
@@ -868,6 +899,13 @@ async def agent_loop(args: argparse.Namespace) -> None:
             # Phase 8: Input sanitization — strip leading backslashes and control chars
             user_text = user_text.lstrip("\\").strip()
             if not user_text:
+                continue
+
+            # Phase 8.1: Input length validation
+            if len(user_text) > 5000:
+                print(f"{Fore.RED}Input too long ({len(user_text)} chars). Maximum is 5000.{Style.RESET_ALL}")
+                continue
+            if len(user_text.strip()) == 0:
                 continue
 
             cmd_lower = user_text.lower()
@@ -1208,7 +1246,9 @@ async def agent_loop(args: argparse.Namespace) -> None:
                     print(f"\r{Fore.YELLOW}No actions to execute.{Style.RESET_ALL}\n")
 
             elif action_type == "chat_reply":
-                response_text = agent_response.get("response", "I couldn't process that.")
+                response_text = agent_response.get("response", "")
+                if not response_text:
+                    response_text = "I couldn't process that request. Please try rephrasing."
                 print(f"\r{Fore.CYAN}{response_text}{Style.RESET_ALL}\n")
                 log_event("agent_chat")
                 # Store assistant response in conversation history
@@ -1218,7 +1258,7 @@ async def agent_loop(args: argparse.Namespace) -> None:
                     pass
 
             else:
-                print(f"\r{Fore.YELLOW}Unknown response type.{Style.RESET_ALL}\n")
+                print(f"\r{Fore.YELLOW}Sorry, I didn't understand the response. Please try again.{Style.RESET_ALL}\n")
 
             # Record user request in memory
             try:

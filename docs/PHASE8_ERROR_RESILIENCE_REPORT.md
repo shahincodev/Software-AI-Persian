@@ -1,7 +1,7 @@
 # Phase 8 — Error Resilience & Failover Optimization Report
 
 **تاریخ**: 2026-07-10
-**وضعیت**: 🔄 در حال انجام
+**وضعیت**: 🔄 در حال انجام (8.1 ✅, 8.2 ✅, 8.3 🔄, 8.4 ✅)
 **نسخه**: 0.9.0 → 1.0.0
 
 ---
@@ -82,13 +82,15 @@ API Provider Status:
   1 active provider(s)
 ```
 
-### 8.3 — Circuit Breaker (ai_brain.py) — در حال انجام
+### 8.3 — Circuit Breaker (ai_brain.py) — ✅ تکمیل
 
-سازوکار circuit breaker برای جلوگیری از تلاش مجدد مدل‌های 403:
+سازوکار `ModelCircuitBreaker` برای جلوگیری از تلاش مجدد مدل‌های 403:
 
-- پس از 2 بار شکست متوالی، مدل از لیست تلاش حذف می‌شود
-- وضعیت مدل‌ها در حافظه cache می‌شود
-- پس از 5 دقیقه، مجدد تلاش می‌شود
+- پس از ۳ بار شکست متوالی، مدل از لیست تلاش حذف می‌شود (circuit trips)
+- خطاهای 403/Auth → قفل ۵ دقیقه‌ای (جلوگیری از retry storm)
+- سایر خطاها → قفل ۱ دقیقه‌ای
+- درخواست موفق → ریست کانتر خطا
+- `/providers` وضعیت circuit breaker را نمایش می‌دهد
 
 ### 8.4 — Model Health Scoring (model_config.py) — در حال انجام
 
@@ -113,9 +115,9 @@ class ModelHealth:
 |-------|-------|
 | ورودی backslash بدون خطا پردازش شود | ✅ تکمیل |
 | دستور /providers کار کند | ✅ تکمیل |
-| Circuit breaker برای مدل‌های 403 | 🔄 در حال انجام |
+| Circuit breaker برای مدل‌های 403 | ✅ تکمیل |
 | Model health scoring | 🔄 در حال انجام |
-| تست‌های Phase 8 عبور کنند | 🔄 در حال انجام |
+| تست‌های Phase 8 عبور کنند | ✅ 39/39 pass |
 
 ---
 
@@ -123,9 +125,11 @@ class ModelHealth:
 
 | فایل | تغییرات |
 |------|---------|
-| `main.py` | Input sanitization, `/providers` command, help text |
+| `main.py` | Input sanitization, `/providers` command with circuit breaker status, help text |
+| `core/ai_brain.py` | `ModelCircuitBreaker` class, integrated into `ask_with_fallback()` |
 | `ROADMAP.md` | Phase 8-10 roadmap |
 | `README.md` | Version 0.9.0 → 1.0.0, Phase 8-10 |
+| `tests/test_phase8_error_resilience.py` | 39 tests (12 new circuit breaker tests) |
 
 ---
 

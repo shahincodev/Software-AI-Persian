@@ -120,11 +120,114 @@ class TestProviderStatus:
 class TestCircuitBreaker:
     """تست‌های سازوکار Circuit Breaker"""
 
-    def test_model_health_tracking_structure(self):
-        """بررسی ساختار ردیابی سلامت مدل"""
-        from core.model_config import ModelConfig
-        # بررسی وجود فیلدهای لازم
-        assert hasattr(ModelConfig, '__dataclass_fields__') or True  # Basic check
+    def test_circuit_breaker_initial_status(self):
+        """وضعیت اولیه Circuit Breaker خالی است"""
+        from core.ai_brain import ModelCircuitBreaker
+        cb = ModelCircuitBreaker()
+        assert cb.get_status() == {}
+
+    def test_circuit_breaker_not_locked_initially(self):
+        """مدل در ابتدا قفل نیست"""
+        from core.ai_brain import ModelCircuitBreaker
+        cb = ModelCircuitBreaker()
+        assert cb.is_locked("some-model") is False
+
+    def test_circuit_breaker_failure_below_threshold(self):
+        """خطای زیر آستانه → قفل نمی‌شود"""
+        from core.ai_brain import ModelCircuitBreaker
+        cb = ModelCircuitBreaker()
+        cb.record_failure("m1", Exception("403 Forbidden"))
+        cb.record_failure("m1", Exception("403 Forbidden"))
+        assert cb.is_locked("m1") is False
+
+    def test_circuit_breaker_trips_at_threshold(self):
+        """رسیدن به آستانه → قفل"""
+        from core.ai_brain import ModelCircuitBreaker
+        cb = ModelCircuitBreaker()
+        for _ in range(cb.FAILURE_THRESHOLD):
+            cb.record_failure("m1", Exception("403 Forbidden"))
+        assert cb.is_locked("m1") is True
+
+    def test_circuit_breaker_success_resets_failures(self):
+        """موفقیت → ریست کانتر خطا"""
+        from core.ai_brain import ModelCircuitBreaker
+        cb = ModelCircuitBreaker()
+        cb.record_failure("m1", Exception("error"))
+        cb.record_failure("m1", Exception("error"))
+        cb.record_success("m1")
+        assert cb.is_locked("m1") is False
+        assert cb.get_status() == {}
+
+    def test_circuit_breaker_lockout_duration_auth(self):
+        """قفل ۵ دقیقه‌ای برای خطاهای 403"""
+        import time
+        from core.ai_brain import ModelCircuitBreaker
+        cb = ModelCircuitBreaker()
+        for _ in range(cb.FAILURE_THRESHOLD):
+            cb.record_failure("m1", Exception("403 Forbidden"))
+        status = cb.get_status()
+        assert status["m1"]["locked"] is True
+        assert status["m1"]["reason"] == "auth/403"
+        assert status["m1"]["locked_seconds_remaining"] > 200
+
+    def test_circuit_breaker_lockout_duration_other(self):
+        """قفل ۱ دقیقه‌ای برای سایر خطاها"""
+        from core.ai_brain import ModelCircuitBreaker
+        cb = ModelCircuitBreaker()
+        for _ in range(cb.FAILURE_THRESHOLD):
+            cb.record_failure("m1", Exception("Connection timeout"))
+        status = cb.get_status()
+        assert status["m1"]["locked"] is True
+        assert status["m1"]["reason"] == "other"
+        assert 50 <= status["m1"]["locked_seconds_remaining"] <= 60
+
+    def test_circuit_breaker_reset_all(self):
+        """ریست تمام مدل‌ها"""
+        from core.ai_brain import ModelCircuitBreaker
+        cb = ModelCircuitBreaker()
+        cb.record_failure("m1", Exception("err"))
+        cb.record_failure("m2", Exception("err"))
+        cb.reset_all()
+        assert cb.get_status() == {}
+        assert cb.is_locked("m1") is False
+
+    def test_circuit_breaker_multiple_models_independent(self):
+        """قفل مستقل برای هر مدل"""
+        from core.ai_brain import ModelCircuitBreaker
+        cb = ModelCircuitBreaker()
+        for _ in range(cb.FAILURE_THRESHOLD):
+            cb.record_failure("m1", Exception("403"))
+        cb.record_success("m2")
+        assert cb.is_locked("m1") is True
+        assert cb.is_locked("m2") is False
+
+    def test_circuit_breaker_status_structure(self):
+        """ساختار وضعیت شامل فیلدهای لازم"""
+        from core.ai_brain import ModelCircuitBreaker
+        cb = ModelCircuitBreaker()
+        cb.record_failure("m1", Exception("err"))
+        status = cb.get_status()
+        info = status["m1"]
+        assert "failures" in info
+        assert "locked" in info
+        assert "locked_seconds_remaining" in info
+        assert "reason" in info
+
+    def test_circuit_breaker_auth_keywords(self):
+        """تشخیص خطاهای auth از روی پیام"""
+        from core.ai_brain import ModelCircuitBreaker
+        cb = ModelCircuitBreaker()
+        for _ in range(cb.FAILURE_THRESHOLD):
+            cb.record_failure("m1", Exception("unauthorized access"))
+        assert cb._lock_reason.get("m1") == "auth/403"
+
+    def test_circuit_breaker_quota_as_auth(self):
+        """خطای quota نیز auth محسوب می‌شود"""
+        from core.ai_brain import ModelCircuitBreaker
+        cb = ModelCircuitBreaker()
+        for _ in range(cb.FAILURE_THRESHOLD):
+            cb.record_failure("m1", Exception("quota exceeded"))
+        assert cb._lock_reason.get("m1") == "auth/403"
 
     def test_provider_detector_provider_key_map完整性(self):
         """بررسی کامل بودن نقشه کلیدهای ارائه‌دهندگان"""

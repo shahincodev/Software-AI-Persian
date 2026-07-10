@@ -127,6 +127,98 @@ def get_provider_detector() -> ProviderDetector:
     return _provider_detector
 
 
+class ModelCircuitBreaker:
+    """Circuit Breaker برای جلوگیری از retry storm روی مدل‌های ۴۰۳.
+
+    وقتی یک مدل چند بار متوالی خطا بدهد (مثلاً 403 Forbidden)،
+    این کلاس آن مدل را برای مدت مشخصی "قفل" می‌کند تا در fallback chain
+    دوباره تلاش نشود. بعد از انقضای مهلت، مدل دوباره در دسترس می‌شود.
+
+    - خطا‌های 403/Auth → قفل ۵ دقیقه‌ای
+    - سایر خطاها → قفل ۱ دقیقه‌ای
+    - درخواست موفق → ریست کانتر خطا
+    """
+
+    # آستانه خطا برای قفل کردن یک مدل
+    FAILURE_THRESHOLD = 3
+    # مهلت قفل برای خطاهای 403/Auth (ثانیه)
+    LOCKOUT_SECONDS_AUTH = 300  # 5 minutes
+    # مهلت قفل برای سایر خطاها (ثانیه)
+    LOCKOUT_SECONDS_OTHER = 60  # 1 minute
+
+    def __init__(self):
+        self._failures: dict[str, int] = {}          # شمارنده خطا به ازای هر مدل
+        self._locked_until: dict[str, float] = {}     # زمان انقضای قفل (epoch)
+        self._lock_reason: dict[str, str] = {}        # دلیل قفل
+
+    def is_locked(self, model_name: str) -> bool:
+        """بررسی آیا مدل قفل است یا نه."""
+        import time
+        until = self._locked_until.get(model_name, 0)
+        if time.time() < until:
+            return True
+        # قفل منقضی شده → پاکسازی
+        if until > 0:
+            self._reset(model_name)
+        return False
+
+    def record_success(self, model_name: str) -> None:
+        """ثبت موفقیت → ریست کانتر خطا."""
+        self._reset(model_name)
+
+    def record_failure(self, model_name: str, error: Exception) -> None:
+        """ثبت خطا → افزایش کانتر و قفل در صورت رسیدن به آستانه."""
+        import time
+        count = self._failures.get(model_name, 0) + 1
+        self._failures[model_name] = count
+
+        # تشخیص نوع خطا
+        error_str = str(error).lower()
+        is_auth_error = any(kw in error_str for kw in [
+            "403", "forbidden", "unauthorized", "auth",
+            "permission", "access denied", "quota"
+        ])
+
+        if count >= self.FAILURE_THRESHOLD:
+            lockout = self.LOCKOUT_SECONDS_AUTH if is_auth_error else self.LOCKOUT_SECONDS_OTHER
+            self._locked_until[model_name] = time.time() + lockout
+            self._lock_reason[model_name] = "auth/403" if is_auth_error else "other"
+            logger.warning(
+                f"🔒 Circuit breaker TRIPPED for {model_name} "
+                f"(failures={count}, locked for {lockout}s, reason={self._lock_reason[model_name]})"
+            )
+        else:
+            logger.debug(f"⚠️ Failure {count}/{self.FAILURE_THRESHOLD} for {model_name}")
+
+    def _reset(self, model_name: str) -> None:
+        """ریست وضعیت یک مدل."""
+        self._failures.pop(model_name, None)
+        self._locked_until.pop(model_name, None)
+        self._lock_reason.pop(model_name, None)
+
+    def get_status(self) -> dict[str, dict[str, Any]]:
+        """دریافت وضعیت تمام مدل‌ها (برای /providers و debug)."""
+        import time
+        now = time.time()
+        result = {}
+        for model in set(list(self._failures.keys()) + list(self._locked_until.keys())):
+            until = self._locked_until.get(model, 0)
+            is_locked = now < until
+            result[model] = {
+                "failures": self._failures.get(model, 0),
+                "locked": is_locked,
+                "locked_seconds_remaining": max(0, int(until - now)) if is_locked else 0,
+                "reason": self._lock_reason.get(model, ""),
+            }
+        return result
+
+    def reset_all(self) -> None:
+        """ریست تمام مدل‌ها (برای دستی)."""
+        self._failures.clear()
+        self._locked_until.clear()
+        self._lock_reason.clear()
+
+
 class AIBrain:
     """کلاس هوشمند برای مدیریت و انتخاب مدل بر اساس ارائه‌دهندگان فعال.
     
@@ -135,11 +227,13 @@ class AIBrain:
     2. انتخاب مدل بر اساس نوع تسک و ارائه‌دهنده موجود
     3. fallback هوشمند بین ارائه‌دهندگان فعال
     4. بدون تلاش برای ارائه‌دهندگان بدون کلید API
+    5. Circuit Breaker برای جلوگیری از retry storm
     """
 
     def __init__(self) -> None:
         self._models: dict[str, Any] = {}
         self._detector = get_provider_detector()
+        self._circuit_breaker = ModelCircuitBreaker()
         self._detector.log_summary()
         
         # بارگذاری مدل‌های دردسترس
@@ -467,6 +561,11 @@ class AIBrain:
         
         # سعی اول: از registry استفاده کن
         for i, model_config in enumerate(available_models):
+            # Circuit Breaker: skip models that are locked
+            if self._circuit_breaker.is_locked(model_config.name):
+                logger.info(f"⏭️ Skipping {model_config.name} (circuit breaker locked)")
+                continue
+
             try:
                 logger.info(f"🤖 Trying model {i+1}/{len(available_models)}: {model_config.name}")
                 
@@ -478,6 +577,7 @@ class AIBrain:
                 result = await self.ask(prompt, mode=model_config.name, max_tokens=max_tokens)
                 
                 if result and result.strip():
+                    self._circuit_breaker.record_success(model_config.name)
                     if i > 0:
                         logger.info(f"✅ Success with fallback model: {model_config.name}")
                     return result
@@ -485,6 +585,7 @@ class AIBrain:
                     logger.warning(f"⚠️ Model {model_config.name} returned empty response")
                     
             except Exception as e:
+                self._circuit_breaker.record_failure(model_config.name, e)
                 logger.warning(f"❌ Model {model_config.name} failed: {e}")
                 continue
         

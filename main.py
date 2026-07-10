@@ -1017,7 +1017,7 @@ async def agent_loop(args: argparse.Namespace) -> None:
             # Phase 8: Provider status command
             if cmd_lower == "/providers":
                 try:
-                    from core.ai_brain import ProviderDetector
+                    from core.ai_brain import ProviderDetector, ModelCircuitBreaker
                     detector = ProviderDetector()
                     providers = detector.get_all_status()
                     print(f"\n{Fore.CYAN}API Provider Status:{Style.RESET_ALL}")
@@ -1027,6 +1027,17 @@ async def agent_loop(args: argparse.Namespace) -> None:
                         print(f"  {icon}{Style.RESET_ALL} {name:15s} ({key_info})")
                     available = detector.get_available_providers()
                     print(f"\n  {Fore.GREEN}{len(available)} active provider(s){Style.RESET_ALL}")
+
+                    # Circuit breaker status
+                    cb = ModelCircuitBreaker()
+                    cb_status = cb.get_status()
+                    if cb_status:
+                        print(f"\n{Fore.CYAN}Circuit Breaker Status:{Style.RESET_ALL}")
+                        for model, info in cb_status.items():
+                            if info["locked"]:
+                                print(f"  {Fore.RED}LOCKED{Style.RESET_ALL} {model} ({info['locked_seconds_remaining']}s remaining, {info['reason']})")
+                            else:
+                                print(f"  {Fore.YELLOW}failures={info['failures']}{Style.RESET_ALL} {model}")
                     print()
                 except Exception as e:
                     print(f"{Fore.RED}Failed to get provider status: {e}{Style.RESET_ALL}")

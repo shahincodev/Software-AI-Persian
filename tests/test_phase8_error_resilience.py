@@ -265,6 +265,118 @@ class TestFailoverChain:
         assert len(registry.models) == 0
 
 
+class TestModelHealthTracker:
+    """تست‌های ردیاب سلامت مدل (Phase 8.3)"""
+
+    def test_health_tracker_initial_empty(self):
+        """وضعیت اولیه خالی"""
+        from core.model_config import ModelHealthTracker
+        tracker = ModelHealthTracker()
+        assert tracker.get_all_health() == {}
+
+    def test_health_tracker_record_success(self):
+        """ثبت موفقیت"""
+        from core.model_config import ModelHealthTracker
+        tracker = ModelHealthTracker()
+        tracker.record_success("m1")
+        h = tracker.get_health("m1")
+        assert h.success_count == 1
+        assert h.failure_count == 0
+        assert h.total_attempts == 1
+
+    def test_health_tracker_record_failure(self):
+        """ثبت شکست"""
+        from core.model_config import ModelHealthTracker
+        tracker = ModelHealthTracker()
+        tracker.record_failure("m1", "403")
+        h = tracker.get_health("m1")
+        assert h.failure_count == 1
+        assert h.last_failure_type == "403"
+
+    def test_health_tracker_success_rate(self):
+        """نرخ موفقیت"""
+        from core.model_config import ModelHealthTracker
+        tracker = ModelHealthTracker()
+        tracker.record_success("m1")
+        tracker.record_success("m1")
+        tracker.record_failure("m1", "error")
+        h = tracker.get_health("m1")
+        assert h.success_rate == pytest.approx(2 / 3, abs=0.01)
+
+    def test_health_tracker_score_increases_with_success(self):
+        """امتیاز سلامت با موفقیت افزایش می‌یابد"""
+        from core.model_config import ModelHealthTracker
+        tracker = ModelHealthTracker()
+        tracker.record_success("m1")
+        score1 = tracker.get_health("m1").health_score
+        tracker.record_success("m1")
+        score2 = tracker.get_health("m1").health_score
+        assert score2 > score1
+
+    def test_health_tracker_score_decreases_with_failure(self):
+        """امتیاز سلامت با شکست کاهش می‌یابد"""
+        from core.model_config import ModelHealthTracker
+        tracker = ModelHealthTracker()
+        for _ in range(5):
+            tracker.record_success("m1")
+        score1 = tracker.get_health("m1").health_score
+        for _ in range(5):
+            tracker.record_failure("m1", "error")
+        score2 = tracker.get_health("m1").health_score
+        assert score2 < score1
+
+    def test_health_tracker_ranked_models(self):
+        """رتبه‌بندی مدل‌ها بر اساس سلامت"""
+        from core.model_config import ModelHealthTracker
+        tracker = ModelHealthTracker()
+        # m1: mostly success
+        for _ in range(10):
+            tracker.record_success("m1")
+        # m2: mostly failure
+        for _ in range(10):
+            tracker.record_failure("m2", "error")
+        ranked = tracker.get_ranked_models(["m1", "m2"])
+        assert ranked[0] == "m1"
+
+    def test_health_tracker_independent_models(self):
+        """مدل‌ها مستقل از هم ردیابی می‌شوند"""
+        from core.model_config import ModelHealthTracker
+        tracker = ModelHealthTracker()
+        tracker.record_success("m1")
+        tracker.record_failure("m2", "403")
+        assert tracker.get_health("m1").success_count == 1
+        assert tracker.get_health("m2").failure_count == 1
+
+    def test_health_report_structure(self):
+        """ساختار گزارش سلامت"""
+        from core.model_config import ModelHealthTracker
+        tracker = ModelHealthTracker()
+        tracker.record_success("m1")
+        tracker.record_failure("m1", "timeout")
+        report = tracker.get_health_report()
+        assert "m1" in report
+        info = report["m1"]
+        assert "success" in info
+        assert "failure" in info
+        assert "rate" in info
+        assert "score" in info
+
+    def test_health_default_no_data(self):
+        """مدل بدون داده امتیاز خنثی دارد"""
+        from core.model_config import ModelHealthTracker
+        tracker = ModelHealthTracker()
+        h = tracker.get_health("new_model")
+        assert h.success_rate == 0.5
+        assert h.total_attempts == 0
+
+    def test_get_health_tracker_singleton(self):
+        """get_health_tracker singleton"""
+        from core.model_config import get_health_tracker
+        t1 = get_health_tracker()
+        t2 = get_health_tracker()
+        assert t1 is t2
+
+
 class TestVersionConsistency:
     """تست‌های یکسانی نسخه در فایل‌ها"""
 

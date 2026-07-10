@@ -24,7 +24,7 @@ import re
 from typing import Any, Optional
 from dataclasses import dataclass, field
 
-from core.model_config import get_model_registry, ModelConfig
+from core.model_config import get_model_registry, ModelConfig, get_health_tracker
 from core.tool_schema import (
     TOOLS, validate_tool_call, get_tool_prompt_block, get_all_tool_names
 )
@@ -651,6 +651,7 @@ class AIBrain:
                 
                 if result and result.strip():
                     self._circuit_breaker.record_success(model_config.name)
+                    get_health_tracker().record_success(model_config.name)
                     self._response_cache.set(prompt, mode, result)
                     if i > 0:
                         logger.info(f"✅ Success with fallback model: {model_config.name}")
@@ -660,6 +661,8 @@ class AIBrain:
                     
             except Exception as e:
                 self._circuit_breaker.record_failure(model_config.name, e)
+                error_type = "403" if "403" in str(e) or "forbidden" in str(e).lower() else "error"
+                get_health_tracker().record_failure(model_config.name, error_type)
                 logger.warning(f"❌ Model {model_config.name} failed: {e}")
                 continue
         

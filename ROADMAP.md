@@ -43,10 +43,10 @@
 - **فایل‌ها**: `core/ai_brain.py`, `core/model_config.py`
 
 #### 8.3 — مدیریت هوشمند ارائه‌دهندگان
-- [ ] بررسی اعتبار API key قبل از تلاش اتصال
-- [ ] رتبه‌بندی مدل‌ها بر اساس تاریخچه موفقیت
-- [ ] اضافه کردن مکانیزم "model health check" در ابتدا
-- **فایل‌ها**: `core/ai_brain.py`, `core/model_orchestrator.py`
+- [x] بررسی اعتبار API key قبل از تلاش اتصال
+- [x] رتبه‌بندی مدل‌ها بر اساس تاریخچه موفقیت
+- [x] اضافه کردن مکانیزم "model health check" در ابتدا
+- **فایل‌ها**: `core/ai_brain.py`, `core/model_config.py`
 
 #### 8.4 — گزارش وضعیت ارائه‌دهندگان
 - [x] نمایش لحظه‌ای وضعیت ارائه‌دهندگان در CLI
@@ -58,9 +58,9 @@
 | فایل | تغییرات |
 |------|---------|
 | `main.py` | ✅ Input sanitization, ✅ `/providers` command with circuit breaker status |
-| `core/ai_brain.py` | ✅ Circuit Breaker (ModelCircuitBreaker), integrated into ask_with_fallback |
-| `core/model_config.py` | 🔄 Model health scoring, retry limits |
-| `tests/test_phase8_error_resilience.py` | ✅ 39 تست (همه عبور) |
+| `core/ai_brain.py` | ✅ Circuit Breaker, ✅ Health tracking integration, ResponseCache |
+| `core/model_config.py` | ✅ ModelHealthTracker, health scoring, sorted by health |
+| `tests/test_phase8_error_resilience.py` | ✅ 61 تست (همه عبور) |
 | `docs/PHASE8_ERROR_RESILIENCE_REPORT.md` | ✅ گزارش فاز |
 
 ### معیار تکمیل Phase 8

@@ -1,7 +1,7 @@
 # Phase 8 — Error Resilience & Failover Optimization Report
 
 **تاریخ**: 2026-07-10
-**وضعیت**: 🔄 در حال انجام (8.1 ✅, 8.2 ✅, 8.3 🔄, 8.4 ✅)
+**وضعیت**: ✅ تکمیل (8.1 ✅, 8.2 ✅, 8.3 ✅, 8.4 ✅)
 **نسخه**: 0.9.0 → 1.0.0
 
 ---
@@ -92,9 +92,9 @@ API Provider Status:
 - درخواست موفق → ریست کانتر خطا
 - `/providers` وضعیت circuit breaker را نمایش می‌دهد
 
-### 8.4 — Model Health Scoring (model_config.py) — در حال انجام
+### 8.3 — Model Health Scoring (model_config.py) — ✅ تکمیل
 
-رتبه‌بندی مدل‌ها بر اساس تاریخچه موفقیت:
+کلاس `ModelHealthTracker` برای رتبه‌بندی مدل‌ها بر اساس تاریخچه موفقیت:
 
 ```python
 @dataclass
@@ -103,8 +103,10 @@ class ModelHealth:
     success_count: int = 0
     failure_count: int = 0
     last_failure_type: str = ""  # "403", "timeout", "error"
-    last_success: float = 0.0
-    is_circuit_open: bool = False
+
+    @property
+    def health_score(self) -> int:
+        # 70% success rate + 30% volume (more attempts = more trusted)
 ```
 
 ---
@@ -116,8 +118,8 @@ class ModelHealth:
 | ورودی backslash بدون خطا پردازش شود | ✅ تکمیل |
 | دستور /providers کار کند | ✅ تکمیل |
 | Circuit breaker برای مدل‌های 403 | ✅ تکمیل |
-| Model health scoring | 🔄 در حال انجام |
-| تست‌های Phase 8 عبور کنند | ✅ 39/39 pass |
+| Model health scoring | ✅ تکمیل |
+| تست‌های Phase 8 عبور کنند | ✅ 61/61 pass |
 
 ---
 
@@ -125,11 +127,12 @@ class ModelHealth:
 
 | فایل | تغییرات |
 |------|---------|
-| `main.py` | Input sanitization, `/providers` command with circuit breaker status, help text |
-| `core/ai_brain.py` | `ModelCircuitBreaker` class, integrated into `ask_with_fallback()` |
+| `main.py` | Input sanitization, `/providers` command with circuit breaker + health status |
+| `core/ai_brain.py` | `ModelCircuitBreaker`, `ResponseCache`, integrated into `ask_with_fallback()` |
+| `core/model_config.py` | `ModelHealthTracker`, `ModelHealth`, health scoring in `get_available_models()` |
 | `ROADMAP.md` | Phase 8-10 roadmap |
 | `README.md` | Version 0.9.0 → 1.0.0, Phase 8-10 |
-| `tests/test_phase8_error_resilience.py` | 39 tests (12 new circuit breaker tests) |
+| `tests/test_phase8_error_resilience.py` | 61 tests (all passing) |
 
 ---
 

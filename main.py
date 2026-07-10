@@ -790,6 +790,7 @@ def print_help() -> None:
     /search <q>   Search across sessions
     /current      Show current session info
     /providers    Show API provider status
+    /status       Show full system status (providers, health, memory)
     pause/resume  Pause or resume the session
     stop/exit     Exit the program
 
@@ -1043,8 +1044,59 @@ async def agent_loop(args: argparse.Namespace) -> None:
                     print(f"{Fore.RED}Failed to get provider status: {e}{Style.RESET_ALL}")
                 continue
 
+            # Phase 9: System status command
+            if cmd_lower == "/status":
+                try:
+                    from core.ai_brain import ProviderDetector, ModelCircuitBreaker, ResponseCache
+                    from core.model_config import get_health_tracker
+                    detector = ProviderDetector()
+                    cb = ModelCircuitBreaker()
+                    tracker = get_health_tracker()
+
+                    available = detector.get_available_providers()
+                    cb_status = cb.get_status()
+                    health_report = tracker.get_health_report()
+
+                    print(f"\n{Fore.CYAN}{'='*50}{Style.RESET_ALL}")
+                    print(f"{Fore.CYAN}  Software-AI System Status  (v1.0.0){Style.RESET_ALL}")
+                    print(f"{Fore.CYAN}{'='*50}{Style.RESET_ALL}")
+
+                    # Providers
+                    print(f"\n{Fore.WHITE}Providers:{Style.RESET_ALL}")
+                    print(f"  Active: {Fore.GREEN}{len(available)}{Style.RESET_ALL}")
+                    for p in available:
+                        print(f"    {Fore.GREEN}+{Style.RESET_ALL} {p}")
+
+                    # Circuit Breaker
+                    locked_count = sum(1 for v in cb_status.values() if v["locked"])
+                    print(f"\n{Fore.WHITE}Circuit Breaker:{Style.RESET_ALL}")
+                    print(f"  Locked models: {Fore.RED if locked_count else Fore.GREEN}{locked_count}{Style.RESET_ALL}")
+
+                    # Health Report
+                    if health_report:
+                        print(f"\n{Fore.WHITE}Model Health:{Style.RESET_ALL}")
+                        for name, info in sorted(health_report.items(), key=lambda x: x[1]["score"], reverse=True):
+                            color = Fore.GREEN if info["score"] >= 50 else Fore.YELLOW if info["score"] >= 20 else Fore.RED
+                            print(f"  {color}{info['score']:3d}{Style.RESET_ALL} {name} ({info['rate']} success, {info['total']} attempts)")
+
+                    # Memory
+                    try:
+                        from core.memory_integrator import MemoryManager
+                        mm = MemoryManager()
+                        conv_count = len(mm._conversation_history)
+                        print(f"\n{Fore.WHITE}Memory:{Style.RESET_ALL}")
+                        print(f"  Conversation messages: {conv_count}")
+                    except Exception:
+                        pass
+
+                    print(f"\n{Fore.CYAN}{'='*50}{Style.RESET_ALL}\n")
+                except Exception as e:
+                    print(f"{Fore.RED}Failed to get status: {e}{Style.RESET_ALL}")
+                continue
+
             # ── Agent Processing ──
             log_event("agent_start", text=user_text[:100])
+            print(f"{Fore.CYAN}⏳ Analyzing request...{Style.RESET_ALL}", end="", flush=True)
 
             # Record user message in conversation history
             try:
@@ -1089,6 +1141,7 @@ async def agent_loop(args: argparse.Namespace) -> None:
             )
 
             action_type = agent_response.get("action", "chat_reply")
+            print(f"\r{Fore.GREEN}✓ Analysis complete{Style.RESET_ALL}      ")
 
             # Step 3: Execute based on AI decision
             if action_type == "tool_call":

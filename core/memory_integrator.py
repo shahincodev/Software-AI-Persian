@@ -737,7 +737,7 @@ class MemoryManager:
         self._consolidation_threshold = max(1, int(consolidation_threshold))
         self._lock = Lock()
         self._conversation_history: List[Dict[str, str]] = []
-        self._max_history = 50
+        self._max_history = 30  # Phase 9.1: reduced from 50 to save memory
         self._session_id = session_id
         self._init_conversation_table()
 
@@ -813,20 +813,31 @@ class MemoryManager:
             return results
 
     def get_memory_context(self, max_items: int = 5) -> str:
-        """تولید بخش حافظه برای تزریق به پرامپت AI"""
+        """تولید بخش حافظه برای تزریق به پرامپت AI.
+
+        بهینه‌سازی Phase 9.1: پیام‌های قدیمی‌تر فشرده‌سازی (summarize) می‌شوند
+        تا حجم context کاهش یابد.
+        """
         lines = []
 
         # Recent conversation
         history = self.get_conversation_history(limit=max_items)
         if history:
             lines.append("Recent Conversation:")
-            for entry in history:
+            # پیام‌های اخیر: کامل نمایش داده شوند
+            recent = history[-3:] if len(history) > 3 else history
+            for entry in recent:
                 role = entry["role"]
                 content = entry["content"][:200]
                 lines.append(f"  {role}: {content}")
 
-        # Relevant recalled memories
-        # (Will be populated by recall when needed)
+            # پیام‌های قدیمی‌تر: خلاصه شوند
+            older = history[:-3] if len(history) > 3 else []
+            if older:
+                user_msgs = [e["content"][:100] for e in older if e["role"] == "user"]
+                if user_msgs:
+                    summary = ", ".join(user_msgs[:3])
+                    lines.append(f"  [Earlier topics: {summary}]")
 
         return "\n".join(lines) if lines else ""
 

@@ -219,6 +219,72 @@ class ModelCircuitBreaker:
         self._lock_reason.clear()
 
 
+class ResponseCache:
+    """کش ساده برای پاسخ‌های AI تکراری.
+
+    درخواست‌های تکراری (یا بسیار مشابه) را caching می‌کند تا از فراخوانی
+    مجدد مدل جلوگیری شود. TTL پیش‌فرض: ۱۰ دقیقه.
+    """
+
+    DEFAULT_TTL = 600  # 10 minutes
+
+    def __init__(self, ttl: int = DEFAULT_TTL, max_size: int = 100):
+        self._cache: dict[str, tuple[str, float]] = {}  # key → (response, expiry)
+        self._ttl = ttl
+        self._max_size = max_size
+        self._hits = 0
+        self._misses = 0
+
+    def _make_key(self, prompt: str, mode: str) -> str:
+        """ساخت کلید کش از prompt و mode."""
+        import hashlib
+        raw = f"{mode}:{prompt[:500]}"
+        return hashlib.sha256(raw.encode()).hexdigest()[:16]
+
+    def get(self, prompt: str, mode: str) -> str | None:
+        """دریافت پاسخ از کش (اگر موجود و منقضی نشده باشد)."""
+        import time
+        key = self._make_key(prompt, mode)
+        entry = self._cache.get(key)
+        if entry is None:
+            self._misses += 1
+            return None
+        response, expiry = entry
+        if time.time() > expiry:
+            del self._cache[key]
+            self._misses += 1
+            return None
+        self._hits += 1
+        logger.debug(f"Cache HIT for mode={mode}")
+        return response
+
+    def set(self, prompt: str, mode: str, response: str) -> None:
+        """ذخیره پاسخ در کش."""
+        import time
+        if len(self._cache) >= self._max_size:
+            # حذف قدیمی‌ترین entry
+            oldest_key = min(self._cache, key=lambda k: self._cache[k][1])
+            del self._cache[oldest_key]
+        key = self._make_key(prompt, mode)
+        self._cache[key] = (response, time.time() + self._ttl)
+
+    def get_stats(self) -> dict[str, Any]:
+        """آمار کش."""
+        total = self._hits + self._misses
+        return {
+            "size": len(self._cache),
+            "hits": self._hits,
+            "misses": self._misses,
+            "hit_rate": f"{self._hits / total * 100:.1f}%" if total > 0 else "0%",
+        }
+
+    def clear(self) -> None:
+        """پاکسازی کامل کش."""
+        self._cache.clear()
+        self._hits = 0
+        self._misses = 0
+
+
 class AIBrain:
     """کلاس هوشمند برای مدیریت و انتخاب مدل بر اساس ارائه‌دهندگان فعال.
     
@@ -234,6 +300,7 @@ class AIBrain:
         self._models: dict[str, Any] = {}
         self._detector = get_provider_detector()
         self._circuit_breaker = ModelCircuitBreaker()
+        self._response_cache = ResponseCache()
         self._detector.log_summary()
         
         # بارگذاری مدل‌های دردسترس
@@ -558,6 +625,12 @@ class AIBrain:
         
         # لاگ مدل‌های دردسترس (DEBUG level to reduce noise on every request)
         logger.debug(f"Available models ({len(available_models)}): {', '.join(m.name for m in available_models[:3])}...")
+
+        # Response Cache: check for cached response first
+        cached = self._response_cache.get(prompt, mode)
+        if cached is not None:
+            logger.info("⚡ Serving cached response for mode=%s", mode)
+            return cached
         
         # سعی اول: از registry استفاده کن
         for i, model_config in enumerate(available_models):
@@ -578,6 +651,7 @@ class AIBrain:
                 
                 if result and result.strip():
                     self._circuit_breaker.record_success(model_config.name)
+                    self._response_cache.set(prompt, mode, result)
                     if i > 0:
                         logger.info(f"✅ Success with fallback model: {model_config.name}")
                     return result

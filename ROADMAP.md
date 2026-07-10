@@ -57,31 +57,31 @@
 ### فایل‌های تغییر یافته Phase 8
 | فایل | تغییرات |
 |------|---------|
-| `main.py` | ✅ Input sanitization, ✅ `/providers` command, improved error display |
-| `core/ai_brain.py` | 🔄 Circuit breaker, model health tracking, better fallback logic |
+| `main.py` | ✅ Input sanitization, ✅ `/providers` command with circuit breaker status |
+| `core/ai_brain.py` | ✅ Circuit Breaker (ModelCircuitBreaker), integrated into ask_with_fallback |
 | `core/model_config.py` | 🔄 Model health scoring, retry limits |
-| `tests/test_phase8_error_resilience.py` | ✅ 28 تست جدید (همه عبور) |
+| `tests/test_phase8_error_resilience.py` | ✅ 39 تست (همه عبور) |
 | `docs/PHASE8_ERROR_RESILIENCE_REPORT.md` | ✅ گزارش فاز |
 
 ### معیار تکمیل Phase 8
 - [x] ورودی‌های خاص (backslash, empty) بدون خطا پردازش شوند
-- [ ] مدل‌های 403 بیش از یک بار تلاش نشوند
+- [x] مدل‌های 403 بیش از یک بار تلاش نشوند
 - [ ] پیام خطای کاربرپسند نمایش داده شود
 - [x] دستور `/providers` کار کند
-- [x] تست‌ها با موفقیت اجرا شوند
+- [x] تست‌ها با موفقیت اجرا شوند (39/39)
 
 ---
 
 ## Phase 9 — بهینه‌سازی عملکرد و تجربه کاربری
 
-**وضعیت**: 📋 برنامه‌ریزی شده
+**وضعیت**: 🔄 در حال انجام (9.1 ✅)
 
 ### زیرفازها
 
 #### 9.1 — بهینه‌سازی حافظه و کش
-- [ ] پیاده‌سازی کش پاسخ‌های AI برای درخواست‌های تکراری
-- [ ] بهینه‌سازی حجم context (فشرده‌سازی system context)
-- [ ] محدود کردن اندازه conversation history بهینه
+- [x] پیاده‌سازی کش پاسخ‌های AI برای درخواست‌های تکراری
+- [x] بهینه‌سازی حجم context (فشرده‌سازی system context)
+- [x] محدود کردن اندازه conversation history بهینه
 - **فایل‌ها**: `core/memory_integrator.py`, `core/ai_brain.py`
 
 #### 9.2 — بهبود تجربه کاربری CLI
@@ -100,7 +100,7 @@
 
 ### معیار تکمیل Phase 9
 - [ ] زمان پاسخ‌گویی برای درخواست‌های تکراری < 500ms
-- [ ] context size بهینه شده باشد
+- [x] context size بهینه شده باشد
 - [ ] CLI تجربه کاربری بهتری داشته باشد
 - [ ] تست‌های یکپارچه‌سازی عبور کنند
 

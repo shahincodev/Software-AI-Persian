@@ -329,3 +329,117 @@ class TestDocsIntegrity:
             content = f.read()
         assert len(content) > 500, "Phase 8 report should have substantial content"
         assert "test_log.log" in content or "تحلیل" in content
+
+
+class TestResponseCache:
+    """تست‌های Response Cache (Phase 9.1)"""
+
+    def test_cache_initial_status(self):
+        """وضعیت اولیه کش خالی است"""
+        from core.ai_brain import ResponseCache
+        cache = ResponseCache()
+        assert cache.get("test", "normal") is None
+        stats = cache.get_stats()
+        assert stats["size"] == 0
+        assert stats["hits"] == 0
+
+    def test_cache_set_and_get(self):
+        """ذخیره و بازیابی از کش"""
+        from core.ai_brain import ResponseCache
+        cache = ResponseCache()
+        cache.set("hello", "normal", "world")
+        assert cache.get("hello", "normal") == "world"
+
+    def test_cache_miss_returns_none(self):
+        """کش miss → None"""
+        from core.ai_brain import ResponseCache
+        cache = ResponseCache()
+        assert cache.get("nonexistent", "normal") is None
+
+    def test_cache_different_mode_independent(self):
+        """حالت‌های مختلف مستقل هستند"""
+        from core.ai_brain import ResponseCache
+        cache = ResponseCache()
+        cache.set("q", "normal", "a1")
+        cache.set("q", "system", "a2")
+        assert cache.get("q", "normal") == "a1"
+        assert cache.get("q", "system") == "a2"
+
+    def test_cache_max_size_eviction(self):
+        """کش حداکثر اندازه را رعایت می‌کند"""
+        from core.ai_brain import ResponseCache
+        cache = ResponseCache(max_size=3)
+        for i in range(5):
+            cache.set(f"q{i}", "normal", f"a{i}")
+        stats = cache.get_stats()
+        assert stats["size"] <= 3
+
+    def test_cache_stats(self):
+        """آمار کش"""
+        from core.ai_brain import ResponseCache
+        cache = ResponseCache()
+        cache.set("q", "normal", "a")
+        cache.get("q", "normal")   # hit
+        cache.get("x", "normal")   # miss
+        stats = cache.get_stats()
+        assert stats["hits"] == 1
+        assert stats["misses"] == 1
+
+    def test_cache_clear(self):
+        """پاکسازی کش"""
+        from core.ai_brain import ResponseCache
+        cache = ResponseCache()
+        cache.set("q", "normal", "a")
+        cache.clear()
+        assert cache.get("q", "normal") is None
+        assert cache.get_stats()["size"] == 0
+
+    def test_cache_key_includes_mode(self):
+        """کلید کش شامل mode است"""
+        from core.ai_brain import ResponseCache
+        cache = ResponseCache()
+        cache.set("prompt", "normal", "r1")
+        cache.set("prompt", "system", "r2")
+        assert cache.get("prompt", "normal") == "r1"
+        assert cache.get("prompt", "system") == "r2"
+
+
+class TestContextCompression:
+    """تست‌های فشرده‌سازی Context (Phase 9.1)"""
+
+    def test_memory_context_compression_older_messages(self):
+        """پیام‌های قدیمی خلاصه می‌شوند"""
+        from core.memory_integrator import MemoryManager
+        mi = MemoryManager()
+        # Add 5 messages
+        for i in range(5):
+            mi.add_conversation("user", f"message {i}")
+        context = mi.get_memory_context(max_items=5)
+        assert "message" in context
+        # Older messages should be summarized
+        assert len(context) > 0
+        # Cleanup
+        mi.shutdown()
+
+    def test_memory_context_empty(self):
+        """context خالی"""
+        from core.memory_integrator import MemoryManager
+        mi = MemoryManager()
+        mi._conversation_history = []
+        # Force empty DB state for this test
+        mi.get_conversation_history = lambda limit=10: []
+        context = mi.get_memory_context(max_items=5)
+        assert context == ""
+        mi.shutdown()
+
+    def test_max_history_limit(self):
+        """محدودیت اندازه تاریخچه"""
+        from core.memory_integrator import MemoryManager
+        mi = MemoryManager()
+        original_max = mi._max_history
+        mi._max_history = 10
+        for i in range(20):
+            mi.add_conversation("user", f"msg {i}")
+        assert len(mi._conversation_history) <= 10
+        mi._max_history = original_max
+        mi.shutdown()

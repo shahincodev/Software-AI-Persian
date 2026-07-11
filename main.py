@@ -1152,7 +1152,6 @@ async def agent_loop(args: argparse.Namespace) -> None:
 
                     # Memory
                     try:
-                        from core.memory_integrator import MemoryManager
                         mm = MemoryManager()
                         conv_count = len(mm._conversation_history)
                         print(f"\n{Fore.WHITE}Memory:{Style.RESET_ALL}")

@@ -17,7 +17,13 @@ import asyncio
 import io
 import logging
 import os
-import readline  # Phase 9.2: Tab completion
+try:
+    import readline  # Phase 9.2: Tab completion
+except ImportError:
+    try:
+        import pyreadline3 as readline  # Windows fallback
+    except ImportError:
+        readline = None  # Tab completion unavailable
 import shutil
 import subprocess
 import sys

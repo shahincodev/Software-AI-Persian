@@ -441,7 +441,13 @@ class ToolExecutor:
             return {"status": "failed", "description": description, "error": str(e)}
 
     async def _execute_via_action_factory(self, action_type: str, params: dict, description: str) -> dict[str, Any]:
-        """Create a SystemAction via action_factory and execute via ActionController with vision verification."""
+        """Create a SystemAction via action_factory and execute via appropriate handler."""
+        from core.execution_manager import ExecutionManager
+        from core.system_actions import (
+            QueryHardwareAction, LaunchAppAction, InstallPackageAction,
+            TerminateProcessAction, ExecuteCommandAction,
+        )
+
         action_data = {"type": action_type, "params": params}
         action = create_action_from_data(action_data)
 
@@ -453,14 +459,35 @@ class ToolExecutor:
         if not is_valid:
             return {"status": "failed", "description": description, "error": f"Validation failed: {msg}"}
 
-        # Observe screen before action
+        # System actions go through ExecutionManager
+        system_action_types = (
+            QueryHardwareAction, LaunchAppAction, InstallPackageAction,
+            TerminateProcessAction, ExecuteCommandAction,
+        )
+        if isinstance(action, system_action_types):
+            executor = ExecutionManager(dry_run=self.action_controller.dry_run)
+            try:
+                result = await executor.execute_single(action)
+                if result and result.success:
+                    return {
+                        "status": "success",
+                        "description": description,
+                        "output": result.output or result.message or "",
+                    }
+                else:
+                    error_msg = result.error if result else "Execution failed"
+                    return {"status": "failed", "description": description, "error": error_msg}
+            except Exception as e:
+                logger.exception("System action execution failed: %s", e)
+                return {"status": "failed", "description": description, "error": str(e)}
+
+        # UI actions go through ActionController with vision verification
         screen_before = None
         try:
             screen_before = self.vision_loop.observe_screen()
         except Exception as e:
             logger.warning("Failed to observe screen before action: %s", e)
 
-        # Execute via ActionController
         result = self.action_controller.execute_action(action)
 
         # Verify action with vision if it's a UI action

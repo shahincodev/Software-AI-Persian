@@ -885,14 +885,13 @@ async def agent_loop(args: argparse.Namespace) -> None:
     memory = MemoryManager(session_id=current_session.id)
     voice = VoiceManager(tts_provider=args.tts_provider)
     action_controller = ActionController(dry_run=args.dry_run)
-    intent_router = IntentRouter()
     ai_brain = AIBrain()
     windows_env = WindowsEnvironment()
     system_context = SystemContext()
     vision = DesktopVision()
     vision_loop = VisionLoopManager(vision=vision)
     tool_executor = ToolExecutor(action_controller, vision_loop, safety_mode=args.safety_mode, ai_brain=ai_brain, memory_manager=memory)
-    chat_brain = AIBrain()
+    chat_brain = ai_brain
 
     # Safety
     session_control = SafetyConsentManager()
@@ -1251,26 +1250,40 @@ async def agent_loop(args: argparse.Namespace) -> None:
                     results_summary = "\n".join(
                         f"- [{'OK' if r['status']=='success' else 'FAIL'}] {r['description']}"
                         + (f": {r.get('error','')}" if r.get('error') else "")
+                        + (f"\n  Output:\n{r['output'][:1500]}" if r.get('output') else "")
                         for r in results
                     )
 
                     summary_prompt = (
                         f"User asked: {user_text}\n\n"
-                        f"Actions executed:\n{results_summary}\n\n"
-                        f"Respond to the user in 1-2 sentences about what was done. "
-                        f"Be concise and direct."
+                        f"Actions executed and their output:\n{results_summary}\n\n"
+                        f"Your task: Write a clear, detailed summary of what was found/done.\n\n"
+                        f"RULES:\n"
+                        f"1. Quote ACTUAL data from the output — specific numbers, file paths, folder sizes, names.\n"
+                        f"2. If the output is a table/list, summarize the TOP 3-5 most important items with their values.\n"
+                        f"3. If the output is empty or shows an error, say so honestly.\n"
+                        f"4. Start with the concrete findings, not generic phrases.\n"
+                        f"5. Write 2-4 sentences maximum.\n"
+                        f"6. DO NOT say 'analysis was completed' or 'task was successful' without showing what was found.\n"
+                        f"7. If the user asked a question (not an action), answer it directly based on the output.\n"
                     )
                     try:
-                        summary = await chat_brain.ask_with_fallback(summary_prompt, mode="system", max_tokens=300)
+                        summary = await chat_brain.ask_with_fallback(summary_prompt, mode="summary", max_tokens=500)
                         if summary:
                             print(f"\n{Fore.CYAN}{summary}{Style.RESET_ALL}\n")
-                            # Store assistant summary in conversation history
                             try:
                                 memory.add_conversation("assistant", summary, metadata={"action_type": "tool_summary"})
                             except Exception:
                                 pass
+                        else:
+                            # Fallback: print raw output directly
+                            for r in results:
+                                if r.get("output"):
+                                    print(f"\n{Fore.WHITE}{r['output'][:2000]}{Style.RESET_ALL}\n")
                     except Exception:
-                        print()
+                        for r in results:
+                            if r.get("output"):
+                                print(f"\n{Fore.WHITE}{r['output'][:2000]}{Style.RESET_ALL}\n")
 
                     log_event("agent_tool_exec", actions=len(tool_calls),
                               successes=sum(1 for r in results if r["status"] == "success"))

@@ -236,9 +236,30 @@ class ResponseCache:
         self._misses = 0
 
     def _make_key(self, prompt: str, mode: str) -> str:
-        """ساخت کلید کش از prompt و mode."""
+        """ساخت کلید کش از prompt و mode.
+
+        Extracts the user message from the prompt template to build a unique key.
+        Falls back to full prompt hash if extraction fails.
+        """
         import hashlib
-        raw = f"{mode}:{prompt[:500]}"
+        # Extract user message between markers in the prompt template
+        user_msg = ""
+        marker = "## User Request:\n"
+        if marker in prompt:
+            start = prompt.index(marker) + len(marker)
+            # Find the next section marker (## or end of prompt)
+            end = len(prompt)
+            for next_marker in ["\n\n## ", "\n\n{context_block}", "\n\n{screen_block}"]:
+                idx = prompt.find(next_marker, start)
+                if idx != -1 and idx < end:
+                    end = idx
+            user_msg = prompt[start:end].strip()
+
+        if not user_msg:
+            # Fallback: use the full prompt (no caching for unparseable prompts)
+            user_msg = prompt
+
+        raw = f"{mode}:{user_msg}"
         return hashlib.sha256(raw.encode()).hexdigest()[:16]
 
     def get(self, prompt: str, mode: str) -> str | None:
@@ -627,10 +648,15 @@ class AIBrain:
         logger.debug(f"Available models ({len(available_models)}): {', '.join(m.name for m in available_models[:3])}...")
 
         # Response Cache: check for cached response first
-        cached = self._response_cache.get(prompt, mode)
-        if cached is not None:
-            logger.info("⚡ Serving cached response for mode=%s", mode)
-            return cached
+        # Skip cache entirely for "system" mode (agent_chat) — every user
+        # request is unique and caching leads to stale/wrong tool calls.
+        if mode == "system":
+            pass  # bypass cache completely
+        else:
+            cached = self._response_cache.get(prompt, mode)
+            if cached is not None:
+                logger.info("⚡ Serving cached response for mode=%s", mode)
+                return cached
         
         # سعی اول: از registry استفاده کن
         for i, model_config in enumerate(available_models):
@@ -652,7 +678,9 @@ class AIBrain:
                 if result and result.strip():
                     self._circuit_breaker.record_success(model_config.name)
                     get_health_tracker().record_success(model_config.name)
-                    self._response_cache.set(prompt, mode, result)
+                    # Don't cache "system" mode responses (agent_chat — always unique)
+                    if mode != "system":
+                        self._response_cache.set(prompt, mode, result)
                     if i > 0:
                         logger.info(f"✅ Success with fallback model: {model_config.name}")
                     return result
@@ -970,6 +998,9 @@ Your job is to convert natural language requests into structured tool calls or c
 You can OBSERVE the screen using vision tools to understand what is currently visible.
 You can REMEMBER and RECALL information across conversations using memory tools.
 
+## User Request:
+{user_message}
+
 {context_block}
 {screen_block}
 {memory_block}
@@ -977,9 +1008,6 @@ You can REMEMBER and RECALL information across conversations using memory tools.
 
 ## Available Tools:
 {tools_block}
-
-## User Request:
-{user_message}
 
 ## Response Format:
 You MUST respond with ONE of the following JSON formats:

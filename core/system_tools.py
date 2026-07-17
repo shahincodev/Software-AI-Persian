@@ -128,35 +128,107 @@ class ProcessLauncher(ToolAdapter):
         return result
     
     def _find_application(self, app_name: str) -> Optional[str]:
-        """جستجوی برنامه در سیستم."""
-        # جستجو در PATH
+        """جستجوی برنامه در سیستم.
+
+        Searches PATH, then common Windows installation directories including
+        Microsoft Office-specific paths. Uses registry lookup as a fallback.
+        """
+        target = app_name.lower()
+        if not target.endswith(".exe"):
+            target_exe = f"{target}.exe"
+        else:
+            target_exe = target
+
+        # 1. Search PATH
         app_path = shutil.which(app_name)
         if app_path:
             return app_path
-        
-        # جستجو با پسوند .exe
-        if not app_name.endswith(".exe"):
-            app_path = shutil.which(f"{app_name}.exe")
-            if app_path:
-                return app_path
-        
-        # جستجو در مسیرهای معمول برنامه‌های ویندوز
-        common_paths = [
-            Path(os.environ.get("PROGRAMFILES", "C:\\Program Files")),
-            Path(os.environ.get("PROGRAMFILES(X86)", "C:\\Program Files (x86)")),
-            Path(os.environ.get("LOCALAPPDATA", "C:\\Users\\Default\\AppData\\Local")),
+        app_path = shutil.which(target_exe)
+        if app_path:
+            return app_path
+
+        # 2. Search common Windows installation directories
+        program_files = os.environ.get("PROGRAMFILES", "C:\\Program Files")
+        program_files_x86 = os.environ.get("PROGRAMFILES(X86)", "C:\\Program Files (x86)")
+        local_app_data = os.environ.get("LOCALAPPDATA", "")
+        app_data = os.environ.get("APPDATA", "")
+        common_program_files = os.environ.get("COMMONPROGRAMFILES", "")
+        program_data = os.environ.get("PROGRAMDATA", "")
+
+        search_roots = [
+            Path(program_files),
+            Path(program_files_x86),
         ]
-        
-        for base_path in common_paths:
+        if local_app_data:
+            search_roots.append(Path(local_app_data))
+        if app_data:
+            search_roots.append(Path(app_data))
+        if common_program_files:
+            search_roots.append(Path(common_program_files))
+        if program_data:
+            search_roots.append(Path(program_data))
+
+        # Microsoft Office common install subdirectories
+        office_subdirs = [
+            "Microsoft Office\\root\\Office16",
+            "Microsoft Office\\Office16",
+            "Microsoft Office\\root\\Office15",
+            "Microsoft Office\\Office15",
+            "Microsoft Office",
+            "OfficeUpdate",
+        ]
+
+        for base_path in search_roots:
             if not base_path.exists():
                 continue
-            # جستجوی ساده (محدود به عمق 2)
-            for exe_file in base_path.rglob(f"{app_name}*.exe"):
-                if exe_file.name.lower().startswith(app_name.lower()):
-                    return str(exe_file)
-                # محدود کردن جستجو برای جلوگیری از تاخیر
-                break
-        
+
+            # Check Office-specific subdirectories first (common case)
+            for subdir in office_subdirs:
+                office_path = base_path / subdir
+                if office_path.exists():
+                    for exe_file in office_path.iterdir():
+                        if exe_file.suffix.lower() == ".exe" and exe_file.name.lower() == target_exe:
+                            return str(exe_file)
+
+            # Shallow scan: immediate children (depth 1)
+            try:
+                for child in base_path.iterdir():
+                    if child.is_file() and child.suffix.lower() == ".exe" and child.name.lower() == target_exe:
+                        return str(child)
+                    if child.is_dir():
+                        try:
+                            for exe_file in child.iterdir():
+                                if exe_file.suffix.lower() == ".exe" and exe_file.name.lower() == target_exe:
+                                    return str(exe_file)
+                        except PermissionError:
+                            continue
+            except PermissionError:
+                continue
+
+        # 3. Registry lookup for installed applications (Windows-specific)
+        try:
+            import winreg
+            registry_paths = [
+                (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths"),
+                (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\App Paths"),
+            ]
+            for hive, base_key in registry_paths:
+                try:
+                    key = winreg.OpenKey(hive, base_key)
+                    try:
+                        subkey = winreg.OpenKey(key, target_exe)
+                        value, _ = winreg.QueryValueEx(subkey, "")
+                        if value and Path(value).exists():
+                            return value
+                    except FileNotFoundError:
+                        pass
+                    finally:
+                        winreg.CloseKey(key)
+                except FileNotFoundError:
+                    continue
+        except (ImportError, OSError):
+            pass
+
         return None
 
 

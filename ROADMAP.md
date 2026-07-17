@@ -8,11 +8,109 @@
 
 | آیتم | مقدار |
 |------|-------|
-| نسخه فعلی | 1.0.0 |
-| نسخه هدف | 1.0.0 |
-| فازهای تکمیل شده | Phase 1-10 ✅ |
+| نسخه فعلی | 1.1.0 |
+| نسخه هدف | 1.1.0 |
+| فازهای تکمیل شده | Phase 1-11 ✅ |
 | فاز جاری | — (تکمیل شده) |
-| تاریخ آخرین به‌روزرسانی | 2026-07-10 |
+| تاریخ آخرین به‌روزرسانی | 2026-07-17 |
+
+---
+
+## Phase 11 — رفع باگ‌ها و بازسازی ماژول‌های قدیمی
+
+**وضعیت**: ✅ تکمیل
+
+**مشکل اصلی**: بر اساس `test_log.log`:
+- **خطای بحرانی**: `Application 'winword.exe' not found` — `ProcessLauncher._find_application()` قادر به یافتن Microsoft Word نبود
+- **مشکل تایپ فارسی**: `KeyboardController.type_text()` از `pyautogui.write()` استفاده می‌کرد که فقط متن ASCII پشتیبانی می‌کند
+- **باگ زمان‌بندی Bezier**: محاسبه نادرست مدت زمان حرکت موس
+- **عملکرد ضعیف**: استفاده از `list` به جای `deque` برای history در کنترلرهای موس و کیبورد
+- **سبک کدنویسی**: استفاده از f-string در فراخوانی‌های logging (ارزیابی تنبل)
+
+### زیرفازها
+
+#### 11.1 — اصلاح ProcessLauncher._find_application()
+- [x] حذف `break` شکسته که جستجو را پس از اولین فایل متوقف می‌کرد
+- [x] اضافه کردن مسیرهای Microsoft Office به جستجو (root\Office16, root\Office15)
+- [x] اضافه کردن `COMMONPROGRAMFILES`, `APPDATA`, `PROGRAMDATA` به مسیرهای جستجو
+- [x] اضافه کردن جستجوی Windows Registry به عنوان fallback
+- **فایل**: `core/system_tools.py`
+
+#### 11.2 — اصلاح SafetyFilter
+- [x] حذف import تکراری `os`
+- [x] اضافه کردن مسیرهای Microsoft Office به `allowed_paths`
+- [x] اضافه کردن executableهای Office به `allowed_apps` و `always_allowed`
+- [x] تبدیل f-string logging به %-formatting
+- **فایل**: `core/safety_filter.py`
+
+#### 11.3 — بازسازی Mouse Controller
+- [x] اصلاح باگ زمان‌بندی Bezier curve (thermalduration / تعداد نقاط)
+- [x] جایگزینی `list` با `deque(maxlen=100)` برای action_history
+- [x] حذف `max_history` و `_log_action` trimming اضافی
+- [x] اضافه کردن `__all__` exports
+- **فایل**: `core/mouse_control.py`
+
+#### 11.4 — بازسازی Keyboard Controller
+- [x] اصلاح تایپ متن فارسی/غیرASCII از طریق clipboard paste
+- [x] جایگزینی `list` با `deque(maxlen=100)` برای action_history
+- [x] تبدیل تمام f-string logging به %-formatting
+- [x] اضافه کردن `__all__` exports
+- **فایل**: `core/keyboard_control.py`
+
+#### 11.5 — بازسازی Action Safety
+- [x] تبدیل تمام f-string logging به %-formatting
+- [x] حذف ایموجی‌های غیرضروری از لاگ‌ها
+- **فایل**: `core/action_safety.py`
+
+### فایل‌های تغییر یافته Phase 11
+| فایل | تغییرات |
+|------|---------|
+| `core/system_tools.py` | ✅ اصلاح `_find_application()` با جستجوی Office و Registry |
+| `core/safety_filter.py` | ✅ مسیرهای Office، حذف import تکراری، %-formatting |
+| `core/mouse_control.py` | ✅ اصلاح Bezier timing، deque، `__all__` |
+| `core/keyboard_control.py` | ✅ تایپ فارسی از clipboard، deque، %-formatting، `__all__` |
+| `core/action_safety.py` | ✅ %-formatting، حذف ایموجی |
+
+### معیار تکمیل Phase 11
+- [x] `winword.exe` از مسیرهای Office قابل یافتن باشد
+- [x] متن فارسی از طریق clipboard paste تایپ شود
+- [x] حرکت موس با منحنی Bezier در مدت زمان صحیح انجام شود
+- [x] history در هر دو کنترلر O(1) append باشد
+- [x] تمام لاگ‌ها از %-formatting استفاده کنند
+
+---
+
+## ساختار فایل‌ها پس از هر فاز
+
+```
+پس از Phase 8:
+├── ROADMAP.md                          ← این فایل (به‌روزرسانی وضعیت)
+├── README.md                           ← نسخه 1.0.0
+├── main.py                             ← Input sanitization + /providers
+├── core/ai_brain.py                    ← Circuit breaker + model health
+├── core/model_config.py                ← Health scoring
+├── docs/PHASE8_ERROR_RESILIENCE_REPORT.md  ← گزارش فاز
+└── tests/test_phase8_error_resilience.py   ← تست‌های جدید
+
+پس از Phase 9:
+├── core/memory_integrator.py           ← Context compression
+├── docs/PHASE9_PERFORMANCE_REPORT.md   ← گزارش فاز
+└── tests/test_phase9_integration.py    ← تست‌های یکپارچه‌سازی
+
+پس از Phase 10:
+├── CHANGELOG.md                        ← تاریخچه تغییرات
+├── docs/PHASE10_RELEASE_REPORT.md      ← گزارش انتشار
+└── Git tag: v1.0.0
+
+پس از Phase 11:
+├── core/system_tools.py                ← اصلاح _find_application()
+├── core/safety_filter.py               ← مسیرهای Office + %-formatting
+├── core/mouse_control.py               ← اصلاح Bezier + deque
+├── core/keyboard_control.py            ← تایپ فارسی + deque + %-formatting
+├── core/action_safety.py               ← %-formatting
+├── README.md                           ← نسخه 1.1.0
+└── ROADMAP.md                          ← این فایل (Phase 11)
+```
 
 ---
 
@@ -162,6 +260,15 @@
 ├── CHANGELOG.md                        ← تاریخچه تغییرات
 ├── docs/PHASE10_RELEASE_REPORT.md      ← گزارش انتشار
 └── Git tag: v1.0.0
+
+پس از Phase 11:
+├── core/system_tools.py                ← اصلاح _find_application()
+├── core/safety_filter.py               ← مسیرهای Office + %-formatting
+├── core/mouse_control.py               ← اصلاح Bezier + deque
+├── core/keyboard_control.py            ← تایپ فارسی + deque + %-formatting
+├── core/action_safety.py               ← %-formatting
+├── README.md                           ← نسخه 1.1.0
+└── ROADMAP.md                          ← این فایل (Phase 11)
 ```
 
 ---

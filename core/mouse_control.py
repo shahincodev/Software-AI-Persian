@@ -17,6 +17,7 @@ from __future__ import annotations
 import logging
 import random
 import time
+from collections import deque
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -33,6 +34,14 @@ except ImportError:
     np = None  # type: ignore
 
 logger = logging.getLogger(__name__)
+
+
+__all__ = [
+    "MouseButton",
+    "ClickPattern",
+    "MouseAction",
+    "MouseController",
+]
 
 
 class MouseButton(Enum):
@@ -122,8 +131,7 @@ class MouseController:
         }
         
         # History برای تحلیل الگو
-        self.action_history: list[MouseAction] = []
-        self.max_history = 100
+        self.action_history: deque[MouseAction] = deque(maxlen=100)
         
         # آمار
         self.stats = {
@@ -352,9 +360,8 @@ class MouseController:
                 start_pos = self.get_position()
                 curve_points = self._bezier_curve(start_pos, (x, y))
                 
-                for i, (px, py) in enumerate(curve_points):
-                    progress = i / len(curve_points)
-                    point_duration = duration * 0.05  # کوتاه برای هر نقطه
+                point_duration = duration / max(len(curve_points), 1)
+                for px, py in curve_points:
                     pyautogui.moveTo(px, py, duration=point_duration)
             else:
                 # حرکت خطی
@@ -699,10 +706,6 @@ class MouseController:
     def _log_action(self, action: MouseAction):
         """ثبت اقدام در history."""
         self.action_history.append(action)
-        
-        # محدود کردن سایز history
-        if len(self.action_history) > self.max_history:
-            self.action_history = self.action_history[-self.max_history:]
     
     def get_stats(self) -> dict:
         """دریافت آمار استفاده.

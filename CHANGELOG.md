@@ -6,6 +6,23 @@
 
 ---
 
+## [1.1.0] — 2026-07-17
+
+### Phase 11 — رفع باگ‌ها و بازسازی ماژول‌های قدیمی
+
+#### Fixed
+- **ProcessLauncher._find_application()**: اصلاح `break` شکسته که جستجو را متوقف می‌کرد. اضافه شدن مسیرهای Microsoft Office، `COMMONPROGRAMFILES`، `PROGRAMDATA`، و جستجوی Windows Registry
+- **KeyboardController.type_text()**: متن فارسی/غیرASCII از طریق clipboard paste تایپ می‌شود (pyautogui.write فقط ASCII پشتیبانی می‌کند)
+- **MouseController Bezier timing**: محاسبه صحیح مدت زمان حرکت (`duration / تعداد نقاط` به جای `duration * 0.05`)
+
+#### Changed
+- **MouseController** و **KeyboardController**: `action_history` از `list` به `deque(maxlen=100)` تغییر کرد (O(1) append به جای O(n) trim)
+- **SafetyFilter**: اضافه شدن مسیرهای Microsoft Office به `allowed_paths` و executableهای Office به `allowed_apps`
+- **Action Safety**: تبدیل تمام f-string logging به %-formatting (lazy evaluation)
+- حذف ایموجی‌های غیرضروری از لاگ‌ها
+
+---
+
 ## [1.0.0] — 2026-07-10
 
 ### Phase 8 — تاب‌آوری خطا و بهینه‌سازی زنجیره Failover

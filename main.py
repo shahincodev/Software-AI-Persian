@@ -759,7 +759,7 @@ Examples:
   python main.py --safety-mode power # Less restrictive safety
         """,
     )
-    parser.add_argument("--version", action="version", version="Software-AI 1.0.0")
+    parser.add_argument("--version", action="version", version="Software-AI 1.1.0")
     parser.add_argument("--input-mode", choices=["text", "voice"], default="text")
     parser.add_argument("--tts-provider", choices=["google-cloud", "gtts", "elevenlabs"], default="gtts")
     parser.add_argument("--debug", action="store_true")
@@ -790,7 +790,7 @@ def print_banner() -> None:
         except UnicodeEncodeError:
             print(padded)
     print()
-    print(f"  {Fore.GREEN}Software-AI 1.0.0{reset}  |  AI-Powered Windows Agent")
+    print(f"  {Fore.GREEN}Software-AI 1.1.0{reset}  |  AI-Powered Windows Agent")
     print(f"  {Fore.YELLOW}Type your request in natural language{reset}")
     print(f"  {Fore.YELLOW}Type 'help' for commands, 'exit' to quit{reset}")
     print(f"  {Fore.CYAN}Made By shahincodev{reset}")
@@ -1128,7 +1128,7 @@ async def agent_loop(args: argparse.Namespace) -> None:
                     health_report = tracker.get_health_report()
 
                     print(f"\n{Fore.CYAN}{'='*50}{Style.RESET_ALL}")
-                    print(f"{Fore.CYAN}  Software-AI System Status  (v1.0.0){Style.RESET_ALL}")
+                    print(f"{Fore.CYAN}  Software-AI System Status  (v1.1.0){Style.RESET_ALL}")
                     print(f"{Fore.CYAN}{'='*50}{Style.RESET_ALL}")
 
                     # Providers

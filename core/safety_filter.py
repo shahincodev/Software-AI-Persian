@@ -39,20 +39,33 @@ class SafetyPolicy:
             os.environ.get("PROGRAMFILES(X86)", "C:\\Program Files (x86)"),
             os.environ.get("LOCALAPPDATA", ""),
             os.environ.get("APPDATA", ""),
+            os.environ.get("COMMONPROGRAMFILES", ""),
+            os.environ.get("COMMONPROGRAMFILES(X86)", ""),
             "C:\\Windows\\System32",
             "C:\\Windows\\SysWOW64",
+            # Microsoft Office specific paths
+            "C:\\Program Files\\Microsoft Office",
+            "C:\\Program Files (x86)\\Microsoft Office",
+            "C:\\Program Files\\Microsoft Office\\root",
         ]
         
         # برنامه‌های مجاز (whitelist)
-        # نکته: explorer.exe همیشه مجاز است چون برای file management ضروری است
         self.allowed_apps: set[str] = {
+            # Core system
             "notepad.exe", "calc.exe", "mspaint.exe", "explorer.exe",
+            # Development
             "code.exe", "chrome.exe", "firefox.exe", "edge.exe",
-            "photoshop.exe", "illustrator.exe", "winword.exe", "excel.exe",
-            "powershell.exe", "cmd.exe",  # System tools
-            # Gaming apps
+            # Creative
+            "photoshop.exe", "illustrator.exe",
+            # Microsoft Office
+            "winword.exe", "excel.exe", "powerpnt.exe", "outlook.exe",
+            "msaccess.exe", "mspub.exe", "visio.exe", "winproj.exe",
+            "onenote.exe", "lync.exe", "teams.exe",
+            # System tools
+            "powershell.exe", "cmd.exe",
+            # Gaming
             "steam.exe", "steamwebhelper.exe",
-            "cs2.exe", "csgo.exe",  # Counter-Strike
+            "cs2.exe", "csgo.exe",
             "valorant.exe", "league of legends.exe",
         }
         
@@ -64,7 +77,8 @@ class SafetyPolicy:
         # برنامه‌های همیشه مجاز (بدون محدودیت)
         self.always_allowed: set[str] = {
             "notepad.exe", "calc.exe", "mspaint.exe", "explorer.exe",
-            "steam.exe", "cs2.exe", "csgo.exe"  # Gaming apps - auto-approve
+            "winword.exe", "excel.exe", "powerpnt.exe",
+            "steam.exe", "cs2.exe", "csgo.exe",
         }
         
         # فرآیندهای ممنوع برای بستن (blacklist)
@@ -166,7 +180,6 @@ class SafetyFilter:
         # در حالت strict، فقط برنامه‌های whitelist مجاز هستند
         if self.strict_mode:
             # بررسی پسوند فایل
-            import os
             _, ext = os.path.splitext(app_name)
             
             # اگر پسوند مجاز باشد (مثل .bat, .cmd)، اجازه بده
@@ -174,13 +187,13 @@ class SafetyFilter:
                 # فایل‌های .bat و .cmd نیاز به تایید دارند
                 if ext.lower() in {'.bat', '.cmd', '.ps1', '.vbs'}:
                     needs_consent = True
-                    logger.info(f"Script file detected: {app_name} - requires approval")
+                    logger.info("Script file detected: %s - requires approval", app_name)
                 return True, f"Script file '{app_name}' allowed with approval", needs_consent
             
             # بررسی برنامه‌های always_allowed (notepad, calc, etc.) - بدون تایید!
             if app_name in self.policy.always_allowed:
-                logger.info(f"✅ Trusted app auto-approved: {app_name}")
-                return True, f"Trusted application '{app_name}' auto-approved", False  # No consent needed!
+                logger.info("Trusted app auto-approved: %s", app_name)
+                return True, f"Trusted application '{app_name}' auto-approved", False
             
             # بررسی نام برنامه در whitelist
             if app_name and app_name not in self.policy.allowed_apps:

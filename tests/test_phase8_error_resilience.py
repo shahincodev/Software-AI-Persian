@@ -384,13 +384,13 @@ class TestVersionConsistency:
         """بررسی نسخه در main.py"""
         with open("main.py", "r", encoding="utf-8") as f:
             content = f.read()
-        assert "1.0.0" in content, "main.py should contain version 1.0.0"
+        assert "1.1.0" in content, "main.py should contain version 1.1.0"
 
     def test_readme_md_version(self):
         """بررسی نسخه در README.md"""
         with open("README.md", "r", encoding="utf-8") as f:
             content = f.read()
-        assert "1.0.0" in content, "README.md should contain version 1.0.0"
+        assert "1.1.0" in content, "README.md should contain version 1.1.0"
         assert "0.9.0" not in content, "README.md should not contain old version 0.9.0"
 
 

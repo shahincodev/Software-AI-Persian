@@ -23,6 +23,7 @@ import time
 import random
 import logging
 import unicodedata
+from collections import deque
 from enum import Enum
 from typing import Optional, List, Union
 from dataclasses import dataclass, field
@@ -51,6 +52,17 @@ except ImportError:
 
 
 logger = logging.getLogger(__name__)
+
+
+__all__ = [
+    "Language",
+    "TypingSpeed",
+    "KeyAction",
+    "KeyboardAction",
+    "KeyboardController",
+    "is_persian_text",
+    "Hotkeys",
+]
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -149,8 +161,7 @@ class KeyboardController:
         }
         
         # Audit trail
-        self.action_history: List[KeyboardAction] = []
-        self.max_history = 100
+        self.action_history: deque[KeyboardAction] = deque(maxlen=100)
         
         # Persian character mapping
         self.persian_chars = set(
@@ -168,9 +179,8 @@ class KeyboardController:
         ] if safety_enabled else []
         
         logger.info(
-            f"KeyboardController initialized: "
-            f"safety={safety_enabled}, human={human_behavior}, "
-            f"speed={default_speed.name}"
+            "KeyboardController initialized: safety=%s, human=%s, speed=%s",
+            safety_enabled, human_behavior, default_speed.name,
         )
     
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -246,12 +256,12 @@ class KeyboardController:
         # بررسی الگوهای خطرناک
         for pattern in self.unsafe_patterns:
             if pattern.lower() in text_lower:
-                logger.warning(f"Unsafe pattern detected: {pattern}")
+                logger.warning("Unsafe pattern detected: %s", pattern)
                 return False
         
         # بررسی طول (جلوگیری از متن خیلی طولانی)
         if len(text) > 10000:
-            logger.warning(f"Text too long: {len(text)} chars")
+            logger.warning("Text too long: %d chars", len(text))
             return False
         
         return True
@@ -348,6 +358,10 @@ class KeyboardController:
     ) -> bool:
         """تایپ متن با تشخیص خودکار زبان.
         
+        For ASCII text, types character-by-character with human-like timing.
+        For Persian/Unicode text, uses clipboard paste (pyautogui.write cannot
+        handle non-ASCII characters).
+        
         Args:
             text: متن برای تایپ
             speed: سرعت تایپ (None = default)
@@ -378,14 +392,30 @@ class KeyboardController:
             language = self.detect_language(text)
             action.language = language.value
             
-            logger.debug(f"Typing text: '{text[:50]}...' (lang={language.name})")
+            logger.debug("Typing text: '%s...' (lang=%s)", text[:50], language.name)
             
-            # تایپ کاراکتر به کاراکتر
+            # Use clipboard paste for non-ASCII text (Persian, etc.)
+            # pyautogui.write() only supports ASCII characters
+            has_non_ascii = any(ord(c) > 127 for c in text)
+            
+            if has_non_ascii:
+                success = self.paste_text(text)
+                if success:
+                    self.stats['total_text_typed'] += len(text)
+                    self.stats['total_actions'] += 1
+                    self.stats['total_keystrokes'] += len(text)
+                    action.success = True
+                    logger.info("Typed %d chars via clipboard in %.2fs", len(text), time.time() - start_time)
+                    return True
+                else:
+                    logger.warning("Clipboard paste failed, falling back to character-by-character")
+            
+            # Character-by-character typing for ASCII or clipboard fallback
             for char in text:
-                interval = self._get_typing_interval(speed, char)
+                char_interval = self._get_typing_interval(speed, char)
                 
-                if interval > 0:
-                    time.sleep(interval)
+                if char_interval > 0:
+                    time.sleep(char_interval)
                 
                 pyautogui.write(char, interval=0)
                 self.stats['total_keystrokes'] += 1
@@ -396,12 +426,13 @@ class KeyboardController:
             action.success = True
             
             logger.info(
-                f"Typed {len(text)} chars in {time.time() - start_time:.2f}s"
+                "Typed %d chars in %.2fs",
+                len(text), time.time() - start_time,
             )
             return True
             
         except Exception as e:
-            logger.error(f"Failed to type text: {e}")
+            logger.error("Failed to type text: %s", e)
             self.stats['failed_actions'] += 1
             self.stats['total_actions'] += 1
             action.success = False
@@ -440,7 +471,7 @@ class KeyboardController:
         )
         
         try:
-            logger.debug(f"Pressing key: {key} (x{presses})")
+            logger.debug("Pressing key: %s (x%d)", key, presses)
             
             for _ in range(presses):
                 pyautogui.press(key)
@@ -454,7 +485,7 @@ class KeyboardController:
             return True
             
         except Exception as e:
-            logger.error(f"Failed to press key '{key}': {e}")
+            logger.error("Failed to press key '%s': %s", key, e)
             self.stats['failed_actions'] += 1
             self.stats['total_actions'] += 1
             action.success = False
@@ -489,7 +520,7 @@ class KeyboardController:
         
         try:
             keys_str = '+'.join(keys)
-            logger.debug(f"Pressing hotkey: {keys_str}")
+            logger.debug("Pressing hotkey: %s", keys_str)
             
             pyautogui.hotkey(*keys)
             
@@ -499,7 +530,7 @@ class KeyboardController:
             return True
             
         except Exception as e:
-            logger.error(f"Failed to press hotkey {keys}: {e}")
+            logger.error("Failed to press hotkey %s: %s", keys, e)
             self.stats['failed_actions'] += 1
             self.stats['total_actions'] += 1
             action.success = False
@@ -530,7 +561,7 @@ class KeyboardController:
         )
         
         try:
-            logger.debug(f"Holding key: {key} for {duration}s")
+            logger.debug("Holding key: %s for %.1fs", key, duration)
             
             pyautogui.keyDown(key)
             time.sleep(duration)
@@ -542,7 +573,7 @@ class KeyboardController:
             return True
             
         except Exception as e:
-            logger.error(f"Failed to hold key '{key}': {e}")
+            logger.error("Failed to hold key '%s': %s", key, e)
             self.stats['failed_actions'] += 1
             self.stats['total_actions'] += 1
             action.success = False
@@ -559,7 +590,8 @@ class KeyboardController:
     def paste_text(self, text: str) -> bool:
         """کپی متن به clipboard و paste کردن.
         
-        این روش سریع‌تر از type_text است برای متون بلند.
+        This is the primary method for typing Persian/Unicode text since
+        pyautogui.write() only supports ASCII characters.
         
         Args:
             text: متن برای paste
@@ -572,8 +604,8 @@ class KeyboardController:
             True
         """
         if pyperclip is None:
-            logger.warning("pyperclip not available, falling back to type_text")
-            return self.type_text(text)
+            logger.warning("pyperclip not available, cannot paste non-ASCII text")
+            return False
         
         try:
             # کپی به clipboard
@@ -584,7 +616,7 @@ class KeyboardController:
             return self.hotkey('ctrl', 'v')
             
         except Exception as e:
-            logger.error(f"Failed to paste text: {e}")
+            logger.error("Failed to paste text: %s", e)
             return False
     
     def get_clipboard(self) -> Optional[str]:
@@ -604,7 +636,7 @@ class KeyboardController:
         try:
             return pyperclip.paste()
         except Exception as e:
-            logger.error(f"Failed to get clipboard: {e}")
+            logger.error("Failed to get clipboard: %s", e)
             return None
     
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -614,10 +646,6 @@ class KeyboardController:
     def _add_to_history(self, action: KeyboardAction):
         """اضافه کردن اقدام به history."""
         self.action_history.append(action)
-        
-        # محدود کردن تعداد
-        if len(self.action_history) > self.max_history:
-            self.action_history.pop(0)
     
     def get_stats(self) -> dict:
         """دریافت آمار استفاده.

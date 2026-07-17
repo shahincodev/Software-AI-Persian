@@ -148,8 +148,8 @@ class TestVersionAndRoadmapIntegration:
         with open("README.md", "r", encoding="utf-8") as f:
             readme_content = f.read()
 
-        assert "1.0.0" in main_content
-        assert "1.0.0" in readme_content
+        assert "1.1.0" in main_content
+        assert "1.1.0" in readme_content
 
     def test_roadmap_has_all_phases(self):
         """نقشه راه شامل تمام فازها"""

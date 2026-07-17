@@ -118,7 +118,7 @@ class ActionSafety:
         action_type = action.get("type", "")
         params = action.get("params", {})
         
-        logger.debug(f"🔍 Validating action: {action_type}")
+        logger.debug("Validating action: %s", action_type)
         
         # بررسی بر اساس نوع اقدام
         if action_type == "DeleteFile":
@@ -143,7 +143,7 @@ class ActionSafety:
             return self._check_install_package(params)
         
         # اقدامات دیگر به طور پیش‌فرض ایمن هستند
-        logger.debug(f"✅ Action {action_type} is safe by default")
+        logger.debug("Action %s is safe by default", action_type)
         return True, ""
     
     def _check_delete_file(self, params: dict[str, Any]) -> tuple[bool, str]:
@@ -163,15 +163,15 @@ class ActionSafety:
         # بررسی پوشه‌های ممنوعه
         for forbidden in self.forbidden_paths:
             if re.search(forbidden, path, re.IGNORECASE):
-                logger.warning(f"❌ Forbidden path: {path}")
+                logger.warning("Forbidden path: %s", path)
                 return False, f"Forbidden system path: {path}"
         
         # بررسی فایل‌های سیستمی ویندوز
         if re.search(r"C:\\Windows\\.*\.(dll|sys|exe)", path, re.IGNORECASE):
-            logger.warning(f"❌ System file: {path}")
+            logger.warning("System file: %s", path)
             return False, f"Cannot delete system file: {path}"
         
-        logger.debug(f"✅ Delete file is safe: {path}")
+        logger.debug("Delete file is safe: %s", path)
         return True, ""
     
     def _check_terminate_process(self, params: dict[str, Any]) -> tuple[bool, str]:
@@ -191,10 +191,10 @@ class ActionSafety:
         # بررسی فرآیندهای حیاتی
         for critical in self.critical_processes:
             if critical.lower() == process_name.lower():
-                logger.warning(f"❌ Critical process: {process_name}")
+                logger.warning("Critical process: %s", process_name)
                 return False, f"Cannot terminate critical process: {process_name}"
         
-        logger.debug(f"✅ Terminate process is safe: {process_name}")
+        logger.debug("Terminate process is safe: %s", process_name)
         return True, ""
     
     def _check_execute_command(self, params: dict[str, Any]) -> tuple[bool, str]:
@@ -214,7 +214,7 @@ class ActionSafety:
         # بررسی دستورات ممنوعه
         for forbidden in self.forbidden_commands:
             if forbidden.lower() in command.lower():
-                logger.warning(f"❌ Forbidden command: {command}")
+                logger.warning("Forbidden command: %s", command)
                 return False, f"Forbidden command detected: {forbidden}"
         
         # بررسی دستورات مشکوک
@@ -228,10 +228,10 @@ class ActionSafety:
         
         for pattern in suspicious_patterns:
             if re.search(pattern, command, re.IGNORECASE):
-                logger.warning(f"❌ Suspicious command: {command}")
-                return False, f"Suspicious command pattern detected"
+                logger.warning("Suspicious command: %s", command)
+                return False, "Suspicious command pattern detected"
         
-        logger.debug(f"✅ Execute command is safe: {command}")
+        logger.debug("Execute command is safe: %s", command)
         return True, ""
     
     def _check_modify_registry(self, params: dict[str, Any]) -> tuple[bool, str]:
@@ -259,12 +259,12 @@ class ActionSafety:
         for sensitive in sensitive_keys:
             if re.search(sensitive, key, re.IGNORECASE):
                 if self.strict_mode:
-                    logger.warning(f"❌ Sensitive registry key: {key}")
+                    logger.warning("Sensitive registry key: %s", key)
                     return False, f"Cannot modify sensitive registry key: {key}"
                 else:
-                    logger.warning(f"⚠️ Warning: Modifying sensitive registry key: {key}")
+                    logger.warning("Warning: Modifying sensitive registry key: %s", key)
         
-        logger.debug(f"✅ Modify registry is safe: {key}")
+        logger.debug("Modify registry is safe: %s", key)
         return True, ""
     
     def _check_download_file(self, params: dict[str, Any]) -> tuple[bool, str]:
@@ -284,20 +284,20 @@ class ActionSafety:
         
         # بررسی پروتکل امن
         if not (url.startswith("https://") or url.startswith("http://")):
-            logger.warning(f"❌ Unsafe protocol: {url}")
-            return False, f"Only HTTP/HTTPS protocols allowed"
+            logger.warning("Unsafe protocol: %s", url)
+            return False, "Only HTTP/HTTPS protocols allowed"
         
         # بررسی پسوند فایل مشکوک
         if destination:
             ext = Path(destination).suffix.lower()
             if ext in self.suspicious_extensions:
                 if self.strict_mode:
-                    logger.warning(f"❌ Suspicious file extension: {ext}")
+                    logger.warning("Suspicious file extension: %s", ext)
                     return False, f"Suspicious file extension: {ext}"
                 else:
-                    logger.warning(f"⚠️ Warning: Downloading executable file: {ext}")
+                    logger.warning("Warning: Downloading executable file: %s", ext)
         
-        logger.debug(f"✅ Download file is safe: {url}")
+        logger.debug("Download file is safe: %s", url)
         return True, ""
     
     def _check_launch_app(self, params: dict[str, Any]) -> tuple[bool, str]:
@@ -322,10 +322,10 @@ class ActionSafety:
             # بررسی دستورات ممنوعه در آرگومان‌ها
             for forbidden in self.forbidden_commands:
                 if forbidden.lower() in args_str.lower():
-                    logger.warning(f"❌ Forbidden argument: {args_str}")
+                    logger.warning("Forbidden argument: %s", args_str)
                     return False, f"Forbidden command in arguments: {forbidden}"
         
-        logger.debug(f"✅ Launch app is safe: {app_name}")
+        logger.debug("Launch app is safe: %s", app_name)
         return True, ""
     
     def _check_install_package(self, params: dict[str, Any]) -> tuple[bool, str]:
@@ -346,10 +346,10 @@ class ActionSafety:
         # فقط package manager های معتبر
         valid_managers = ["winget", "choco", "scoop", "pip", "npm", "apt", "brew"]
         if package_manager and package_manager not in valid_managers:
-            logger.warning(f"❌ Unknown package manager: {package_manager}")
+            logger.warning("Unknown package manager: %s", package_manager)
             return False, f"Unknown package manager: {package_manager}"
         
-        logger.debug(f"✅ Install package is safe: {package_name}")
+        logger.debug("Install package is safe: %s", package_name)
         return True, ""
     
     def validate_batch(self, actions: list[dict[str, Any]]) -> dict[str, Any]:
@@ -392,8 +392,8 @@ class ActionSafety:
         all_safe = len(unsafe_actions) == 0
         
         logger.info(
-            f"📊 Batch validation: {len(safe_actions)}/{len(actions)} safe, "
-            f"{len(unsafe_actions)} unsafe"
+            "Batch validation: %d/%d safe, %d unsafe",
+            len(safe_actions), len(actions), len(unsafe_actions),
         )
         
         return {

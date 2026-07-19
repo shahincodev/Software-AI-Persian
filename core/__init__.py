@@ -77,7 +77,7 @@ from .memory_integrator import MemoryManager, MemoryItem, ShortTermMemory, LongT
 from .mouse_engine import MouseEngine, MouseButton, ClickPattern, ClickResult, TargetInfo
 from .keyboard_engine import KeyboardEngine, TypingMode, TypingSpeed, TypeResult, Hotkeys
 from .security_engine import SecurityEngine, RiskLevel as SecurityRiskLevel, TrustLevel, SecurityDecision, SecurityAssessment
-from .reasoning_pipeline import ReasoningPipeline, PipelineStage, ExecutionPlan, PlanStep, AgentResult
+from .reasoning_pipeline import ReasoningPipeline, PipelineStage, PlanStep, AgentResult
 from .uia_provider import UIAProvider, UIAElement, UIATreeSnapshot
 from .reliability import ReliabilityManager, SystemState, Checkpoint, DiagnosticEntry
 

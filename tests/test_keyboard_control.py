@@ -8,13 +8,11 @@
 """
 
 import pytest
-import time
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from core.keyboard_control import (
     KeyboardController,
     Language,
     TypingSpeed,
-    KeyAction,
     Hotkeys,
     is_persian_text,
 )
@@ -77,8 +75,8 @@ class TestLanguageDetection:
     
     def test_helper_function(self):
         """تست تابع کمکی is_persian_text."""
-        assert is_persian_text("سلام") == True
-        assert is_persian_text("Hello") == False
+        assert is_persian_text("سلام") is True
+        assert is_persian_text("Hello") is False
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -90,24 +88,24 @@ class TestSafety:
     
     def test_safe_text(self, kb_basic):
         """تست متن امن."""
-        assert kb_basic.is_safe_text("Hello World") == True
-        assert kb_basic.is_safe_text("سلام دنیا") == True
-        assert kb_basic.is_safe_text("Python code") == True
+        assert kb_basic.is_safe_text("Hello World") is True
+        assert kb_basic.is_safe_text("سلام دنیا") is True
+        assert kb_basic.is_safe_text("Python code") is True
     
     def test_unsafe_patterns(self, kb_basic):
         """تست الگوهای خطرناک."""
-        assert kb_basic.is_safe_text("rm -rf /") == False
-        assert kb_basic.is_safe_text("del /f *.*") == False
-        assert kb_basic.is_safe_text("DROP TABLE users") == False
-        assert kb_basic.is_safe_text("format c:") == False
+        assert kb_basic.is_safe_text("rm -rf /") is False
+        assert kb_basic.is_safe_text("del /f *.*") is False
+        assert kb_basic.is_safe_text("DROP TABLE users") is False
+        assert kb_basic.is_safe_text("format c:") is False
     
     def test_long_text(self, kb_basic):
         """تست متن خیلی طولانی."""
         long_text = "a" * 10001
-        assert kb_basic.is_safe_text(long_text) == False
+        assert kb_basic.is_safe_text(long_text) is False
         
         ok_text = "a" * 9999
-        assert kb_basic.is_safe_text(ok_text) == True
+        assert kb_basic.is_safe_text(ok_text) is True
     
     def test_validate_text_raises(self, kb_basic):
         """تست ValueError برای متن خطرناک."""
@@ -117,8 +115,8 @@ class TestSafety:
     def test_safety_disabled(self, kb_unsafe):
         """تست غیرفعال بودن امنیت."""
         # همه چیز باید مجاز باشد
-        assert kb_unsafe.is_safe_text("rm -rf /") == True
-        assert kb_unsafe.is_safe_text("DROP TABLE users") == True
+        assert kb_unsafe.is_safe_text("rm -rf /") is True
+        assert kb_unsafe.is_safe_text("DROP TABLE users") is True
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -174,7 +172,7 @@ class TestTyping:
         """تست تایپ ساده."""
         result = kb_basic.type_text("Hello")
         
-        assert result == True
+        assert result is True
         assert mock_write.call_count == 5  # 5 chars
         assert kb_basic.stats['total_text_typed'] == 5
         assert kb_basic.stats['total_keystrokes'] == 5
@@ -184,7 +182,7 @@ class TestTyping:
         """تست تایپ فارسی."""
         result = kb_basic.type_text("سلام")
         
-        assert result == True
+        assert result is True
         assert mock_write.call_count == 4  # 4 chars
     
     @patch('pyautogui.write')
@@ -192,7 +190,7 @@ class TestTyping:
         """تست تایپ متن خطرناک."""
         result = kb_basic.type_text("rm -rf /", validate=True)
         
-        assert result == False
+        assert result is False
         assert kb_basic.stats['failed_actions'] == 1
         assert mock_write.call_count == 0  # نباید صدا زده شود
     
@@ -210,7 +208,7 @@ class TestTyping:
         """تست تایپ متن خالی."""
         result = kb_basic.type_text("")
         
-        assert result == True
+        assert result is True
         assert mock_write.call_count == 0
 
 
@@ -226,7 +224,7 @@ class TestKeyPress:
         """تست فشردن یک بار."""
         result = kb_basic.press_key('enter')
         
-        assert result == True
+        assert result is True
         mock_press.assert_called_once_with('enter')
         assert kb_basic.stats['total_special_keys'] == 1
     
@@ -236,7 +234,7 @@ class TestKeyPress:
         """تست فشردن چند بار."""
         result = kb_basic.press_key('tab', presses=3, interval=0.1)
         
-        assert result == True
+        assert result is True
         assert mock_press.call_count == 3
         assert kb_basic.stats['total_special_keys'] == 3
     
@@ -247,7 +245,7 @@ class TestKeyPress:
         
         result = kb_basic.press_key('invalid')
         
-        assert result == False
+        assert result is False
         assert kb_basic.stats['failed_actions'] == 1
 
 
@@ -263,7 +261,7 @@ class TestHotkeys:
         """تست Hotkey ساده."""
         result = kb_basic.hotkey('ctrl', 'c')
         
-        assert result == True
+        assert result is True
         mock_hotkey.assert_called_once_with('ctrl', 'c')
         assert kb_basic.stats['total_hotkeys'] == 1
     
@@ -272,7 +270,7 @@ class TestHotkeys:
         """تست Hotkey پیچیده."""
         result = kb_basic.hotkey('ctrl', 'shift', 's')
         
-        assert result == True
+        assert result is True
         mock_hotkey.assert_called_once_with('ctrl', 'shift', 's')
     
     @patch('pyautogui.hotkey')
@@ -291,7 +289,7 @@ class TestHotkeys:
         
         result = kb_basic.hotkey('ctrl', 'x')
         
-        assert result == False
+        assert result is False
         assert kb_basic.stats['failed_actions'] == 1
 
 
@@ -309,7 +307,7 @@ class TestHoldKey:
         """تست نگه داشتن کلید."""
         result = kb_basic.hold_key('shift', duration=1.0)
         
-        assert result == True
+        assert result is True
         mock_down.assert_called_once_with('shift')
         mock_up.assert_called_once_with('shift')
         mock_sleep.assert_called_once_with(1.0)
@@ -324,7 +322,7 @@ class TestHoldKey:
         
         result = kb_basic.hold_key('ctrl', duration=0.5)
         
-        assert result == False
+        assert result is False
         assert kb_basic.stats['failed_actions'] == 1
 
 
@@ -344,7 +342,7 @@ class TestClipboard:
         
         result = kb_basic.paste_text("Test text")
         
-        assert result == True
+        assert result is True
         mock_pyperclip.copy.assert_called_once_with("Test text")
         mock_hotkey.assert_called_once_with('ctrl', 'v')
     
@@ -352,7 +350,7 @@ class TestClipboard:
     @patch('pyautogui.write')
     def test_paste_text_fallback(self, mock_write, kb_basic):
         """تست fallback به type_text."""
-        result = kb_basic.paste_text("Test")
+        kb_basic.paste_text("Test")
         
         # باید به type_text برگردد
         assert mock_write.call_count == 4  # 4 chars
@@ -444,7 +442,7 @@ class TestActionHistory:
         
         assert action.action_type == "type"
         assert action.text == "Test"
-        assert action.success == True
+        assert action.success is True
         assert action.duration > 0
     
     @patch('pyautogui.write')
@@ -523,7 +521,7 @@ class TestEdgeCases:
         special = "!@#$%^&*()_+-={}[]|\\:;\"'<>,.?/"
         result = kb_basic.type_text(special)
         
-        assert result == True
+        assert result is True
         assert mock_write.call_count == len(special)
     
     @patch('pyautogui.write')
@@ -532,7 +530,7 @@ class TestEdgeCases:
         unicode_text = "🎉 مرحبا 你好 こんにちは"
         result = kb_basic.type_text(unicode_text)
         
-        assert result == True
+        assert result is True
     
     @patch('pyautogui.write')
     def test_whitespace(self, mock_write, kb_basic):
@@ -540,7 +538,7 @@ class TestEdgeCases:
         text = "Hello\nWorld\t!"
         result = kb_basic.type_text(text)
         
-        assert result == True
+        assert result is True
 
 
 if __name__ == "__main__":

@@ -12,12 +12,11 @@ Test Suite for Intent Planning System Integration - تست جریان کامل 5
 """
 
 import pytest
-from datetime import datetime
 import os
 import tempfile
 
 from core.intent_analyzer import IntentAnalyzer
-from core.plan_generator import PlanGenerator, ExecutionMode
+from core.plan_generator import PlanGenerator
 from core.plan_validator import PlanValidator, ValidationLevel
 from core.memory_integrator import MemoryIntegrator, PlanStatus
 
@@ -136,7 +135,7 @@ class TestFullPipeline:
         assert len(plan.steps) > 0
         
         # اعتبارسنجی
-        validation = await plan_validator.validate(plan, intent, ValidationLevel.STRICT)
+        await plan_validator.validate(plan, intent, ValidationLevel.STRICT)
         
         # ثبت موفق
         record_id = memory_integrator.record_execution(
@@ -178,7 +177,7 @@ class TestErrorHandlingIntegration:
         intent = await analyzer.analyze(request)
         
         plan = await plan_generator.generate_plan(intent)
-        validation = await plan_validator.validate(plan, intent, ValidationLevel.PARANOID)
+        await plan_validator.validate(plan, intent, ValidationLevel.PARANOID)
         
         # ممکن است warning یا error داشته باشد (حذف خطرناک است)
         # اما باید ثبت شود
@@ -423,7 +422,7 @@ class TestPerformanceIntegration:
         
         # مرحله ۴: اعتبارسنجی
         start_val = time.time()
-        validation = await plan_validator.validate(plan, intent)
+        await plan_validator.validate(plan, intent)
         val_time = time.time() - start_val
         assert val_time < 0.1  # کمتر از ۱۰۰ms
     
@@ -555,10 +554,10 @@ class TestDataFlow:
         request = "فایل دانلود کن"
         intent = await analyzer.analyze(request)
         plan = await plan_generator.generate_plan(intent)
-        validation = await plan_validator.validate(plan, intent)
+        await plan_validator.validate(plan, intent)
         
         # ثبت در حافظه
-        record_id = memory_integrator.record_execution(
+        memory_integrator.record_execution(
             plan_id=plan.plan_id,
             intent=intent,
             status=PlanStatus.SUCCESSFUL,

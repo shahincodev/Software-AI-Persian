@@ -12,7 +12,6 @@ import queue
 import threading
 import logging
 import tempfile
-import subprocess
 from typing import Optional, Callable, Any, cast, Literal, Tuple
 import speech_recognition as sr
 from google.cloud import texttospeech
@@ -21,8 +20,6 @@ from elevenlabs.client import ElevenLabs
 from langdetect import detect, LangDetectException
 import sounddevice as sd
 import soundfile as sf
-from pydub import AudioSegment
-import io
 
 logger = logging.getLogger(__name__)
 

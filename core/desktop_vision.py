@@ -17,7 +17,6 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Optional
 
 import numpy as np
@@ -523,7 +522,6 @@ class DesktopVision:
             
             # resize اگر سایزها متفاوت باشند
             if baseline_array.shape != current_array.shape:
-                from PIL import Image as PILImage
                 current_image = current_image.resize(baseline_image.size)
                 current_array = np.array(current_image)
             

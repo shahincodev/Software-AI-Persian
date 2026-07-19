@@ -9,15 +9,11 @@ Test Suite for Plan Validator - مجموعه تست‌های بررسی‌کنن
 """
 
 import pytest
-from datetime import datetime
-
 from core.plan_validator import (
     PlanValidator,
     ValidationLevel,
     ValidationStatus,
-    RiskLevel,
     ValidationReport,
-    ValidationIssue
 )
 from core.plan_generator import (
     ExecutionPlan,

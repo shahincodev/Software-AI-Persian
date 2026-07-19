@@ -70,6 +70,6 @@ class TaskEngine:
 
             logger.info("✅ Anham-Shod: %s", task)
             return result
-        except Exception as exc:
+        except Exception:
             logger.exception("❌ Shekast-Khord: %s", task)
             return None

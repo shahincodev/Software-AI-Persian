@@ -12,15 +12,12 @@
 
 import pytest
 import time
-from unittest.mock import Mock, MagicMock, patch, PropertyMock
-from pathlib import Path
-from datetime import datetime
+from unittest.mock import Mock, MagicMock
 
 from core.action_controller import (
     ActionController,
     ActionResult,
     ActionState,
-    ActionOutcome
 )
 from core.desktop_vision import ImageMatch
 from core.smart_wait import WaitResult, WaitStrategy
@@ -665,7 +662,7 @@ class TestIntegration:
         mock_vision.verify_text_typed.return_value = True
         
         # 1. Save initial state
-        initial_state = controller.save_state(name="initial")
+        controller.save_state(name="initial")
         
         # 2. Open File menu
         result1 = controller.select_menu_item(["File", "New"])

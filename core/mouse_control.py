@@ -21,7 +21,7 @@ from collections import deque
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Callable, Any
+from typing import Optional, Any
 
 try:
     import pyautogui

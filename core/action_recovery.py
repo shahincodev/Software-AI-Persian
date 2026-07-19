@@ -168,7 +168,7 @@ class ActionRecovery:
                 logger.debug(f"Attempt {attempt}/{self.config.max_retries}")
                 
                 # اجرای اقدام با timeout
-                result = await asyncio.wait_for(
+                await asyncio.wait_for(
                     action_func(),
                     timeout=self.config.timeout
                 )

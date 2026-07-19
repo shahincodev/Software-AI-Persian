@@ -19,7 +19,6 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.system_actions import LaunchAppAction, ExecuteCommandAction
-from core.system_actions import ActionResult as SysActionResult, ActionStatus
 from core.action_controller import ActionOutcome, ActionResult as ControllerResult
 from core.execution_manager import ExecutionManager
 from core.safety_filter import SafetyFilter, UserConsentManager
@@ -129,7 +128,7 @@ async def test_stdin_isolation_order():
     # Spy state: record whether action_controller.execute_action is EVER called
     call_record = {"desktop_called": False}
 
-    original_execute_action = agent.action_controller.execute_action
+    original_execute_action = agent.action_controller.execute_action  # noqa: F841
 
     def spy_execute_action(action, auto_consent=False):
         call_record["desktop_called"] = True

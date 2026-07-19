@@ -14,13 +14,10 @@ Plan Validator - بررسی صحت و امنیت پلان اجرایی
 """
 
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, Tuple, List, Set
+from typing import Optional, Any, List
 from enum import Enum
 from datetime import datetime
 import logging
-import json
-import uuid
-import re
 
 from core.plan_generator import ExecutionPlan, ExecutionStep, StepType
 from core.intent_analyzer import Intent

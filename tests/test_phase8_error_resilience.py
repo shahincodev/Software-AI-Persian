@@ -9,7 +9,7 @@
 
 import os
 import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import patch
 
 
 class TestInputSanitization:
@@ -160,7 +160,6 @@ class TestCircuitBreaker:
 
     def test_circuit_breaker_lockout_duration_auth(self):
         """قفل ۵ دقیقه‌ای برای خطاهای 403"""
-        import time
         from core.ai_brain import ModelCircuitBreaker
         cb = ModelCircuitBreaker()
         for _ in range(cb.FAILURE_THRESHOLD):

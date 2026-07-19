@@ -21,14 +21,13 @@ def test_ai_message_formatting():
     
     try:
         from core.ai_brain import AIBrain
-        from langchain_core.messages import HumanMessage
         
         brain = AIBrain()
         
         # تست 1: String input (باید خودکار تبدیل شود)
         async def test_string():
             try:
-                result = await brain.ask("test prompt", mode="system")
+                await brain.ask("test prompt", mode="system")
                 return True
             except AttributeError as e:
                 print(f"❌ FAILED: {e}")
@@ -60,7 +59,7 @@ def test_google_api_error_handling():
         # فعال کردن logging برای دیدن پیام‌های error
         logging.basicConfig(level=logging.INFO)
         
-        brain = AIBrain()
+        AIBrain()  # noqa: F841
         
         # شبیه‌سازی شرایطی که ممکن است Google API error بدهد
         # این تست فقط می‌خواهد مطمئن شود error handling وجود دارد
@@ -123,7 +122,7 @@ def test_vision_api_compatibility():
         from core.smart_wait import SmartWaiter
         
         vision = DesktopVision()
-        waiter = SmartWaiter(vision=vision)
+        SmartWaiter(vision=vision)
         
         # بررسی که متد wait_for_element با confidence_threshold کار می‌کند
         # (بدون اجرای واقعی که ممکن است timeout شود)

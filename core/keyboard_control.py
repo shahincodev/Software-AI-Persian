@@ -22,10 +22,9 @@
 import time
 import random
 import logging
-import unicodedata
 from collections import deque
 from enum import Enum
-from typing import Optional, List, Union
+from typing import Optional, List
 from dataclasses import dataclass, field
 from datetime import datetime
 

@@ -22,7 +22,6 @@ from core.memory_integrator import (
     MemoryManager,
     MemoryItem,
     ShortTermMemory,
-    LongTermMemory,
 )
 
 

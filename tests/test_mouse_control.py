@@ -13,7 +13,7 @@
 
 import pytest
 import time
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from core.mouse_control import (
     MouseController,
     MouseButton,
@@ -42,18 +42,18 @@ class TestMouseController:
     
     def test_is_safe_position_valid(self):
         """تست موقعیت‌های امن."""
-        assert self.mouse.is_safe_position(100, 100) == True
-        assert self.mouse.is_safe_position(500, 300) == True
+        assert self.mouse.is_safe_position(100, 100) is True
+        assert self.mouse.is_safe_position(500, 300) is True
     
     def test_is_safe_position_invalid(self):
         """تست موقعیت‌های غیرامن."""
         # خارج از حد بالا
-        assert self.mouse.is_safe_position(-10, 100) == False
+        assert self.mouse.is_safe_position(-10, 100) is False
         # خارج از حد پایین  
-        assert self.mouse.is_safe_position(5, 5) == False
+        assert self.mouse.is_safe_position(5, 5) is False
         # Y زیاد (نزدیک taskbar)
         bounds_max_y = self.mouse.safe_bounds['max_y']
-        assert self.mouse.is_safe_position(100, bounds_max_y + 100) == False
+        assert self.mouse.is_safe_position(100, bounds_max_y + 100) is False
     
     def test_validate_coordinates_success(self):
         """تست اعتبارسنجی مختصات معتبر."""
@@ -71,7 +71,7 @@ class TestMouseController:
         """تست غیرفعال کردن امنیت."""
         mouse_unsafe = MouseController(safety_enabled=False)
         # باید موقعیت غیرامن را قبول کند
-        assert mouse_unsafe.is_safe_position(-100, -100) == True
+        assert mouse_unsafe.is_safe_position(-100, -100) is True
         x, y = mouse_unsafe.validate_coordinates(-100, -100)
         assert x == -100
     
@@ -170,7 +170,7 @@ class TestMouseController:
         
         result = self.mouse.move(500, 300, duration=0.5, smooth=False)
         
-        assert result == True
+        assert result is True
         mock_pyautogui.moveTo.assert_called_once_with(500, 300, duration=0.5)
         assert self.mouse.stats['total_moves'] == 1
     
@@ -181,7 +181,7 @@ class TestMouseController:
         
         result = self.mouse.move(-100, -100, duration=0.5)
         
-        assert result == False
+        assert result is False
         assert self.mouse.stats['failed_actions'] == 1
     
     @patch('core.mouse_control.pyautogui')
@@ -192,7 +192,7 @@ class TestMouseController:
         
         result = self.mouse.click(100, 100, button=MouseButton.LEFT, clicks=1)
         
-        assert result == True
+        assert result is True
         assert self.mouse.stats['total_clicks'] == 1
         mock_pyautogui.click.assert_called_once()
     
@@ -204,7 +204,7 @@ class TestMouseController:
         
         result = self.mouse.click(100, 100, clicks=2)
         
-        assert result == True
+        assert result is True
         assert self.mouse.stats['total_clicks'] == 2
     
     @patch('core.mouse_control.pyautogui')
@@ -215,7 +215,7 @@ class TestMouseController:
         
         result = self.mouse.click(100, 100, button=MouseButton.RIGHT)
         
-        assert result == True
+        assert result is True
         args = mock_pyautogui.click.call_args
         assert args[1]['button'] == 'right'
     
@@ -232,7 +232,7 @@ class TestMouseController:
             pattern=ClickPattern.HUMAN_NORMAL
         )
         
-        assert result == True
+        assert result is True
         # باید sleep فراخوانی شود (برای تاخیر)
         assert mock_sleep.call_count >= 1
     
@@ -244,7 +244,7 @@ class TestMouseController:
         
         result = self.mouse.drag(100, 100, 500, 300)
         
-        assert result == True
+        assert result is True
         assert self.mouse.stats['total_drags'] == 1
         mock_pyautogui.drag.assert_called_once()
     
@@ -253,7 +253,7 @@ class TestMouseController:
         """تست اسکرول."""
         result = self.mouse.scroll(5)
         
-        assert result == True
+        assert result is True
         assert self.mouse.stats['total_scrolls'] == 1
         mock_pyautogui.scroll.assert_called_once_with(5)
     
@@ -282,7 +282,7 @@ class TestMouseController:
         
         result = mouse_with_vision.click_on_text("OK")
         
-        assert result == True
+        assert result is True
         mock_vision.find_text_boxes.assert_called_once_with("OK")
     
     @patch('core.mouse_control.pyautogui')
@@ -312,7 +312,7 @@ class TestMouseController:
         
         result = mouse_with_vision.click_on_image("button.png")
         
-        assert result == True
+        assert result is True
         mock_vision.find_image.assert_called_once_with("button.png", confidence=0.8)
     
     @patch('core.mouse_control.pyautogui')
@@ -392,7 +392,7 @@ class TestMouseActionDataclass:
         assert action.button is None
         assert action.timestamp is not None  # auto-generated
         assert action.duration == 0.0
-        assert action.success == False
+        assert action.success is False
     
     def test_creation_with_values(self):
         """تست ساخت با مقادیر."""
@@ -413,7 +413,7 @@ class TestMouseActionDataclass:
         assert action.y == 200
         assert action.timestamp == now
         assert action.duration == 0.5
-        assert action.success == True
+        assert action.success is True
 
 
 class TestMouseEnums:

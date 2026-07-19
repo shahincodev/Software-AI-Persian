@@ -40,7 +40,7 @@ from typing import Optional, List, Dict, Any, Tuple, Union
 
 from core.mouse_control import MouseController, MouseButton
 from core.keyboard_control import KeyboardController
-from core.desktop_vision import DesktopVision, ImageMatch
+from core.desktop_vision import DesktopVision
 from core.smart_wait import SmartWaiter
 from core.system_actions import SystemAction, RiskLevel
 from core.desktop_actions import (

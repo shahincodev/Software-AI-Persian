@@ -6,7 +6,6 @@
 
 import time
 import pytest
-from pathlib import Path
 
 from core.desktop_vision import DesktopVision, TextBox, WindowInfo
 

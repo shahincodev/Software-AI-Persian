@@ -17,10 +17,10 @@ from __future__ import annotations
 
 import logging
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Literal, Optional
 
-from core.system_actions import ActionStatus, RiskLevel, SystemAction
+from core.system_actions import RiskLevel, SystemAction
 
 logger = logging.getLogger(__name__)
 

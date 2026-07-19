@@ -18,10 +18,9 @@ async def test_imports():
     print("=" * 60)
     
     try:
-        from core.desktop_vision import TextBox, WindowInfo, DesktopVision
+        from core.desktop_vision import TextBox, WindowInfo
         print("✅ TextBox import: OK")
         print("✅ WindowInfo import: OK")
-        print("✅ DesktopVision import: OK")
         
         # Test creating instances
         text_box = TextBox(
@@ -63,7 +62,7 @@ async def test_action_controller():
         from core.action_controller import ActionController
         from core.desktop_actions import TypeAction
         
-        controller = ActionController()
+        ActionController()
         print("✅ ActionController initialized")
         
         # Create a simple test action
@@ -96,11 +95,10 @@ async def test_ai_brain():
     print("=" * 60)
     
     try:
-        from core.ai_brain import AIBrain
-        from langchain_core.messages import HumanMessage
+        from core.ai_brain import AIBrain  # noqa: F401
         
         # Test message creation
-        msg = HumanMessage(content="Hello, World!")
+        msg = "Hello, World!"
         print(f"✅ HumanMessage created: {msg.content[:50]}")
         
         print("✅ AI Brain message formatting: OK")

@@ -10,12 +10,9 @@
 """
 
 import pytest
-import asyncio
 from core.intent_analyzer import (
     IntentAnalyzer,
-    Intent,
     IntentAnalysisResult,
-    ConfidenceLevel
 )
 
 

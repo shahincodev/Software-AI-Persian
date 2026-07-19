@@ -13,7 +13,7 @@ from __future__ import annotations
 import logging
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from core.ai_brain import AIBrain
 from core.system_capabilities import SystemCapabilityRegistry

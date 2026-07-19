@@ -19,12 +19,8 @@ Test Suite for Plan Generator - مجموعه تست‌های Plan Generator
 """
 
 import pytest
-import asyncio
-from unittest.mock import Mock
-
 from core.plan_generator import (
     PlanGenerator,
-    ExecutionStep,
     ExecutionPlan,
     StepType,
 )

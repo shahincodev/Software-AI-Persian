@@ -342,7 +342,7 @@ async def test_action_controller(result: TestResult):
         
         # Instantiation
         try:
-            ctrl = ActionController()
+            ActionController()
             result.add_pass("Action Controller", "Instantiation", "✓")
         except Exception as e:
             result.add_fail("Action Controller", "Instantiation", f"{e}")
@@ -409,7 +409,7 @@ async def test_ai_brain(result: TestResult):
         
         # Model selection
         try:
-            model = brain.get_model(purpose="system")
+            brain.get_model(purpose="system")
             result.add_pass("AI Brain", "get_model()", "✓")
         except Exception as e:
             if "API" in str(e) or "key" in str(e).lower():

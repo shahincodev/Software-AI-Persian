@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 import logging
-import time
+import importlib.util
 from collections import deque
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -24,11 +24,8 @@ from typing import Any, Callable, Optional
 logger = logging.getLogger(__name__)
 
 # تلاش برای import psutil
-try:
-    import psutil
-    PSUTIL_AVAILABLE = True
-except ImportError:
-    PSUTIL_AVAILABLE = False
+PSUTIL_AVAILABLE = importlib.util.find_spec("psutil") is not None
+if not PSUTIL_AVAILABLE:
     logger.warning("psutil unavailable - monitoring service is disabled")
 
 

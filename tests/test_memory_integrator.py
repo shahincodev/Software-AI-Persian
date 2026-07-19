@@ -18,7 +18,6 @@ from core.memory_integrator import (
     PlanStatus,
     LearningType,
     ExecutionHistory,
-    OptimizationSuggestion
 )
 from core.plan_generator import (
     ExecutionPlan,

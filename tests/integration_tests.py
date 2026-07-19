@@ -5,9 +5,8 @@
 """تست‌های یکپارچه‌سازی سیستم کامل."""
 
 import pytest
-import asyncio
 from core.action_safety import ActionSafety
-from core.action_recovery import ActionRecovery, RecoveryConfig
+from core.action_recovery import ActionRecovery
 
 
 class TestIntegration:

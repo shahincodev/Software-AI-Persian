@@ -13,7 +13,6 @@ from core.safety_consent_manager import (
     SafetyConsentManager,
     RiskLevel,
     ConsentRequest,
-    ConsentDecision
 )
 
 

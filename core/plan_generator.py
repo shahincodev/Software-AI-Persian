@@ -21,10 +21,9 @@ Core Responsibilities:
     4. بهینه‌سازی اجرا (Execution Optimization)
 """
 
-import asyncio
 import logging
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set, Tuple, Any
+from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
 import uuid
 from datetime import datetime
@@ -306,7 +305,6 @@ class PlanGenerator:
         مراحل پویا تولید می‌کند.
         """
         steps = []
-        step_counter = 0
         
         # بررسی وجود الگو برای این فعل
         pattern = self.ACTION_PATTERNS.get(intent.verb)

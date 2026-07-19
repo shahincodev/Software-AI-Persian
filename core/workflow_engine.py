@@ -18,8 +18,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
-from core.plan_generator import ExecutionPlan, ExecutionStep, ExecutionMode, StepType
-from core.plan_validator import PlanValidator, ValidationLevel, ValidationStatus
+from core.plan_generator import ExecutionPlan, ExecutionStep, StepType
+from core.plan_validator import PlanValidator, ValidationLevel
 from core.step_tracker import StepTracker, StepStatus
 
 logger = logging.getLogger(__name__)

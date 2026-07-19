@@ -14,7 +14,6 @@ from core.keyboard_control import (
     TypingSpeed,
     Hotkeys,
     Language,
-    is_persian_text,
 )
 
 # تنظیم logging
@@ -75,7 +74,6 @@ def demo_2_typing_speeds():
         kb = KeyboardController(human_behavior=True, default_speed=speed)
         
         # شبیه‌سازی تایپ
-        start = time.time()
         text = "Hello"
         
         # محاسبه زمان انتظاری
@@ -86,8 +84,6 @@ def demo_2_typing_speeds():
         for char in text:
             interval = kb._get_typing_interval(speed, char)
             total_time += interval
-        
-        elapsed = time.time() - start
         
         print(f"  {description}:")
         print(f"    - Base interval: {speed.value}s")
@@ -130,8 +126,6 @@ def demo_3_safety_validation():
 def demo_4_hotkeys():
     """Demo 4: Hotkey های پیش‌فرض."""
     print_section("Demo 4: Common Hotkeys (کلیدهای میانبر رایج)")
-    
-    kb = KeyboardController(human_behavior=False)
     
     print("Available predefined hotkeys:\n")
     
@@ -299,8 +293,6 @@ def demo_8_human_behavior():
     
     kb_robot = KeyboardController(human_behavior=False)
     kb_human = KeyboardController(human_behavior=True)
-    
-    text = "Hello World"
     
     # Robot mode
     print("1. Robot Mode (no delays):")

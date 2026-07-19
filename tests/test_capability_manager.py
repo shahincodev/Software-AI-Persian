@@ -9,7 +9,7 @@
 """
 
 import pytest
-from core.capability_manager import CapabilityManager, CapabilityType
+from core.capability_manager import CapabilityManager
 
 
 @pytest.fixture

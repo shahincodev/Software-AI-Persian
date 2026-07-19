@@ -141,14 +141,7 @@ def demo_vision_guided():
     
     try:
         # ساخت Vision system
-        vision = DesktopVision()
-        
-        # ساخت MouseController با Vision
-        mouse = MouseController(
-            vision_system=vision,
-            safety_enabled=True,
-            human_behavior=True
-        )
+        DesktopVision()
         
         print("\n✅ MouseController + DesktopVision ready")
         print("\n📝 Usage examples:")

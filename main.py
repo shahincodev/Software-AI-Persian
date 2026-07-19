@@ -44,20 +44,14 @@ from core.action_controller import ActionController
 from core.action_factory import create_action_from_data
 from core.action_types import ActionResult
 from core.ai_brain import AIBrain
-from core.capability_manager import CapabilityManager
 from core.desktop_vision import DesktopVision
-from core.intent_router import IntentRouter, RouteType
-from core.keyboard_control import KeyboardController
 from core.logging_config import install_exception_hook, setup_logging
-from core.memory_integrator import MemoryIntegrator, MemoryManager
+from core.memory_integrator import MemoryManager
 from core.session_manager import SessionManager
 from core.windows_environment import WindowsEnvironment
-from core.mouse_control import MouseController
 from core.plan_generator import PlanGenerator, ExecutionPlan
 from core.plan_validator import PlanValidator
 from core.safety_consent_manager import SafetyConsentManager
-from core.smart_wait import SmartWaiter
-from core.step_tracker import StepTracker
 from core.tool_schema import TOOLS
 from core.vision_loop import VisionLoopManager
 from core.voice_io import VoiceManager
@@ -240,7 +234,7 @@ class ToolExecutor:
             }
 
         try:
-            from core.intent_analyzer import Intent, IntentAnalysisResult
+            from core.intent_analyzer import Intent
 
             # Create a minimal intent for plan generation
             intent = Intent(
@@ -521,7 +515,6 @@ class ToolExecutor:
     async def _screenshot(self, params: dict, description: str) -> dict[str, Any]:
         """Take a screenshot of the current screen."""
         try:
-            region = params.get("region")
             screenshot = self.vision_loop.vision.capture_screen()
             path = f"data/screenshots/screenshot_{int(__import__('time').time())}.png"
             screenshot.save(path)
@@ -894,7 +887,7 @@ async def agent_loop(args: argparse.Namespace) -> None:
     chat_brain = ai_brain
 
     # Safety
-    session_control = SafetyConsentManager()
+    SafetyConsentManager()
 
     print_banner()
 
@@ -1117,7 +1110,7 @@ async def agent_loop(args: argparse.Namespace) -> None:
             # Phase 9: System status command
             if cmd_lower == "/status":
                 try:
-                    from core.ai_brain import ProviderDetector, ModelCircuitBreaker, ResponseCache
+                    from core.ai_brain import ProviderDetector, ModelCircuitBreaker
                     from core.model_config import get_health_tracker
                     detector = ProviderDetector()
                     cb = ModelCircuitBreaker()

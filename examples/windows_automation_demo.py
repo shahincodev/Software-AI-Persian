@@ -13,7 +13,6 @@
 
 import asyncio
 import logging
-from pathlib import Path
 
 # تنظیم logging
 logging.basicConfig(

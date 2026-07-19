@@ -12,7 +12,7 @@
 """
 
 import pytest
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock, patch
 from PIL import Image
 import numpy as np
 

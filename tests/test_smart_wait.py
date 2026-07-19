@@ -6,8 +6,7 @@
 
 import time
 import pytest
-import os
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from PIL import Image
 
 from core.smart_wait import (
@@ -440,7 +439,7 @@ def test_retry_all_attempts_fail(waiter):
 
 def test_retry_exponential_backoff(waiter):
     """تست Exponential Backoff."""
-    delays = []
+    delays = []  # noqa: F841
     
     def action():
         raise ValueError("Fail")

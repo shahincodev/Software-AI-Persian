@@ -11,9 +11,9 @@ Memory Integrator - یکپارچه‌سازی حافظه و یادگیری
 
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from threading import Lock
-from typing import Optional, Dict, List, Tuple, Any, Iterable
+from typing import Optional, Dict, List, Any
 from enum import Enum
 from datetime import datetime, timedelta
 import hashlib
@@ -22,8 +22,8 @@ import logging
 import sqlite3
 from pathlib import Path
 
-from core.plan_generator import ExecutionPlan, ExecutionStep
-from core.plan_validator import ValidationReport, ValidationStatus
+from core.plan_generator import ExecutionPlan
+from core.plan_validator import ValidationReport
 from core.intent_analyzer import Intent, IntentAnalysisResult
 
 

@@ -20,13 +20,12 @@ import asyncio
 import os
 import logging
 import json
-import re
 from typing import Any, Optional
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from core.model_config import get_model_registry, ModelConfig, get_health_tracker
 from core.tool_schema import (
-    TOOLS, validate_tool_call, get_tool_prompt_block, get_all_tool_names
+    validate_tool_call, get_tool_prompt_block, get_all_tool_names
 )
 
 logger = logging.getLogger(__name__)
@@ -672,7 +671,7 @@ class AIBrain:
                 if model_config.name not in self._models:
                     self._models[model_config.name] = self._load_model(model_config.name)
                 
-                model = self._models[model_config.name]
+                _ = self._models[model_config.name]
                 result = await self.ask(prompt, mode=model_config.name, max_tokens=max_tokens)
                 
                 if result and result.strip():

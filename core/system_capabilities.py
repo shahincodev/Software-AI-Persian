@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import json
 import logging
-import os
+import importlib.util
 import platform
 import shutil
 import subprocess
@@ -23,11 +23,8 @@ from typing import Any, Optional
 logger = logging.getLogger(__name__)
 
 # تلاش برای import کتابخانه‌های اختیاری
-try:
-    import psutil
-    PSUTIL_AVAILABLE = True
-except ImportError:
-    PSUTIL_AVAILABLE = False
+PSUTIL_AVAILABLE = importlib.util.find_spec("psutil") is not None
+if not PSUTIL_AVAILABLE:
     logger.warning("psutil is unavailable - some functionality will be limited")
 
 

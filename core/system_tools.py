@@ -43,13 +43,13 @@ except ImportError:
     PSUTIL_AVAILABLE = False
     logger.warning("psutil is not available - capabilities will be limited")
 
-try:
-    import win32api
-    import win32con
-    import win32process
-    WIN32_AVAILABLE = True
-except ImportError:
-    WIN32_AVAILABLE = False
+import importlib.util
+
+WIN32_AVAILABLE = all(
+    importlib.util.find_spec(mod) is not None
+    for mod in ("win32api", "win32con", "win32process")
+)
+if not WIN32_AVAILABLE:
     logger.warning("pywin32 is not available - some advanced features will be disabled")
 
 

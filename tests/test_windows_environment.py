@@ -12,10 +12,8 @@ Tests cover:
 - EnvironmentContext: context summary generation
 """
 
-import os
 import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
 
 from core.windows_environment import (
     WindowsEnvironment,

@@ -9,7 +9,6 @@
 """
 
 import sys
-import os
 from pathlib import Path
 from colorama import init, Fore, Style
 
@@ -79,7 +78,7 @@ def test_core_components():
     # تست Desktop Vision
     try:
         from core.desktop_vision import DesktopVision
-        vision = DesktopVision()
+        DesktopVision()
         print_success("Desktop Vision: OK")
         results['vision'] = True
     except Exception as e:
@@ -89,7 +88,7 @@ def test_core_components():
     # تست Keyboard Control
     try:
         from core.keyboard_control import KeyboardController
-        kb = KeyboardController()
+        KeyboardController()
         print_success("Keyboard Control: OK")
         results['keyboard'] = True
     except Exception as e:
@@ -99,7 +98,7 @@ def test_core_components():
     # تست Mouse Control
     try:
         from core.mouse_control import MouseController
-        mouse = MouseController()
+        MouseController()
         print_success("Mouse Control: OK")
         results['mouse'] = True
     except Exception as e:
@@ -109,7 +108,7 @@ def test_core_components():
     # تست Action Controller
     try:
         from core.action_controller import ActionController
-        controller = ActionController()
+        ActionController()
         print_success("Action Controller: OK")
         results['controller'] = True
     except Exception as e:
@@ -179,7 +178,7 @@ def test_log_analyzer():
             print_success("LogAnalyzer class: OK")
             
             # Test instantiation
-            analyzer = LogAnalyzer()
+            LogAnalyzer()  # noqa: F841
             print_success("LogAnalyzer instantiation: OK")
             
             return True

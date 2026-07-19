@@ -487,7 +487,6 @@ class TestPhase4Integration:
 
     def test_tracker_and_workflow_together(self, mock_tool_executor, sample_plan):
         from core.workflow_engine import WorkflowEngine
-        from core.step_tracker import StepTracker
 
         engine = WorkflowEngine(
             tool_executor=mock_tool_executor,

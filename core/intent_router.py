@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional, List, Dict, Any
 
-from core.intent_analyzer import IntentAnalyzer, Intent, IntentAnalysisResult
+from core.intent_analyzer import IntentAnalyzer, Intent
 from core.safety_consent_manager import RiskLevel
 
 logger = logging.getLogger(__name__)
@@ -227,12 +227,6 @@ class IntentRouter:
         # الگوهای اتوماسیون دسکتاپ — هم verb/target و هم متن خام را بررسی کن
         desktop_verbs = ["open", "create", "type", "click", "delete", "move", "copy", "write", "do", "make", "new", "build"]
         desktop_targets = ["file", "folder", "notepad", "desktop", "window", "app", "directory", "document", "drive"]
-        desktop_patterns = ["open ", "launch ", "start ", "run ", "create ", "type ", "click ",
-                            "delete ", "remove ", "write ", "make ", "new ",
-                            "empty ", "clean ", "rename ", "recycle", "close ",
-                            "باز ", "اجرا ", "ایجاد ", "ساخت ", "نوشتن ",
-                            "کلیک ", "نصب ", "drive", "folder", "file ", "desktop",
-                            "شروع ", "بساز ", "بنویس "]
         # Strong filesystem/desktop signals in raw text — catch cases where verb is misclassified
         fs_signals = ["folder", "file", "desktop", "directory", "drive", "notepad",
                       "helloword", "hello world", "txt extension", "text file",

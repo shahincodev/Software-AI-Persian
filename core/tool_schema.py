@@ -7,8 +7,8 @@ rules used by the AI agent to generate and validate structured tool calls.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
-from typing import Any, Optional
+from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 

@@ -24,10 +24,9 @@ import re
 from typing import Dict, List, Any, Optional, Tuple
 
 from core.ai_brain import AIBrain
-from core.system_action_parser import SystemActionParser
 from core.intent_models import (
     DialogState, QuestionType, DialogQuestion,
-    DialogResponse, DialogSession, ConfidenceLevel,
+    DialogResponse, DialogSession,
     Intent, IntentAnalysisResult
 )
 
@@ -689,8 +688,6 @@ class IntentAnalyzer:
         intent: Intent,
         language: str = "fa"
     ) -> DialogQuestion:
-        lang_key = "fa" if language == "fa" else "en"
-        
         if field_name in self.PREDEFINED_QUESTIONS:
             pred = self.PREDEFINED_QUESTIONS[field_name]
             return DialogQuestion(

@@ -13,7 +13,6 @@ from __future__ import annotations
 import logging
 import os
 import re
-from pathlib import Path
 from typing import Optional
 
 from .system_actions import (

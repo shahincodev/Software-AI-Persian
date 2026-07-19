@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Optional
 
 from core.desktop_vision import DesktopVision
 from core.action_recovery import ActionRecovery, RecoveryConfig
@@ -245,14 +245,13 @@ class VisionLoopManager:
 
             # Step 2: Execute action
             try:
-                action_result = None
                 if hasattr(action_func, '__call__'):
                     import asyncio
                     if asyncio.iscoroutinefunction(action_func):
                         import asyncio as _asyncio
-                        action_result = _asyncio.get_event_loop().run_until_complete(action_func())
+                        _asyncio.get_event_loop().run_until_complete(action_func())
                     else:
-                        action_result = action_func()
+                        action_func()
 
                 logger.info("Action executed: %s", action_description)
 

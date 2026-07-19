@@ -17,9 +17,8 @@ import os
 import tempfile
 import time
 import pytest
-from pathlib import Path
 
-from core.session_manager import SessionManager, Session, SessionMessage
+from core.session_manager import SessionManager
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -93,9 +92,9 @@ class TestSessionCRUD:
 
     def test_list_sessions_ordered_by_updated(self, session_manager):
         """Test sessions are listed in order of last update."""
-        s1 = session_manager.create_session("first")
+        session_manager.create_session("first")
         time.sleep(0.01)
-        s2 = session_manager.create_session("second")
+        session_manager.create_session("second")
         sessions = session_manager.list_sessions()
         assert sessions[0].name == "second"
         assert sessions[1].name == "first"
@@ -120,7 +119,7 @@ class TestSessionCRUD:
 
     def test_switch_session(self, session_manager):
         """Test switching to a different session."""
-        s1 = session_manager.create_session("session-a")
+        session_manager.create_session("session-a")
         s2 = session_manager.create_session("session-b")
         result = session_manager.switch_session(s2.id)
         assert result is not None

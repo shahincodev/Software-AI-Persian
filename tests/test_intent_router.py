@@ -10,7 +10,6 @@
 
 import pytest
 from core.intent_router import IntentRouter, RouteType, Route
-from core.intent_analyzer import Intent
 
 
 @pytest.fixture

@@ -37,14 +37,14 @@ for model_name in models_to_test:
             print(f"   ❌ QUOTA ERROR: {model_name}")
             # چاپ جزئیات quota
             if "limit: 0" in error_str:
-                print(f"      ⚠️  Limit is ZERO for this model!")
+                print("      ⚠️  Limit is ZERO for this model!")
             if "retry in" in error_str.lower():
                 import re
                 retry_match = re.search(r'retry in ([\d.]+)s', error_str, re.IGNORECASE)
                 if retry_match:
                     print(f"      ⏳ Retry after: {retry_match.group(1)} seconds")
         elif "403" in error_str or "API_KEY" in error_str.upper():
-            print(f"   ❌ AUTH ERROR: Invalid API Key")
+            print("   ❌ AUTH ERROR: Invalid API Key")
         else:
             print(f"   ❌ ERROR: {error_str[:100]}")
 

@@ -648,4 +648,4 @@ class TestIntegration:
             
             # بازیابی
             restored = create_action_from_dict(data)
-            assert type(restored) == type(action)
+            assert type(restored) is type(action)

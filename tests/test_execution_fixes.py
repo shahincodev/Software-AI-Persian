@@ -123,7 +123,7 @@ async def test_stdin_isolation_order():
     print("\n🔍 Test 2: STDIN Isolation — Desktop action blocked by cascade")
     print("=" * 55)
 
-    agent = IntelligentSystemAgent(dry_run=True)
+    agent = IntelligentSystemAgent(dry_run=True)  # noqa: F821
 
     # Spy state: record whether action_controller.execute_action is EVER called
     call_record = {"desktop_called": False}
@@ -191,7 +191,7 @@ async def test_display_accuracy():
     print("\n🔍 Test 3: Display Accuracy — Symbols Match Outcomes")
     print("=" * 55)
 
-    agent = IntelligentSystemAgent(dry_run=True)
+    agent = IntelligentSystemAgent(dry_run=True)  # noqa: F821
 
     test_cases = [
         ("create folder DisplayTestA on desktop", "create-folder"),
@@ -204,24 +204,24 @@ async def test_display_accuracy():
         result = await agent.process_request(request)
         lines = result.split('\n')
 
-        old_v = [l for l in lines if l.startswith('✓')]
+        old_v = [ln for ln in lines if ln.startswith('✓')]
         if old_v:
             print(f"❌ [{label}] Found submission-time '✓': {old_v}")
             all_pass = False
 
-        status_lines = [l for l in lines if l.startswith('✅') or l.startswith('❌')]
+        status_lines = [ln for ln in lines if ln.startswith('✅') or ln.startswith('❌')]
         if not status_lines:
             print(f"❌ [{label}] No post-execution symbols found")
             all_pass = False
             continue
 
-        success_symbols = sum(1 for l in lines if l.startswith('✅'))
-        fail_symbols = sum(1 for l in lines if l.startswith('❌'))
+        success_symbols = sum(1 for ln in lines if ln.startswith('✅'))
+        fail_symbols = sum(1 for ln in lines if ln.startswith('❌'))
 
         stats_line = None
-        for l in lines:
-            if 'Summary:' in l:
-                stats_line = l.strip()
+        for ln in lines:
+            if 'Summary:' in ln:
+                stats_line = ln.strip()
                 break
 
         if not stats_line:

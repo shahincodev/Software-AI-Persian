@@ -20,15 +20,15 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 
-from core.system_actions import (
+from core.system_actions import (  # noqa: E402
     LaunchAppAction,
     QueryHardwareAction,
     InstallPackageAction,
 )
-from core.system_capabilities import SystemCapabilityRegistry
-from core.execution_manager import ExecutionManager, ExecutionPriority
-from core.monitoring_service import MonitoringService
-from core.safety_filter import SafetyFilter, UserConsentManager
+from core.system_capabilities import SystemCapabilityRegistry  # noqa: E402
+from core.execution_manager import ExecutionManager, ExecutionPriority  # noqa: E402
+from core.monitoring_service import MonitoringService  # noqa: E402
+from core.safety_filter import SafetyFilter, UserConsentManager  # noqa: E402
 
 
 async def demo_hardware_query():
@@ -173,7 +173,7 @@ def demo_monitoring():
         
         # نمایش میانگین
         avg = monitor.get_average_usage(last_n=5)
-        print(f"\n📈 Average usage:")
+        print("\n📈 Average usage:")
         print(f"  CPU: {avg['cpu_percent']:.1f}%")
         print(f"  RAM: {avg['memory_percent']:.1f}%")
         

@@ -65,7 +65,7 @@ else:
 
 # 4. بررسی وضعیت Git
 print("\n4️⃣ Checking Git status...")
-import subprocess
+import subprocess  # noqa: E402
 try:
     result = subprocess.run(
         ["git", "status", "--porcelain"],

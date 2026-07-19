@@ -208,9 +208,9 @@ def test_input_sanitization():
             
             # بررسی که completion= و thinking= حذف شده‌اند
             if "completion=" not in sanitized and "thinking=" not in sanitized:
-                print(f"   ✅ Cleaned successfully")
+                print("   ✅ Cleaned successfully")
             else:
-                print(f"   ❌ Still contains suspicious patterns")
+                print("   ❌ Still contains suspicious patterns")
                 all_passed = False
         
         if all_passed:

@@ -315,7 +315,7 @@ class ActionController:
             logger.error(f"Error clicking on image '{image_path}': {e}")
             return ActionOutcome(
                 result=ActionResult.FAILED,
-                message=f"Failed to click on image",
+                message="Failed to click on image",
                 duration=duration,
                 error=str(e)
             )
@@ -423,7 +423,7 @@ class ActionController:
             logger.error(f"Error typing in field '{field_text}': {e}")
             return ActionOutcome(
                 result=ActionResult.FAILED,
-                message=f"Failed to type in field",
+                message="Failed to type in field",
                 duration=duration,
                 error=str(e)
             )
@@ -505,7 +505,7 @@ class ActionController:
             logger.error(f"Error navigating menu: {e}")
             return ActionOutcome(
                 result=ActionResult.FAILED,
-                message=f"Failed to navigate menu",
+                message="Failed to navigate menu",
                 duration=duration,
                 error=str(e)
             )

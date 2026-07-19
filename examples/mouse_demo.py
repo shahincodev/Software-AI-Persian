@@ -22,8 +22,8 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from core.mouse_control import MouseController, MouseButton, ClickPattern
-from core.desktop_vision import DesktopVision
+from core.mouse_control import MouseController, MouseButton, ClickPattern  # noqa: E402
+from core.desktop_vision import DesktopVision  # noqa: E402
 
 
 def demo_basic_operations():

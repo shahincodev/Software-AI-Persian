@@ -352,7 +352,7 @@ class SystemCapabilityRegistry:
         hardware = len([c for c in self.capabilities.values() if c.type == "hardware"])
         
         summary_parts = [
-            f"System capabilities:",
+            "System capabilities:",
             f"  - Applications: {apps}",
             f"  - Tools: {tools}",
             f"  - Hardware: {hardware}",

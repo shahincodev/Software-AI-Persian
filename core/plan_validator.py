@@ -529,7 +529,7 @@ class PlanValidator:
         summary.append(f"\nوضعیت: {status_emoji.get(report.status, '❓')} {report.status.value.upper()}")
         
         # امتیازها
-        summary.append(f"\n📊 امتیازها:")
+        summary.append("\n📊 امتیازها:")
         summary.append(f"  🔒 امنیت: {report.safety_score:.1f}/100")
         summary.append(f"  🛡️ قابلیت اطمینان: {report.reliability_score:.1f}/100")
         summary.append(f"  ⚡ کارایی: {report.efficiency_score:.1f}/100")
@@ -546,7 +546,7 @@ class PlanValidator:
         
         # پیشنهادات
         if report.suggestions:
-            summary.append(f"\n💡 پیشنهادات:")
+            summary.append("\n💡 پیشنهادات:")
             for suggestion in report.suggestions[:3]:
                 summary.append(f"  • {suggestion}")
         

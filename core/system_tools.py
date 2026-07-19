@@ -43,7 +43,7 @@ except ImportError:
     PSUTIL_AVAILABLE = False
     logger.warning("psutil is not available - capabilities will be limited")
 
-import importlib.util
+import importlib.util  # noqa: E402
 
 WIN32_AVAILABLE = all(
     importlib.util.find_spec(mod) is not None

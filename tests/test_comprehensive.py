@@ -482,7 +482,7 @@ async def test_real_world(result: TestResult):
             try:
                 resp = await brain.ask(p, mode="system", max_tokens=50)
                 if resp and len(resp) > 0:
-                    result.add_pass("Real-World", f"'{p}'", f"✓ got response")
+                    result.add_pass("Real-World", f"'{p}'", "✓ got response")
                 else:
                     result.add_fail("Real-World", f"'{p}'", "empty response")
             except Exception as e:

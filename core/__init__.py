@@ -63,13 +63,6 @@ from .action_recovery import (
 )
 
 # Week 2: Advanced Features (Days 8-9)
-from .multi_monitor import MultiMonitor, MonitorInfo
-from .context_aware_actions import (
-    ContextAwareActions,
-    ContextInfo,
-    SystemState,
-    ApplicationCategory,
-)
 
 # Phase 4: Multi-Step Planning
 from .plan_generator import PlanGenerator, ExecutionPlan, ExecutionStep, StepType, ExecutionMode
@@ -79,6 +72,14 @@ from .workflow_engine import WorkflowEngine, WorkflowResult
 
 # Phase 5: Persistent Memory
 from .memory_integrator import MemoryManager, MemoryItem, ShortTermMemory, LongTermMemory
+
+# New Architecture: Intelligent Engines
+from .mouse_engine import MouseEngine, MouseButton, ClickPattern, ClickResult, TargetInfo
+from .keyboard_engine import KeyboardEngine, TypingMode, TypingSpeed, TypeResult, Hotkeys
+from .security_engine import SecurityEngine, RiskLevel as SecurityRiskLevel, TrustLevel, SecurityDecision, SecurityAssessment
+from .reasoning_pipeline import ReasoningPipeline, PipelineStage, ExecutionPlan, PlanStep, AgentResult
+from .uia_provider import UIAProvider, UIAElement, UIATreeSnapshot
+from .reliability import ReliabilityManager, SystemState, Checkpoint, DiagnosticEntry
 
 __all__ = [
     # Actions
@@ -128,13 +129,6 @@ __all__ = [
     "RecoveryStrategy",
     "ErrorSeverity",
     "RecoveryActionResult",
-    # Week 2: Advanced Features
-    "MultiMonitor",
-    "MonitorInfo",
-    "ContextAwareActions",
-    "ContextInfo",
-    "SystemState",
-    "ApplicationCategory",
     # Phase 4: Multi-Step Planning
     "PlanGenerator",
     "ExecutionPlan",
@@ -154,4 +148,32 @@ __all__ = [
     "MemoryItem",
     "ShortTermMemory",
     "LongTermMemory",
+    # New Architecture: Intelligent Engines
+    "MouseEngine",
+    "MouseButton",
+    "ClickPattern",
+    "ClickResult",
+    "TargetInfo",
+    "KeyboardEngine",
+    "TypingMode",
+    "TypingSpeed",
+    "TypeResult",
+    "Hotkeys",
+    "SecurityEngine",
+    "SecurityRiskLevel",
+    "TrustLevel",
+    "SecurityDecision",
+    "SecurityAssessment",
+    "ReasoningPipeline",
+    "PipelineStage",
+    "ExecutionPlan",
+    "PlanStep",
+    "AgentResult",
+    "UIAProvider",
+    "UIAElement",
+    "UIATreeSnapshot",
+    "ReliabilityManager",
+    "SystemState",
+    "Checkpoint",
+    "DiagnosticEntry",
 ]

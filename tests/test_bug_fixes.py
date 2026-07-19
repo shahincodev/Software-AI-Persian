@@ -232,7 +232,7 @@ def test_memory_optimization():
     print("=" * 50)
     
     try:
-        from core.memory_system import MemoryManager
+        from core.memory_integrator import MemoryManager
         
         # ایجاد memory manager با تنظیمات تست
         memory = MemoryManager(consolidation_threshold=10)

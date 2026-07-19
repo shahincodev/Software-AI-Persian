@@ -17,7 +17,6 @@ import os
 import tempfile
 
 from core.intent_analyzer import IntentAnalyzer
-from core.dialog_manager import DialogManager
 from core.plan_generator import PlanGenerator, ExecutionMode
 from core.plan_validator import PlanValidator, ValidationLevel
 from core.memory_integrator import MemoryIntegrator, PlanStatus
@@ -41,12 +40,6 @@ def temp_db():
 def analyzer():
     """Intent Analyzer"""
     return IntentAnalyzer()
-
-
-@pytest.fixture
-def dialog_manager():
-    """Dialog Manager"""
-    return DialogManager()
 
 
 @pytest.fixture
@@ -76,7 +69,7 @@ class TestFullPipeline:
     
     @pytest.mark.asyncio
     async def test_simple_request_pipeline(
-        self, analyzer, dialog_manager, plan_generator, 
+        self, analyzer, plan_generator, 
         plan_validator, memory_integrator
     ):
         """جریان ساده: درخواست → Intent → Dialog → Plan → Validation → Learning"""
@@ -126,7 +119,7 @@ class TestFullPipeline:
     
     @pytest.mark.asyncio
     async def test_complex_request_with_dialog(
-        self, analyzer, dialog_manager, plan_generator,
+        self, analyzer, plan_generator,
         plan_validator, memory_integrator
     ):
         """درخواست پیچیده با نیاز به Dialog"""
@@ -169,7 +162,7 @@ class TestErrorHandlingIntegration:
     
     @pytest.mark.asyncio
     async def test_invalid_request_handling(
-        self, analyzer, dialog_manager, plan_generator
+        self, analyzer, plan_generator
     ):
         """درخواست نامعتبر"""
         request = ""
@@ -239,7 +232,7 @@ class TestMemoryLearning:
     
     @pytest.mark.asyncio
     async def test_similar_requests_reuse(
-        self, analyzer, dialog_manager, plan_generator,
+        self, analyzer, plan_generator,
         plan_validator, memory_integrator
     ):
         """بازاستفاده از پلان‌های مشابه"""
@@ -407,7 +400,7 @@ class TestPerformanceIntegration:
     
     @pytest.mark.asyncio
     async def test_full_pipeline_speed(
-        self, analyzer, dialog_manager, plan_generator,
+        self, analyzer, plan_generator,
         plan_validator, memory_integrator
     ):
         """سرعت جریان کامل"""

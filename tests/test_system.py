@@ -70,58 +70,6 @@ def test_imports():
     return fail_count == 0
 
 
-def test_logging_system():
-    """تست سیستم لاگ."""
-    print_header("Testing Logging System")
-    
-    try:
-        from core.advanced_logging import get_advanced_logger, close_advanced_logger
-        from core.logging_decorators import log_function_call, LogContext
-        
-        logger = get_advanced_logger()
-        print_success("Logger initialized")
-        
-        # تست لاگ‌های مختلف
-        logger.log_system("Test system message")
-        print_success("System log: OK")
-        
-        logger.log_user_action("test_action", {"param": "value"})
-        print_success("User action log: OK")
-        
-        logger.log_error("Test error", "TestError", {"detail": "test"})
-        print_success("Error log: OK")
-        
-        # تست decorator
-        @log_function_call()
-        def test_func():
-            return "OK"
-        
-        result = test_func()
-        print_success("Decorator log: OK")
-        
-        # تست context
-        with LogContext("test_context"):
-            pass
-        print_success("Context log: OK")
-        
-        # بررسی فایل‌های لاگ
-        log_dir = Path("data/logs")
-        if log_dir.exists():
-            log_files = list(log_dir.glob("*.jsonl")) + list(log_dir.glob("*.log"))
-            print_success(f"Log files created: {len(log_files)} files")
-        else:
-            print_warning("Log directory not found")
-        
-        close_advanced_logger()
-        print_success("Logger closed")
-        
-        return True
-    
-    except Exception as e:
-        print_error(f"Logging system error: {str(e)}")
-        return False
-
-
 def test_core_components():
     """تست اجزای اصلی."""
     print_header("Testing Core Components")
@@ -257,7 +205,6 @@ def main():
     
     # اجرای تست‌ها
     results['imports'] = test_imports()
-    results['logging'] = test_logging_system()
     results['core'] = test_core_components()
     results['config'] = test_configuration()
     results['analyzer'] = test_log_analyzer()

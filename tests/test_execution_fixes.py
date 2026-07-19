@@ -18,7 +18,6 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.intelligent_agent import IntelligentSystemAgent
 from core.system_actions import LaunchAppAction, ExecuteCommandAction
 from core.system_actions import ActionResult as SysActionResult, ActionStatus
 from core.action_controller import ActionOutcome, ActionResult as ControllerResult

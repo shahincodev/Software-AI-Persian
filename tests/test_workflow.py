@@ -54,42 +54,6 @@ async def test_workflow():
         return False
 
 
-async def test_ai_parsing():
-    """Test AI parsing of natural language."""
-    print("\n" + "="*70)
-    print("🧪 AI PARSING TEST: Interpret 'open notepad'")
-    print("="*70)
-    
-    try:
-        from core.ai_brain import AIBrain
-        from core.intelligent_agent import IntelligentSystemAgent
-        
-        # Create agent
-        agent = IntelligentSystemAgent()
-        print("✅ IntelligentSystemAgent initialized")
-        
-        # Test parsing
-        request = "open notepad"
-        print(f"📝 Request: '{request}'")
-        
-        # Get parsed actions (without executing)
-        actions_data = await agent.parser.parse_request(request)
-        print(f"✅ Parsed {len(actions_data)} action(s):")
-        
-        for action in actions_data:
-            print(f"   • Type: {action.get('type')}")
-            print(f"     Description: {action.get('description')}")
-            print(f"     Params: {action.get('params')}")
-        
-        return len(actions_data) > 0
-        
-    except Exception as e:
-        print(f"❌ AI parsing test failed: {e}")
-        import traceback
-        traceback.print_exc()
-        return False
-
-
 async def test_multi_action():
     """Test multi-step action workflow."""
     print("\n" + "="*70)
@@ -145,7 +109,6 @@ async def main():
     print("\n⚡ Starting interactive tests...")
     print("💡 TIP: When approval is requested, type 'n' to skip execution tests\n")
     
-    results.append(("AI Parsing", await test_ai_parsing()))
     results.append(("Workflow (Open Notepad)", await test_workflow()))
     results.append(("Multi-Action (Type Text)", await test_multi_action()))
     

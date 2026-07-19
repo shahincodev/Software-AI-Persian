@@ -1,283 +1,383 @@
-# ROADMAP.md — نقشه راه توسعه Software-AI
+# ROADMAP.md — Software-AI Architectural Redesign & Module Cleanup
 
-> **نکته مهم**: این فایل حافظه عملیاتی توسعه است. پس از هر فاز، وضعیت تکمیل اینجا ثبت می‌شود تا نیاز به خواندن Context از ابتدا نباشد.
+> **Last Updated**: 2026-07-19
+> **Current Version**: 1.1.0
+> **Target Version**: 2.0.0
 
 ---
 
-## وضعیت فعلی
+## Vision Statement
 
-| آیتم | مقدار |
+Transform Software-AI from a traditional automation framework into an **autonomous desktop AI agent** — a reasoning-based system capable of interacting with Windows naturally, safely, and intelligently, comparable to OpenAI's Operator/Atlas or similar AI computer-use systems.
+
+---
+
+## Current Status
+
+| Item | Value |
 |------|-------|
-| نسخه فعلی | 1.1.0 |
-| نسخه هدف | 1.1.0 |
-| فازهای تکمیل شده | Phase 1-11 ✅ |
-| فاز جاری | — (تکمیل شده) |
-| تاریخ آخرین به‌روزرسانی | 2026-07-17 |
+| Phases 1-11 (Legacy) | Completed |
+| Phase 12 — Architectural Redesign | Completed |
+| Phase 13 — Module Cleanup | In Progress (13.1–13.4 Done) |
+| Phase 14 — Integration & Migration | Pending |
+| Phase 15 — Testing & Release | Pending |
 
 ---
 
-## Phase 11 — رفع باگ‌ها و بازسازی ماژول‌های قدیمی
+## Phase 12 — Architectural Redesign (COMPLETED)
 
-**وضعیت**: ✅ تکمیل
+The following new modules have been built to replace the old architecture:
 
-**مشکل اصلی**: بر اساس `test_log.log`:
-- **خطای بحرانی**: `Application 'winword.exe' not found` — `ProcessLauncher._find_application()` قادر به یافتن Microsoft Word نبود
-- **مشکل تایپ فارسی**: `KeyboardController.type_text()` از `pyautogui.write()` استفاده می‌کرد که فقط متن ASCII پشتیبانی می‌کند
-- **باگ زمان‌بندی Bezier**: محاسبه نادرست مدت زمان حرکت موس
-- **عملکرد ضعیف**: استفاده از `list` به جای `deque` برای history در کنترلرهای موس و کیبورد
-- **سبک کدنویسی**: استفاده از f-string در فراخوانی‌های logging (ارزیابی تنبل)
+### New Modules Created
 
-### زیرفازها
+| Module | File | Purpose | Lines |
+|--------|------|---------|-------|
+| MouseEngine | `core/mouse_engine.py` | Vision-guided clicks with observe→locate→move→click→verify→retry | 530 |
+| KeyboardEngine | `core/keyboard_engine.py` | Focus-aware typing with retry, instant/human modes, verification | 520 |
+| SecurityEngine | `core/security_engine.py` | Risk-based execution with trust levels, session permissions | 580 |
+| ReasoningPipeline | `core/reasoning_pipeline.py` | Agent intelligence: understand→think→plan→observe→execute→verify→recover | 450 |
+| UIAProvider | `core/uia_provider.py` | Windows accessibility tree integration | 310 |
+| ReliabilityManager | `core/reliability.py` | Checkpoints, rollback, diagnostics, health monitoring | 300 |
 
-#### 11.1 — اصلاح ProcessLauncher._find_application()
-- [x] حذف `break` شکسته که جستجو را پس از اولین فایل متوقف می‌کرد
-- [x] اضافه کردن مسیرهای Microsoft Office به جستجو (root\Office16, root\Office15)
-- [x] اضافه کردن `COMMONPROGRAMFILES`, `APPDATA`, `PROGRAMDATA` به مسیرهای جستجو
-- [x] اضافه کردن جستجوی Windows Registry به عنوان fallback
-- **فایل**: `core/system_tools.py`
+### Architecture Comparison
 
-#### 11.2 — اصلاح SafetyFilter
-- [x] حذف import تکراری `os`
-- [x] اضافه کردن مسیرهای Microsoft Office به `allowed_paths`
-- [x] اضافه کردن executableهای Office به `allowed_apps` و `always_allowed`
-- [x] تبدیل f-string logging به %-formatting
-- **فایل**: `core/safety_filter.py`
-
-#### 11.3 — بازسازی Mouse Controller
-- [x] اصلاح باگ زمان‌بندی Bezier curve (thermalduration / تعداد نقاط)
-- [x] جایگزینی `list` با `deque(maxlen=100)` برای action_history
-- [x] حذف `max_history` و `_log_action` trimming اضافی
-- [x] اضافه کردن `__all__` exports
-- **فایل**: `core/mouse_control.py`
-
-#### 11.4 — بازسازی Keyboard Controller
-- [x] اصلاح تایپ متن فارسی/غیرASCII از طریق clipboard paste
-- [x] جایگزینی `list` با `deque(maxlen=100)` برای action_history
-- [x] تبدیل تمام f-string logging به %-formatting
-- [x] اضافه کردن `__all__` exports
-- **فایل**: `core/keyboard_control.py`
-
-#### 11.5 — بازسازی Action Safety
-- [x] تبدیل تمام f-string logging به %-formatting
-- [x] حذف ایموجی‌های غیرضروری از لاگ‌ها
-- **فایل**: `core/action_safety.py`
-
-### فایل‌های تغییر یافته Phase 11
-| فایل | تغییرات |
-|------|---------|
-| `core/system_tools.py` | ✅ اصلاح `_find_application()` با جستجوی Office و Registry |
-| `core/safety_filter.py` | ✅ مسیرهای Office، حذف import تکراری، %-formatting |
-| `core/mouse_control.py` | ✅ اصلاح Bezier timing، deque، `__all__` |
-| `core/keyboard_control.py` | ✅ تایپ فارسی از clipboard، deque، %-formatting، `__all__` |
-| `core/action_safety.py` | ✅ %-formatting، حذف ایموجی |
-
-### معیار تکمیل Phase 11
-- [x] `winword.exe` از مسیرهای Office قابل یافتن باشد
-- [x] متن فارسی از طریق clipboard paste تایپ شود
-- [x] حرکت موس با منحنی Bezier در مدت زمان صحیح انجام شود
-- [x] history در هر دو کنترلر O(1) append باشد
-- [x] تمام لاگ‌ها از %-formatting استفاده کنند
+| Aspect | Old Architecture | New Architecture |
+|--------|-----------------|-----------------|
+| Mouse | pyautogui wrapper, no verification | Vision-guided, click verification, retry strategies |
+| Keyboard | Blind typing, no focus check | Focus detection, retry on focus loss, mode selection |
+| Security | Hardcoded whitelist, repeated confirmations | Risk-based, trust levels, session permissions |
+| Intelligence | No reasoning pipeline | 8-stage mandatory pipeline |
+| Desktop Understanding | OCR-only, coordinates primary | UIA accessibility tree + OCR |
+| Reliability | No rollback, no diagnostics | Checkpoints, rollback, structured diagnostics |
 
 ---
 
-## ساختار فایل‌ها پس از هر فاز
+## Phase 13 — Module Cleanup
 
-```
-پس از Phase 8:
-├── ROADMAP.md                          ← این فایل (به‌روزرسانی وضعیت)
-├── README.md                           ← نسخه 1.0.0
-├── main.py                             ← Input sanitization + /providers
-├── core/ai_brain.py                    ← Circuit breaker + model health
-├── core/model_config.py                ← Health scoring
-├── docs/PHASE8_ERROR_RESILIENCE_REPORT.md  ← گزارش فاز
-└── tests/test_phase8_error_resilience.py   ← تست‌های جدید
+### Overview
 
-پس از Phase 9:
-├── core/memory_integrator.py           ← Context compression
-├── docs/PHASE9_PERFORMANCE_REPORT.md   ← گزارش فاز
-└── tests/test_phase9_integration.py    ← تست‌های یکپارچه‌سازی
-
-پس از Phase 10:
-├── CHANGELOG.md                        ← تاریخچه تغییرات
-├── docs/PHASE10_RELEASE_REPORT.md      ← گزارش انتشار
-└── Git tag: v1.0.0
-
-پس از Phase 11:
-├── core/system_tools.py                ← اصلاح _find_application()
-├── core/safety_filter.py               ← مسیرهای Office + %-formatting
-├── core/mouse_control.py               ← اصلاح Bezier + deque
-├── core/keyboard_control.py            ← تایپ فارسی + deque + %-formatting
-├── core/action_safety.py               ← %-formatting
-├── README.md                           ← نسخه 1.1.0
-└── ROADMAP.md                          ← این فایل (Phase 11)
-```
+Analysis identified **17 modules** across 3 tiers that can be removed, totaling approximately **4,337 lines** of dead or redundant code.
 
 ---
 
-## Phase 8 — تاب‌آوری خطا و بهینه‌سازی زنجیره Failover
+### Tier 1 — Safe to Remove Immediately
 
-**وضعیت**: ✅ تکمیل
+These modules are dead code, deprecated wrappers, or completely unused. They have **zero runtime value** and can be deleted without affecting any functionality.
 
-**مشکل اصلی**: بر اساس `test_log.log`، زنجیره failover مدل‌ها کاملاً شکست می‌خورد:
-- مدل‌های OpenRouter: خطای 403 "Access denied by security policy" (6 مدل)
-- ارائه‌دهندگان غیرفعال: Google, Groq, Huggingface, Ollama (بدون API key)
-- خطای TimeoutError در اولین مدل (tencent/hy3:free)
-- **نتیجه نهایی**: "All 11 available models failed" پس از 3 تلاش
+#### 13.1 — Remove Deprecated Wrapper Modules
 
-### زیرفازها
+| # | Module | Lines | Reason |
+|---|--------|-------|--------|
+| 1 | `core/master_controller.py` | 209 | Explicitly deprecated. Redirects to `intent_router.py`. Only imported in 3 test files. |
+| 2 | `core/dialog_manager.py` | 50 | Explicitly deprecated. Redirects to `intent_analyzer.py`. Only imported in 2 test files. |
+| 3 | `core/memory_system.py` | 27 | Explicitly deprecated. Redirects to `memory_integrator.py`. Only imported in 1 test file. |
 
-#### 8.1 — اصلاح ورودی کاربر (Input Sanitization)
-- [x] حذف کاراکترهای اضافی از ورودی (backslash, special chars)
-- [x] اعتبارسنجی طول ورودی
-- [x] فیلتر کردن ورودی‌های خالی یا فقط فاصله
-- **فایل‌ها**: `main.py` (agent_loop)
-- **تست**: `tests/test_phase8_error_resilience.py`
+**Tasks:**
+- [x] Delete `core/master_controller.py`
+- [x] Delete `core/dialog_manager.py`
+- [x] Delete `core/memory_system.py`
+- [x] Remove imports from `tests/test_master_controller.py`
+- [x] Remove imports from `tests/test_master_controller_complete.py`
+- [x] Remove imports from `tests/quick_test_master.py`
+- [x] Remove imports from `tests/test_dialog_manager.py`
+- [x] Remove imports from `tests/test_intent_system_integration.py`
+- [x] Remove import from `tests/test_bug_fixes.py`
 
-#### 8.2 — بهینه‌سازی زنجیره Failover
-- [x] اضافه کردن سازوکار "circuit breaker" برای مدل‌های 403
-- [x] caching پاسخ‌های 403 برای جلوگیری از تلاش مجدد بی‌فایده
-- [x] محدود کردن تعداد تلاش‌ها برای هر مدل خاص (نه فقط کل زنجیره)
-- [x] بهبود پیام خطای کاربرپسند
-- **فایل‌ها**: `core/ai_brain.py`, `core/model_config.py`
+#### 13.2 — Remove Completely Unused Modules
 
-#### 8.3 — مدیریت هوشمند ارائه‌دهندگان
-- [x] بررسی اعتبار API key قبل از تلاش اتصال
-- [x] رتبه‌بندی مدل‌ها بر اساس تاریخچه موفقیت
-- [x] اضافه کردن مکانیزم "model health check" در ابتدا
-- **فایل‌ها**: `core/ai_brain.py`, `core/model_config.py`
+| # | Module | Lines | Reason |
+|---|--------|-------|--------|
+| 4 | `core/agent_core.py` | 85 | **NOT IMPORTED ANYWHERE** in the entire codebase. Dead code. |
+| 5 | `core/browser_core.py` | 38 | **NOT IMPORTED ANYWHERE** in the entire codebase. Dead code. |
+| 6 | `core/model_orchestrator.py` | 89 | **NOT IMPORTED ANYWHERE** in the entire codebase. Dead code. |
 
-#### 8.4 — گزارش وضعیت ارائه‌دهندگان
-- [x] نمایش لحظه‌ای وضعیت ارائه‌دهندگان در CLI
-- [x] دستور `/providers` برای نمایش ارائه‌دهندگان فعال و غیرفعال
-- **فایل‌ها**: `main.py`
-- **تست**: `tests/test_phase8_error_resilience.py`
+**Tasks:**
+- [x] Delete `core/agent_core.py`
+- [x] Delete `core/browser_core.py`
+- [x] Delete `core/model_orchestrator.py`
 
-### فایل‌های تغییر یافته Phase 8
-| فایل | تغییرات |
-|------|---------|
-| `main.py` | ✅ Input sanitization, ✅ `/providers` command with circuit breaker status |
-| `core/ai_brain.py` | ✅ Circuit Breaker, ✅ Health tracking integration, ResponseCache |
-| `core/model_config.py` | ✅ ModelHealthTracker, health scoring, sorted by health |
-| `tests/test_phase8_error_resilience.py` | ✅ 61 تست (همه عبور) |
-| `docs/PHASE8_ERROR_RESILIENCE_REPORT.md` | ✅ گزارش فاز |
+#### 13.3 — Remove Isolated Realtime Modules
 
-### معیار تکمیل Phase 8
-- [x] ورودی‌های خاص (backslash, empty) بدون خطا پردازش شوند
-- [x] مدل‌های 403 بیش از یک بار تلاش نشوند
-- [x] پیام خطای کاربرپسند نمایش داده شود
-- [x] دستور `/providers` کار کند
-- [x] تست‌ها با موفقیت اجرا شوند (61/61)
+| # | Module | Lines | Reason |
+|---|--------|-------|--------|
+| 7 | `core/realtime_loop.py` | 175 | Only imported by `realtime_interpreter.py` (also being removed). Not used in main.py. |
+| 8 | `core/realtime_interpreter.py` | ~200 | Only imported by `realtime_loop.py` (also being removed). Not used in main.py. |
+
+**Tasks:**
+- [x] Delete `core/realtime_loop.py`
+- [x] Delete `core/realtime_interpreter.py`
+- [x] Remove imports from `tests/test_realtime_loop.py`
+- [x] Remove imports from `tests/test_realtime_interpreter.py`
+
+**Tier 1 Total: 8 modules, ~873 lines**
 
 ---
 
-## Phase 9 — بهینه‌سازی عملکرد و تجربه کاربری
+### Tier 2 — Safe to Remove (Test/Example-Only)
 
-**وضعیت**: ✅ تکمیل (9.1 ✅, 9.2 ✅, 9.3 ✅)
+These modules are **not imported by main.py or any core runtime module**. They exist only in tests and examples. Removing them eliminates maintenance burden without affecting runtime.
 
-### زیرفازها
+#### 13.4 — Remove Test/Example-Only Modules
 
-#### 9.1 — بهینه‌سازی حافظه و کش
-- [x] پیاده‌سازی کش پاسخ‌های AI برای درخواست‌های تکراری
-- [x] بهینه‌سازی حجم context (فشرده‌سازی system context)
-- [x] محدود کردن اندازه conversation history بهینه
-- **فایل‌ها**: `core/memory_integrator.py`, `core/ai_brain.py`
+| # | Module | Lines | Import Locations |
+|---|--------|-------|-----------------|
+| 9 | `core/advanced_logging.py` | ~100 | `examples/logging_demo.py`, `tests/test_kill_persistence.py`, `tests/test_system.py` |
+| 10 | `core/logging_decorators.py` | ~80 | Same 3 files as above |
+| 11 | `core/intelligent_agent.py` | ~300 | Only in `tests/` (8 files) and `examples/` — NOT in main.py |
+| 12 | `core/autonomous_agent.py` | 460 | Only in `tests/test_autonomous_agent.py` and `examples/` — NOT in main.py |
+| 13 | `core/context_aware_actions.py` | 483 | Only in `tests/` (2 files) — NOT in main.py |
+| 14 | `core/multi_monitor.py` | ~150 | Only in `tests/` (2 files) — NOT in main.py |
 
-#### 9.2 — بهبود تجربه کاربری CLI
-- [x] نمایش پیشرفت درصدی برای عملیات طولانی
-- [x] رنگ‌بندی بهتر خروجی‌ها
-- [x] دستور `/status` برای نمایش وضعیت سیستم
-- [x] پشتیبانی از Tab completion برای دستورات
-- **فایل‌ها**: `main.py`
+**Tasks:**
+- [x] Delete `core/advanced_logging.py`
+- [x] Delete `core/logging_decorators.py`
+- [x] Delete `core/intelligent_agent.py`
+- [x] Delete `core/autonomous_agent.py`
+- [x] Delete `core/context_aware_actions.py`
+- [x] Delete `core/multi_monitor.py`
+- [x] Update or remove affected test files
+- [x] Update or remove affected example files
 
-#### 9.3 — تست‌های یکپارچه‌سازی
-- [x] تست خودکار زنجیره failover
-- [x] تست input sanitization
-- [x] تست /providers command
-- [x] تست memory context compression
-- **فایل‌ها**: `tests/test_phase9_integration.py`
-
-### معیار تکمیل Phase 9
-- [x] زمان پاسخ‌گویی برای درخواست‌های تکراری < 500ms
-- [x] context size بهینه شده باشد
-- [x] CLI تجربه کاربری بهتری داشته باشد
-- [x] تست‌های یکپارچه‌سازی عبور کنند
+**Tier 2 Total: 6 modules, ~1,573 lines**
 
 ---
 
-## Phase 10 — آماده‌سازی انتشار 1.0.0
+### Tier 3 — Fully Replaced (Requires Migration First)
 
-**وضعیت**: ✅ تکمیل
+These modules are **functionally superseded** by the new architecture but are still imported by `main.py` or `action_controller.py`. They can only be removed **after migrating their consumers**.
 
-### زیرفازها
+#### 13.5 — Migrate action_controller.py
 
-#### 10.1 — مستندسازی نهایی
-- [x] به‌روزرسانی README.md با تمام قابلیت‌های Phase 8-9
-- [x] ایجاد CHANGELOG.md کامل
-- [x] به‌روزرسانی CONTRIBUTING.md
-- [x] بررسی تمام مستندات در docs/
-- **فایل‌ها**: `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `docs/*`
+`action_controller.py` is the central nexus that imports `mouse_control`, `keyboard_control`, and `execution_manager`. It must be migrated first.
 
-#### 10.2 — تست نهایی و پاکسازی
-- [x] اجرای کامل تست‌ها (74/74 pass)
-- [x] بررسی lint و type hints
-- [x] پاکسازی فایل‌های اضافی
-- [x] به‌روزرسانی requirements.txt
-- **فایل‌ها**: `requirements.txt`, `tests/*`
-
-#### 10.3 — انتشار و برچسب‌گذاری
-- [x] تغییر نسخه به 1.0.0 در `main.py` و `README.md`
-- [x] ایجاد Git tag v1.0.0
-- [x] نوشتن release notes
-- [x] ایجاد GitHub Release
-- **فایل‌ها**: `main.py`, `README.md`
-
-### معیار تکمیل Phase 10
-- [x] نسخه 1.0.0 در تمام فایل‌ها یکسان باشد
-- [x] تمام تست‌ها عبور کنند (74/74)
-- [x] مستندات کامل و به‌روز باشند
-- [x] Git tag ایجاد شده باشد
-
----
-
-## ساختار فایل‌ها پس از هر فاز
-
-```
-پس از Phase 8:
-├── ROADMAP.md                          ← این فایل (به‌روزرسانی وضعیت)
-├── README.md                           ← نسخه 1.0.0
-├── main.py                             ← Input sanitization + /providers
-├── core/ai_brain.py                    ← Circuit breaker + model health
-├── core/model_config.py                ← Health scoring
-├── docs/PHASE8_ERROR_RESILIENCE_REPORT.md  ← گزارش فاز
-└── tests/test_phase8_error_resilience.py   ← تست‌های جدید
-
-پس از Phase 9:
-├── core/memory_integrator.py           ← Context compression
-├── docs/PHASE9_PERFORMANCE_REPORT.md   ← گزارش فاز
-└── tests/test_phase9_integration.py    ← تست‌های یکپارچه‌سازی
-
-پس از Phase 10:
-├── CHANGELOG.md                        ← تاریخچه تغییرات
-├── docs/PHASE10_RELEASE_REPORT.md      ← گزارش انتشار
-└── Git tag: v1.0.0
-
-پس از Phase 11:
-├── core/system_tools.py                ← اصلاح _find_application()
-├── core/safety_filter.py               ← مسیرهای Office + %-formatting
-├── core/mouse_control.py               ← اصلاح Bezier + deque
-├── core/keyboard_control.py            ← تایپ فارسی + deque + %-formatting
-├── core/action_safety.py               ← %-formatting
-├── README.md                           ← نسخه 1.1.0
-└── ROADMAP.md                          ← این فایل (Phase 11)
+**Current Dependencies:**
+```python
+from core.mouse_control import MouseController, MouseButton
+from core.keyboard_control import KeyboardController
+from core.execution_manager import ExecutionManager
 ```
 
+**Migration Tasks:**
+- [ ] Add `MouseEngine` and `KeyboardEngine` as constructor parameters (dependency injection)
+- [ ] Maintain backward compatibility via optional legacy parameter support
+- [ ] Replace internal `self.mouse = MouseController()` with `MouseEngine`
+- [ ] Replace internal `self.keyboard = KeyboardController()` with `KeyboardEngine`
+- [ ] Update `click_on_text()`, `type_in_field()`, etc. to use new engines
+- [ ] Run all existing tests to verify backward compatibility
+
+#### 13.6 — Migrate main.py
+
+**Current Dependencies:**
+```python
+from core.mouse_control import MouseController
+from core.keyboard_control import KeyboardController
+from core.safety_consent_manager import SafetyConsentManager
+```
+
+**Migration Tasks:**
+- [ ] Replace `MouseController()` with `MouseEngine()`
+- [ ] Replace `KeyboardController()` with `KeyboardEngine()`
+- [ ] Replace `SafetyConsentManager` with `SecurityEngine` session permissions
+- [ ] Update `VisionLoopManager` initialization to use new vision providers
+
+#### 13.7 — Migrate execution_manager.py
+
+**Current Dependencies:**
+```python
+from core.safety_filter import SafetyFilter, UserConsentManager
+```
+
+**Migration Tasks:**
+- [ ] Replace `SafetyFilter.validate()` with `SecurityEngine.assess_action()`
+- [ ] Replace `UserConsentManager.request_consent()` with `SecurityEngine` session permissions
+- [ ] Maintain the priority queue and audit logging functionality
+- [ ] Run execution pipeline tests
+
+#### 13.8 — Remove Old Replaced Modules
+
+After migration is complete and all tests pass:
+
+| # | Module | Lines | New Replacement |
+|---|--------|-------|----------------|
+| 15 | `core/mouse_control.py` | 744 | `core/mouse_engine.py` |
+| 16 | `core/keyboard_control.py` | 771 | `core/keyboard_engine.py` |
+| 17 | `core/safety_filter.py` | 376 | `core/security_engine.py` |
+
+**Tasks:**
+- [ ] Delete `core/mouse_control.py`
+- [ ] Delete `core/keyboard_control.py`
+- [ ] Delete `core/safety_filter.py`
+- [ ] Remove exports from `core/__init__.py`
+- [ ] Update all remaining test imports
+
+**Tier 3 Total: 3 modules, 1,891 lines (removable after migration)**
+
 ---
 
-## قوانین توسعه (غیرقابل تغییر)
+### Tier 4 — Modules to KEEP (Still Actively Used)
 
-1. **پس از هر فاز**: این فایل (ROADMAP.md) به‌روزرسانی شود
-2. **پس از هر فاز**: گزارش در `docs/` ذخیره شود
-3. **پس از هر فاز**: تست در `tests/` ایجاد شود
-4. **پس از هر فاز**: commit و push انجام شود
-5. **نسخه**: در `README.md` و `main.py` یکسان باشد
-6. **تست‌ها**: قبل از commit اجرا شوند
+These modules remain essential to the runtime and must NOT be removed:
+
+| Module | Purpose | Used By |
+|--------|---------|---------|
+| `core/ai_brain.py` | Multi-provider LLM management | main.py |
+| `core/action_controller.py` | Action orchestration (will be migrated) | main.py, tests |
+| `core/action_factory.py` | Action creation | action_controller.py |
+| `core/action_types.py` | Data models | action_controller.py |
+| `core/desktop_vision.py` | OCR, screenshots, template matching | vision_loop.py, smart_wait.py |
+| `core/desktop_actions.py` | Action definitions (Click, Type, etc.) | action_controller.py |
+| `core/smart_wait.py` | Wait strategies (element, change, process) | action_controller.py |
+| `core/vision_loop.py` | Observe-act-verify loop | main.py |
+| `core/execution_manager.py` | Action queue with priority (will be migrated) | main.py, action_controller.py |
+| `core/action_recovery.py` | Async retry with error classification | vision_loop.py |
+| `core/system_actions.py` | System action types (Launch, Install, etc.) | execution_manager.py |
+| `core/system_tools.py` | System tool adapter | execution_manager.py |
+| `core/system_capabilities.py` | Capability registry | action_controller.py |
+| `core/intent_router.py` | Request routing | main.py |
+| `core/intent_analyzer.py` | Intent parsing (7-step pipeline) | intent_router.py |
+| `core/intent_models.py` | Intent data classes | intent_analyzer.py |
+| `core/session_manager.py` | SQLite conversation sessions | main.py |
+| `core/memory_integrator.py` | Persistent memory with SQLite | main.py |
+| `core/plan_generator.py` | Multi-step plan creation | main.py |
+| `core/plan_validator.py` | Plan validation | main.py |
+| `core/step_tracker.py` | Step execution tracking | main.py, workflow_engine.py |
+| `core/workflow_engine.py` | Multi-step plan execution | main.py |
+| `core/voice_io.py` | Voice I/O with 3 TTS providers | main.py |
+| `core/windows_environment.py` | Windows path/app detection | main.py |
+| `core/logging_config.py` | Logging setup | main.py |
+| `core/model_config.py` | Model registry & health tracking | main.py |
+| `core/monitoring_service.py` | CPU/RAM/Disk monitoring | main.py |
+| `core/tool_schema.py` | 20+ tool definitions | main.py |
+| `core/safety_consent_manager.py` | User consent (will be replaced) | main.py |
+| `core/capability_manager.py` | System capability detection | main.py |
+
+---
+
+## Phase 14 — Integration & Migration
+
+### 14.1 — Update core/__init__.py
+
+- [ ] Remove all Tier 1 module exports
+- [ ] Remove all Tier 2 module exports
+- [ ] Remove Tier 3 module exports after migration
+- [ ] Add new architecture module exports (already done)
+- [ ] Verify all imports resolve correctly
+
+### 14.2 — Update main.py
+
+- [ ] Replace old controller instantiation with new engines
+- [ ] Update agent loop to use ReasoningPipeline
+- [ ] Integrate SecurityEngine for action approval
+- [ ] Update VisionLoopManager to use new vision providers
+- [ ] Test full agent loop end-to-end
+
+### 14.3 — Update Test Suite
+
+- [ ] Remove tests for deleted modules
+- [ ] Create tests for new architecture modules (already have `test_new_architecture.py`)
+- [ ] Update integration tests
+- [ ] Verify all tests pass
+
+---
+
+## Phase 15 — Testing & Release
+
+### 15.1 — Comprehensive Testing
+
+- [ ] Run all unit tests
+- [ ] Run all integration tests
+- [ ] Test mouse engine with real desktop interaction
+- [ ] Test keyboard engine with real typing
+- [ ] Test security engine risk assessments
+- [ ] Test reasoning pipeline end-to-end
+- [ ] Test reliability checkpoints and rollback
+
+### 15.2 — Documentation
+
+- [ ] Update README.md with new architecture
+- [ ] Update CHANGELOG.md with v2.0.0 changes
+- [ ] Update CONVENTIONS.md with new patterns
+- [ ] Create architecture diagram in docs/
+
+### 15.3 — Release
+
+- [ ] Bump version to 2.0.0
+- [ ] Run final test suite
+- [ ] Create Git tag v2.0.0
+- [ ] Write release notes
+
+---
+
+## Expected Outcome
+
+### Code Reduction
+
+| Category | Modules Removed | Lines Saved |
+|----------|----------------|-------------|
+| Tier 1 — Dead/Deprecated | 8 | ~873 |
+| Tier 2 — Test/Example Only | 6 | ~1,573 |
+| Tier 3 — Replaced | 3 | ~1,891 |
+| **Total** | **17** | **~4,337** |
+
+### Architecture Quality
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Total modules | 50 | 33 |
+| Dead code modules | 8 | 0 |
+| Deprecated wrappers | 3 | 0 |
+| Redundant modules | 6 | 0 |
+| Core runtime modules | 33 | 33 (cleaner) |
+
+### Reliability Improvements
+
+| Capability | Before | After |
+|------------|--------|-------|
+| Click verification | None | Vision-guided verification with retry |
+| Focus detection | None | Automatic focus check before typing |
+| Risk assessment | Hardcoded whitelist | Dynamic risk-based with trust levels |
+| Session permissions | None | Temporary elevated access |
+| Reasoning pipeline | None | Mandatory 8-stage pipeline |
+| Rollback support | None | Checkpoint-based rollback |
+| Diagnostics | Basic logging | Structured diagnostic entries |
+| UIA integration | None | Windows accessibility tree |
+
+---
+
+## Execution Order
+
+```
+Phase 13.1  →  Remove deprecated wrappers (master_controller, dialog_manager, memory_system)
+Phase 13.2  →  Remove dead code (agent_core, browser_core, model_orchestrator)
+Phase 13.3  →  Remove isolated modules (realtime_loop, realtime_interpreter)
+Phase 13.4  →  Remove test-only modules (advanced_logging, logging_decorators, etc.)
+Phase 13.5  →  Migrate action_controller.py to new engines
+Phase 13.6  →  Migrate main.py to new engines
+Phase 13.7  →  Migrate execution_manager.py to SecurityEngine
+Phase 13.8  →  Remove old replaced modules (mouse_control, keyboard_control, safety_filter)
+Phase 14    →  Integration and migration
+Phase 15    →  Testing and release
+```
+
+---
+
+## Risk Assessment
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Breaking existing tests | Medium | Remove tests for deleted modules, update imports |
+| Breaking main.py runtime | High | Migrate main.py in Phase 13.6 before removing old modules |
+| Losing backward compatibility | Medium | Keep old modules until migration is verified |
+| UIA initialization failure | Low | Graceful degradation — falls back to OCR |
+| Missing imports in tests | Low | Search and update all test imports |
+
+---
+
+## Development Rules
+
+1. **Before each phase**: Read this ROADMAP.md to understand context
+2. **After each phase**: Update status checkboxes in this file
+3. **After each phase**: Run test suite to verify no regressions
+4. **After each phase**: Commit with descriptive message
+5. **Never remove a module** without first verifying no active runtime imports it
+6. **Always test backward compatibility** before removing old modules

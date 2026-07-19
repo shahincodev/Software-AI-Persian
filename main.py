@@ -56,6 +56,11 @@ from core.tool_schema import TOOLS
 from core.vision_loop import VisionLoopManager
 from core.voice_io import VoiceManager
 from core.workflow_engine import WorkflowEngine
+from core.mouse_engine import MouseEngine, MouseButton, ClickPattern, ClickResult
+from core.reasoning_pipeline import ReasoningPipeline
+from core.security_engine import SecurityEngine, RiskLevel, SecurityDecision
+from core.uia_provider import UIAProvider
+from core.reliability import ReliabilityManager
 
 colorama_init(autoreset=True)
 logger = logging.getLogger(__name__)
@@ -68,10 +73,11 @@ logger = logging.getLogger(__name__)
 class SystemContext:
     """Builds and maintains real-time system context for the AI agent."""
 
-    def __init__(self):
+    def __init__(self, uia_provider: Optional[UIAProvider] = None):
         self.working_directory = os.getcwd()
         self.last_actions: list[dict[str, Any]] = []
         self.max_history = 10
+        self.uia = uia_provider
 
     def record_action(self, action: dict[str, Any]) -> None:
         """Record an executed action for context."""
@@ -130,6 +136,15 @@ class SystemContext:
                 icon = "+" if status == "success" else "X" if status == "failed" else "~"
                 sections.append(f"  [{icon}] {desc}")
 
+        # UIA semantic context (accessibility tree)
+        if self.uia and self.uia.available:
+            try:
+                uia_ctx = self.uia.to_context_string()
+                if uia_ctx and uia_ctx != "UIA not available":
+                    sections.append(f"\n{uia_ctx}")
+            except Exception:
+                pass
+
         return "\n".join(sections)
 
 
@@ -150,12 +165,18 @@ class ToolExecutor:
         safety_mode: str = "safe",
         ai_brain: Optional[AIBrain] = None,
         memory_manager: Optional[MemoryManager] = None,
+        security_engine: Optional[SecurityEngine] = None,
+        mouse_engine: Optional[MouseEngine] = None,
+        reliability: Optional[ReliabilityManager] = None,
     ):
         self.action_controller = action_controller
         self.vision_loop = vision_loop
         self.safety_mode = safety_mode
         self.ai_brain = ai_brain
         self.memory_manager = memory_manager
+        self.security_engine = security_engine
+        self.mouse_engine = mouse_engine
+        self.reliability = reliability
         self.plan_generator: Optional[PlanGenerator] = None
         self.plan_validator: Optional[PlanValidator] = None
         self.workflow_engine: Optional[WorkflowEngine] = None
@@ -278,6 +299,32 @@ class ToolExecutor:
     async def _dispatch(self, tool: str, params: dict, description: str) -> dict[str, Any]:
         """Dispatch a single tool call to the appropriate handler."""
         try:
+            # Security assessment before executing non-read-only tools
+            if self.security_engine and tool not in (
+                "list_directory", "read_file", "screenshot", "read_screen",
+                "describe_screen", "list_plan_steps",
+            ):
+                assessment = self.security_engine.assess_action(
+                    description,
+                    action_type=tool,
+                    context={"tool": tool, "params": params},
+                )
+                if not assessment.should_proceed:
+                    logger.warning(
+                        "Security blocked tool '%s': %s (risk=%s, decision=%s)",
+                        tool, assessment.reason, assessment.risk_level.name,
+                        assessment.decision.value,
+                    )
+                    if assessment.decision == SecurityDecision.REJECT:
+                        return {
+                            "status": "failed",
+                            "description": description,
+                            "error": f"Security: {assessment.reason}",
+                        }
+                    # REQUIRE_CONSENT: log but proceed in safe mode
+                    if self.safety_mode == "safe":
+                        logger.info("Action requires consent, proceeding in safe mode")
+
             # Phase 4: Plan tools
             if tool == "execute_plan":
                 return await self._handle_execute_plan(params, description)
@@ -488,11 +535,39 @@ class ToolExecutor:
         except Exception as e:
             logger.warning("Failed to observe screen before action: %s", e)
 
-        result = self.action_controller.execute_action(action)
+        # Create reliability checkpoint before UI action
+        if self.reliability:
+            self.reliability.create_checkpoint(
+                f"before_{action_type}",
+                state_data={"action_type": action_type, "params": params},
+            )
+
+        # Use MouseEngine for click actions when available
+        if self.mouse_engine and action_type in ("DesktopClick",):
+            target_text = params.get("text", "")
+            if target_text:
+                click_result = self.mouse_engine.click_text(
+                    target_text, verify=True,
+                )
+                result_success = click_result.success
+                result_msg = click_result.summary
+                result_error = click_result.error or ""
+            else:
+                x = params.get("x", 0)
+                y = params.get("y", 0)
+                click_result = self.mouse_engine.click_coordinates(x, y)
+                result_success = click_result.success
+                result_msg = click_result.summary
+                result_error = click_result.error or ""
+        else:
+            result = self.action_controller.execute_action(action)
+            result_success = result.result == ActionResult.SUCCESS
+            result_msg = result.message or ""
+            result_error = result.error or ""
 
         # Verify action with vision if it's a UI action
         verification_passed = True
-        if result.result.value != "success":
+        if not result_success:
             verification_passed = False
         elif screen_before and action_type in ("DesktopClick", "DesktopType", "DesktopHotkey"):
             try:
@@ -503,11 +578,21 @@ class ToolExecutor:
             except Exception as e:
                 logger.warning("Vision verification failed: %s", e)
 
+        # Record result in security engine for trust evolution
+        if self.security_engine:
+            app_name = params.get("app_name", "")
+            self.security_engine.record_action_result(
+                description, result_success, app_name,
+            )
+
+        final_status = "success" if result_success and verification_passed else "failed"
+        final_error = result_error or ("" if verification_passed else "Visual verification failed")
+
         return {
-            "status": "success" if result.result == ActionResult.SUCCESS and verification_passed else "failed",
+            "status": final_status,
             "description": description,
-            "output": result.message or "",
-            "error": result.error or ("" if verification_passed else "Visual verification failed"),
+            "output": result_msg,
+            "error": final_error,
         }
 
     # ── Vision Tools (Phase 3) ──────────────────────────────────────────
@@ -752,7 +837,7 @@ Examples:
   python main.py --safety-mode power # Less restrictive safety
         """,
     )
-    parser.add_argument("--version", action="version", version="Software-AI 1.1.0")
+    parser.add_argument("--version", action="version", version="Software-AI 1.2.0")
     parser.add_argument("--input-mode", choices=["text", "voice"], default="text")
     parser.add_argument("--tts-provider", choices=["google-cloud", "gtts", "elevenlabs"], default="gtts")
     parser.add_argument("--debug", action="store_true")
@@ -783,7 +868,7 @@ def print_banner() -> None:
         except UnicodeEncodeError:
             print(padded)
     print()
-    print(f"  {Fore.GREEN}Software-AI 1.1.0{reset}  |  AI-Powered Windows Agent")
+    print(f"  {Fore.GREEN}Software-AI 1.2.0{reset}  |  AI-Powered Windows Agent")
     print(f"  {Fore.YELLOW}Type your request in natural language{reset}")
     print(f"  {Fore.YELLOW}Type 'help' for commands, 'exit' to quit{reset}")
     print(f"  {Fore.CYAN}Made By shahincodev{reset}")
@@ -880,14 +965,42 @@ async def agent_loop(args: argparse.Namespace) -> None:
     action_controller = ActionController(dry_run=args.dry_run)
     ai_brain = AIBrain()
     windows_env = WindowsEnvironment()
-    system_context = SystemContext()
+
+    # Initialize new architecture modules
+    security_engine = SecurityEngine()
+    mouse_engine = MouseEngine(
+        vision=DesktopVision(),
+        safety_enabled=True,
+        human_behavior=True,
+        max_retries=3,
+    )
+    uia_provider = UIAProvider()
+    reliability = ReliabilityManager()
+
+    system_context = SystemContext(uia_provider=uia_provider)
     vision = DesktopVision()
     vision_loop = VisionLoopManager(vision=vision)
-    tool_executor = ToolExecutor(action_controller, vision_loop, safety_mode=args.safety_mode, ai_brain=ai_brain, memory_manager=memory)
+    tool_executor = ToolExecutor(
+        action_controller, vision_loop,
+        safety_mode=args.safety_mode,
+        ai_brain=ai_brain,
+        memory_manager=memory,
+        security_engine=security_engine,
+        mouse_engine=mouse_engine,
+        reliability=reliability,
+    )
     chat_brain = ai_brain
 
     # Safety
     SafetyConsentManager()
+
+    # Log new module status
+    logger.info(
+        "New modules: security=%s, mouse=%s, uia=%s, reliability=%s",
+        "active", "active",
+        "available" if uia_provider.available else "unavailable",
+        "active",
+    )
 
     print_banner()
 
@@ -1121,7 +1234,7 @@ async def agent_loop(args: argparse.Namespace) -> None:
                     health_report = tracker.get_health_report()
 
                     print(f"\n{Fore.CYAN}{'='*50}{Style.RESET_ALL}")
-                    print(f"{Fore.CYAN}  Software-AI System Status  (v1.1.0){Style.RESET_ALL}")
+                    print(f"{Fore.CYAN}  Software-AI System Status  (v1.2.0){Style.RESET_ALL}")
                     print(f"{Fore.CYAN}{'='*50}{Style.RESET_ALL}")
 
                     # Providers

@@ -530,11 +530,13 @@ class AIBrain:
             api_key = os.getenv(config.api_key_env)
             
             # GapGPT از OpenAI-compatible endpoint استفاده می‌کند
+            # Main site: https://gapgpt.app/
+            # Platform docs: https://gapgpt.app/platform-v2
             model = ChatOpenAI(
                 model=config.name,
                 temperature=config.temperature,
                 api_key=api_key,
-                base_url=config.base_url or "https://api.gapgpt.com/v1"
+                base_url=config.base_url or "https://api.gapgpt.app/v1"
             )
             logger.info(f"✅ Loaded GapGPT model: {config.name}")
             return model

@@ -303,12 +303,14 @@ class ModelRegistry:
 
         # ================== GapGPT (Dedicated Servers) ==================
         # GapGPT - سرورهای اختصاصی با مدل‌های رایگان و باکیفیت
+        # Main site: https://gapgpt.app/
+        # Platform docs: https://gapgpt.app/platform-v2
 
         self.register_model(ModelConfig(
             name="gapgpt-qwen-3.6",
             provider="gapgpt",
             api_key_env="GAPGPT_API_KEY",
-            base_url="https://api.gapgpt.com/v1",
+            base_url="https://api.gapgpt.app/v1",
             temperature=0.5,
             max_tokens=4000,
             priority=92,

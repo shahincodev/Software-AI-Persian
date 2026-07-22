@@ -58,6 +58,7 @@ class ProviderDetector:
         "openai": "OPENAI_API_KEY",
         "anthropic": "ANTHROPIC_API_KEY",
         "huggingface": "HUGGINGFACE_API_KEY",
+        "gapgpt": "GAPGPT_API_KEY",
     }
     
     def __init__(self):
@@ -418,6 +419,8 @@ class AIBrain:
                 return self._load_ollama_model(model_config)
             elif model_config.provider == "huggingface":
                 return self._load_huggingface_model(model_config)
+            elif model_config.provider == "gapgpt":
+                return self._load_gapgpt_model(model_config)
             else:
                 logger.warning(f"Unknown provider: {model_config.provider}, using legacy mode")
                 return self._load_model_legacy(name)
@@ -517,6 +520,26 @@ class AIBrain:
             return model
         except Exception as e:
             logger.exception(f"Failed to load HuggingFace model {config.name}: {e}")
+            raise
+    
+    def _load_gapgpt_model(self, config: ModelConfig) -> Any:
+        """بارگذاری مدل از طریق GapGPT (سرورهای اختصاصی)"""
+        try:
+            from browser_use.llm.openai.chat import ChatOpenAI
+            
+            api_key = os.getenv(config.api_key_env)
+            
+            # GapGPT از OpenAI-compatible endpoint استفاده می‌کند
+            model = ChatOpenAI(
+                model=config.name,
+                temperature=config.temperature,
+                api_key=api_key,
+                base_url=config.base_url or "https://api.gapgpt.com/v1"
+            )
+            logger.info(f"✅ Loaded GapGPT model: {config.name}")
+            return model
+        except Exception as e:
+            logger.exception(f"Failed to load GapGPT model {config.name}: {e}")
             raise
     
     def _load_model_legacy(self, name: str) -> Any:

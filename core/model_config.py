@@ -301,6 +301,21 @@ class ModelRegistry:
             is_free=True
         ))
 
+        # ================== GapGPT (Dedicated Servers) ==================
+        # GapGPT - سرورهای اختصاصی با مدل‌های رایگان و باکیفیت
+
+        self.register_model(ModelConfig(
+            name="gapgpt-qwen-3.6",
+            provider="gapgpt",
+            api_key_env="GAPGPT_API_KEY",
+            base_url="https://api.gapgpt.com/v1",
+            temperature=0.5,
+            max_tokens=4000,
+            priority=92,
+            description="GapGPT Qwen 3.6 (Dedicated Servers, Free & High Quality)",
+            is_free=True
+        ))
+
         logger.info("✅ Loaded %d FREE models from default registry", len(self.models))
 
     def register_model(self, config: ModelConfig):

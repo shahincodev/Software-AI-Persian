@@ -1,0 +1,8 @@
+{
+  "name": "Software-AI Persian Agent",
+  "description": "Windows AI Agent and autonomous control system with natural language reasoning, multi-step planning, desktop vision simulation, and bilingual Persian/English workflows.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

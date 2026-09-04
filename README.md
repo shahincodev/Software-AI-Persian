@@ -1,190 +1,366 @@
 # Software-AI
 
-**نسخه**: 1.2.0  
-**پلتفرم**: ویندوز ۱۰/۱۱  
-**پایتون**: ۳.۱۱+  
-**مجوز**: اختصاصی (تمامی حقوق محفوظ است)
+## A Local-First AI Agent Platform
+
+Software-AI is an open-source project focused on building a reliable, secure, and extensible AI Agent runtime.
+
+Unlike traditional chatbots, Software-AI is designed around the concept of an autonomous agent system that can:
+
+- understand user goals
+- plan tasks when required
+- select appropriate tools
+- execute controlled actions
+- verify results
+- recover from failures
+
+The project focuses on building the foundation of a trustworthy AI agent rather than creating a simple conversational interface.
 
 ---
 
-## پروژه چیست؟
+# Project Status
 
-Software-AI یک عامل هوشمند ویندوز است. درخواست‌های زبان طبیعی (فارسی/انگلیسی) را می‌گیرد و با دسترسی کامل به سیستم آن‌ها را اجرا می‌کند. مثلاً می‌توانید بگویید "فایل‌های Downloads من چیست؟" یا "notepad را باز کن" و سیستم خودکار آن را انجام می‌دهد.
+🚧 Active Development
 
-سیستم هر درخواست را از این مسیر پردازش می‌کند: دریافت متن → ساخت زمینه سیستم → تصمیم‌گیری AI → اجرا → بازخورد.
+Current stage:
 
----
+Foundation and Core Runtime Development
 
-## قابلیت‌ها
+Completed:
 
-- **حلقه عامل**: هر درخواست از طریق AI با زمینه سیستم پردازش می‌شود
-- **زمینه بلادرنگ**: AI وضعیت فایل‌ها، پوشه‌ها و درایوها را قبل از تصمیم‌گیری می‌بیند
-- **بینایی دسکتاپ**: عکس‌برداری از صفحه، OCR، تشخیص عنصر با OpenCV
-- **کنترل ماوس هوشمند**: موتور ماوس با راهنمای بینایی، بازبینی کلیک و رفتار انسانی
-- **پایپ‌لاین استدلال**: حلقه استدلال ۸ مرحله‌ای (درک → فکر → برنامه → مشاهده → اجرا → بازبینی → بازیابی → ادامه)
-- **امنیت پیشرفته**: امتیازدهی ریسک، مدیریت اعتماد، مجوزهای نشست و اعتبارسنجی نیت
-- **درک دسکتاپ معنایی**: ارائه‌دهنده UIA برای دسترسی به درخت دسترسی ویندوز
-- **قابلیت اطمینان**: نقاط بازبینی، بازگشت به حالت قبل و لاگ تشخیصی ساختاریافته
-- **برنامه‌ریزی چندمرحله‌ای**: درخواست‌های پیچیده به مراحل ساختاریافته تبدیل و با رهگیری پیشرفت اجرا می‌شوند
-- **حافظه پایدار**: مکالمات قبلی در SQLite ذخیره شده و در مکالمات آینده بازیابی می‌شوند
-- **مدیریت نشست**: مکالمات در نشست‌های جداگانه ذخیره شده و بین آن‌ها سوئیچ می‌شود
-- **چندارائه‌دهنده**: زنجیره failover بین Groq، Gemini، OpenRouter و Ollama
+- Project vision definition
+- Architecture design
+- Security model design
+- Development workflow definition
+- Repository governance setup
 
----
+Current focus:
 
-## نصب
+Phase 1 - Core Agent Foundation
 
-### پیش‌نیازها
+Not implemented yet:
 
-- ویندوز ۱۰ یا ۱۱
-- پایتون ۳.۱۱ یا بالاتر
-- حداقل ۴ گیگابایت RAM
-- اینترنت (برای API هوش مصنوعی)
-
-### مراحل راه‌اندازی
-
-```powershell
-# 1. کلون کردن
-git clone https://github.com/shahincodev/Software-AI-Persian.git
-cd Software-AI-Persian
-
-# 2. ایجاد محیط مجازی
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-
-# 3. نصب وابستگی‌ها
-pip install -r requirements.txt
-
-# 4. تنظیم کلیدهای API
-Copy-Item .env.example .env
-# فایل .env را ویرایش کنید
-
-# 5. اجرا
-python main.py
-```
-
-### نصب Tesseract OCR (اختیاری)
-
-برای بینایی دسکتاپ (خواندن متن از صفحه) نیاز است:
-- دانلود از: https://github.com/UB-Mannheim/tesseract/wiki
-- مسیر نصب پیش‌فرض: `C:\Program Files\Tesseract-OCR\tesseract.exe`
+- User interface
+- LLM provider integrations
+- Windows automation
+- Vision capabilities
+- Plugin system
+- Advanced memory systems
 
 ---
 
-## تنظیمات
+# Vision
 
-فایل `.env` را از `.env.example` بسازید و حداقل یک کلید API تنظیم کنید:
+The long-term vision of Software-AI is to create a reliable AI agent platform capable of interacting with digital environments safely and intelligently.
 
-```bash
-# حداقل یکی از این‌ها لازم است
-GROQ_API_KEY=your_key_here          # رایگان - 30 درخواست در دقیقه
-GOOGLE_API_KEY=your_key_here        # رایگان - Gemini 2.5 Flash
-OPENROUTER_API_KEY=your_key_here    # 100+ مدل (رایگان و پولی)
-HUGGINGFACE_API_KEY=your_key_here   # رایگان - 30 درخواست در 3 ساعت
+The project aims to build an agent that can:
 
-# مسیر Tesseract (اگر در PATH نیست)
-TESSERACT_PATH=C:\Program Files\Tesseract-OCR\tesseract.exe
-```
+- understand objectives
+- reason about tasks
+- use tools responsibly
+- verify its actions
+- learn from experience without compromising security
 
-ارائه‌دهندگان شناسایی شده در ابتدای برنامه نمایش داده می‌شوند.
+Software-AI is built around the idea that intelligence alone is not enough.
 
----
+A useful AI agent requires:
 
-## نحوه استفاده
-
-### اجرای ساده
-
-```powershell
-python main.py
-```
-
-### نمونه درخواست‌ها
-
-```
-> فایل‌های Downloads من چیست؟
-> یک پوشه روی درایو D به اسم test بساز
-> notepad را باز کن
-> هوای تهران چطوره؟
-> اسکرین‌شات بگیر
-```
-
-### دستورات CLI
-
-```
-help            نمایش راهنما
-clear           پاک کردن صفحه
-context         نمایش زمینه سیستم فعلی
-screen          نمایش وضعیت صفحه (OCR + عناصر)
-history         نمایش اقدامات اخیر
-/providers      نمایش وضعیت ارائه‌دهندگان API
-/status         نمایش وضعیت کامل سیستم
-pause / resume  توقف یا ادامه
-stop / exit     خروج
-/new [name]     ایجاد نشست جدید
-/sessions       نمایش لیست نشست‌ها
-/switch <id>    سوئیچ به نشست دیگر
-/delete <id>    حذف نشست
-/search <q>     جستجو در نشست‌ها
-/current        نمایش اطلاعات نشست فعلی
-```
-
-### گزینه‌های خط فرمان
-
-```powershell
-python main.py --input-mode voice          # ورودی صوتی
-python main.py --debug                     # لاگ اشکال‌زدایی
-python main.py --dry-run                   # شبیه‌سازی بدون اجرا
-python main.py --safety-mode power         # حالت امنیتی کمتر
-python main.py --risk-threshold 80         # آستانه ریسک
-```
+- controlled execution
+- security boundaries
+- verification
+- transparent decisions
+- maintainable architecture
 
 ---
 
-## ساختار پروژه
+# Why Software-AI?
 
-```
-Software-AI/
-├── main.py                 # نقطه ورودی
-├── core/
-│   ├── ai_brain.py         # ارتباط با LLM (چندارائه‌دهنده)
-│   ├── action_controller.py # اجرای اقدامات سیستمی
-│   ├── action_factory.py   # کارخانه ایجاد اقدامات
-│   ├── desktop_vision.py   # عکس صفحه و OCR
-│   ├── mouse_engine.py     # موتور ماوس هوشمند با راهنمای بینایی
-│   ├── reasoning_pipeline.py # پایپ‌لاین استدلال ۸ مرحله‌ای
-│   ├── security_engine.py  # معماری امنیتی هوشمند (ریسک/اعتماد/نشست)
-│   ├── uia_provider.py     # ارائه‌دهنده UIA برای درک معنایی دسکتاپ
-│   ├── reliability.py      # سیستم قابلیت اطمینان (بازبینی/بازگشت/تشخیص)
-│   ├── keyboard_control.py # کنترل صفحه‌کلید
-│   ├── vision_loop.py      # حلقه بینایی خودمختار
-│   ├── plan_generator.py   # برنامه‌ساز چندمرحله‌ای
-│   ├── plan_validator.py   # اعتبارسنجی برنامه
-│   ├── workflow_engine.py  # موتور اجرای گردش کار
-│   ├── memory_integrator.py # حافظه کوتاه‌مدت/بلندمدت
-│   ├── session_manager.py  # مدیریت نشست‌ها
-│   ├── windows_environment.py # درک محیط ویندوز
-│   ├── tool_schema.py      # ثبت ابزارها (۲۰ ابزار)
-│   └── ...                 # ماژول‌های دیگر
-├── tests/                  # تست‌ها
-├── docs/                   # مستندات
-├── data/                   # داده‌های زمان اجرا
-└── requirements.txt        # وابستگی‌ها
-```
+Many current AI applications focus primarily on conversation.
+
+Software-AI explores a different direction:
+
+A true AI agent should not only answer questions.
+
+It should be able to:
+
+Understand
+
+↓
+
+Plan
+
+↓
+
+Act
+
+↓
+
+Observe
+
+↓
+
+Verify
+
+↓
+
+Improve
+
+However, autonomy without control creates unreliable systems.
+
+Therefore Software-AI follows a security-first approach:
+
+- Tools execute actions.
+- Security controls permissions.
+- Verification confirms results.
+- Memory provides context, not authority.
 
 ---
 
-## محدودیت‌ها
+# Core Architecture
 
-- فقط ویندوز — پشتیبانی بین‌پلتفرمی ندارد
-- بدون کلید API، سیستم از هوش مصنوعی نمی‌تواند استفاده کند
-- کیفیت OCR به نصب Tesseract و وضوح صفحه بستگی دارد
-- خودکارسازی مرورگر هنوز کاملاً یکپارچه نشده
-- تست‌ها باید دستی اجرا شوند (CI/CD ندارد)
+Software-AI follows a modular monolith architecture.
+
+High-level flow:
+
+User Request
+
+↓
+
+Agent Brain
+
+↓
+
+Task Management
+
+↓
+
+Security Authorization
+
+↓
+
+Tool Execution
+
+↓
+
+Verification
+
+↓
+
+Persistence
+
+↓
+
+User Response
+
+Core components:
+
+## Agent Brain
+
+Responsible for:
+
+- understanding goals
+- selecting strategies
+- coordinating actions
+
+## Task System
+
+Responsible for:
+
+- task lifecycle
+- execution state
+- recovery handling
+
+## Security Layer
+
+Responsible for:
+
+- authorization
+- permission boundaries
+- safe execution
+
+## Tool System
+
+Responsible for:
+
+- deterministic capabilities
+- external actions
+- system interaction
+
+## Verification System
+
+Responsible for:
+
+- checking outcomes
+- preventing false success
+
+## Persistence Layer
+
+Responsible for:
+
+- task history
+- execution records
+- system state
 
 ---
 
-## مجوز
+# Design Principles
 
-اختصاصی — تمامی حقوق محفوظ است.
+## Security First
 
-© ۲۰۲۵-۲۰۲۶ شاهین (shahincodev)
+No action should happen without proper authorization.
+
+## Tools Over Direct Control
+
+The agent decides.
+
+Tools execute.
+
+The separation between intelligence and execution is fundamental.
+
+## Verification Before Trust
+
+A completed action must be verified whenever possible.
+
+## Memory Is Not Permission
+
+Past experience must never automatically create authority.
+
+## Documentation Driven Development
+
+Architecture, decisions, and changes must remain documented.
+
+---
+
+# Repository Structure
+
+Software-AI-Persian/
+
+├── AGENTS.md
+├── README.md
+├── README_FA.md
+├── ARCHITECTURE.md
+├── docs/
+│   ├── development-workflow.md
+│   ├── legacy-lessons.md
+│   └── adr/
+├── src/
+├── tests/
+
+---
+
+# Documentation
+
+Project documentation:
+
+- Development rules
+  `AGENTS.md`
+
+- Architecture decisions
+  `docs/adr/`
+
+- Development workflow
+  `docs/development-workflow.md`
+
+- Previous project lessons
+  `docs/legacy-lessons.md`
+
+---
+
+# Roadmap
+
+## Phase 1 - Core Foundation
+
+Goal:
+
+Build a reliable execution pipeline.
+
+Includes:
+
+- domain models
+- task system
+- persistence
+- tool contracts
+- security authorization
+- verification
+
+## Phase 2 - Model Integration
+
+Goal:
+
+Introduce AI model providers through stable interfaces.
+
+Potential integrations:
+
+- OpenAI
+- Google
+- Local Models
+- Other providers
+
+## Phase 3 - Advanced Task Execution
+
+Goal:
+
+Support:
+
+- planning
+- multi-step tasks
+- recovery strategies
+
+## Phase 4 - Computer Interaction
+
+Goal:
+
+Introduce controlled interaction with digital environments.
+
+Potential capabilities:
+
+- Windows automation
+- UI automation
+- browser interaction
+- perception systems
+
+## Phase 5 - Memory and Learning
+
+Goal:
+
+Introduce:
+
+- long-term memory
+- experience storage
+- reflection systems
+- skill evolution
+
+---
+
+# Development Philosophy
+
+Software-AI follows these principles:
+
+Reliable foundations before advanced features.
+
+Security before autonomy.
+
+Verification before trust.
+
+Simple systems before complex systems.
+
+Documentation before uncontrolled growth.
+
+---
+
+# Contributing
+
+Contributions are welcome.
+
+Before contributing:
+
+1. Read `AGENTS.md`
+2. Understand the architecture
+3. Follow development workflow
+4. Respect security boundaries
+5. Keep documentation synchronized with code
+
+---
+
+# License
+
+License information will be added as the project matures.

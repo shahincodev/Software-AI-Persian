@@ -34,12 +34,15 @@ pip-delete-this-directory.txt
 .nox/
 .coverage
 .coverage.*
-.cache
+.cache/
 nosetests.xml
 coverage.xml
 *,cover
 hypothesis/
 .pytest_cache/
+.ruff_cache/
+.pyright/
+htmlcov/
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -63,6 +66,8 @@ Thumbs.db
 
 # Environment variables and secrets
 .env
+.env.*
+!.env.example
 *.key
 *.pem
 credentials.json
@@ -76,21 +81,23 @@ secrets.yaml
 *.db
 *.db-journal
 
-# Logs and data
+# Logs and generated runtime data
 *.log
 data/logs/
 data/screenshots/
 data/*.sqlite3
+data/system_capabilities.json
 
-# local settings
+# Local settings
 local_settings.py
 
-# temporary
+# Temporary files
 tmp/
 temp/
-__pycache__/
+*.tmp
+*.temp
 
-# Lock files
+# Lock files from local tooling
 *.lock
 *-lock.json
 package-lock.json
@@ -108,9 +115,7 @@ test_screenshot.png
 test_input.txt
 *.png
 !docs/**/*.png
-data/system_capabilities.json
 
 # Agent/Config files
-AGENTS.md
 CONVENTIONS.md
 skills/

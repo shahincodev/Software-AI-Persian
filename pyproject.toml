@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "software-ai"
+version = "0.1.0"
+description = "A local-first AI agent runtime foundation."
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.8",
+    "pyright>=1.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+src = ["src"]
+
+[tool.pyright]
+include = ["src", "tests"]
+typeCheckingMode = "strict"
+pythonVersion = "3.11"
